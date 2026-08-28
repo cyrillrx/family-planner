@@ -1,0 +1,64 @@
+# MacOS garbage
+.DS_Store
+
+# temp files
+*~*
+
+# built application files
+*.keystroke
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+build/
+out/
+
+# NDK generated files
+obj/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Proguard folder
+proguard/
+*.pro
+
+# IntelliJ / Android Studio project files
+*.iml
+*.ipr
+*.iws
+.idea/
+.fleet/
+.gradle/
+.kotlin/
+
+# iOS
+.externalNativeBuild
+.cxx
+xcuserdata
+
+# SonarScanner
+.scannerwork/
+
+# Python (telegram-bot)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Claude Code — machine-local settings
+.claude/settings.local.json
+.claude/worktrees/
+
+# Secrets — never commit
+.env
+google-services.json
+GoogleService-Info.plist
+*serviceAccount*.json
