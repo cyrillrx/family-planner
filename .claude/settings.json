@@ -1,0 +1,14 @@
+{
+  "extraKnownMarketplaces": {
+    "cyrillrx-conventions": {
+      "source": {
+        "source": "github",
+        "repo": "cyrillrx/coding-conventions"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "git-workflow@cyrillrx-conventions": true,
+    "kmp-conventions@cyrillrx-conventions": true
+  }
+}
