@@ -16,9 +16,13 @@ Monorepo. Each component owns its own build and its own CI workflow.
 
 ```
 family-planner/
-├── cmp-app/            # KMP/CMP client (iOS + Android)  — not yet initialized
+├── cmp-app/            # KMP/CMP client (Android, iOS, Desktop)
+│   ├── shared/core/    # domain and data — no Compose
+│   ├── shared/ui/      # Compose UI
+│   ├── androidApp/  desktopApp/  iosApp/
 ├── telegram-bot/       # Notification scripts            — not yet initialized
 ├── docs/
+│   ├── adr/            # Architecture decisions
 │   ├── conventions/    # Pointers to cyrillrx/coding-conventions
 │   ├── draft-spec.md   # Working ideas, not decisions
 │   └── roadmap.md      # V1 / V2 / V3
@@ -42,7 +46,16 @@ Only the client stack is settled. Everything marked _Candidate_ is a working ass
 
 ## Getting started
 
-> TODO — completed when the KMP project is initialized.
+The client builds with the Gradle wrapper, on Java 21:
+
+```bash
+cd cmp-app
+./gradlew jvmTest              # Run the tests
+./gradlew :desktopApp:run      # Run on Desktop
+./gradlew :androidApp:installDebug   # Install on Android
+```
+
+For iOS, open `cmp-app/iosApp/iosApp.xcodeproj` in Xcode and run it on a simulator. The full command list is in [`AGENTS.md`](AGENTS.md).
 
 The notification scripts read their configuration from a `.env` file at the repository root:
 

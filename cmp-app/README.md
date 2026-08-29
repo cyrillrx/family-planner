@@ -1,35 +1,31 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
+# cmp-app
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+Kotlin Multiplatform client for Family Planner, targeting Android, iOS and Desktop with a shared Compose Multiplatform UI.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+## Modules
 
-### Running the apps
+| Module        | Contains                                                                                                      |
+|---------------|---------------------------------------------------------------------------------------------------------------|
+| `shared/core` | Domain and data layers. No Compose dependency, measured in full by Kover.                                     |
+| `shared/ui`   | Compose UI. Ships to iOS as the `Shared` framework.                                                           |
+| `androidApp`  | Android application wrapper.                                                                                  |
+| `desktopApp`  | JVM application wrapper. Development target — it runs the tests and produces coverage, it is not distributed. |
+| `iosApp`      | Xcode project. Its build phase calls `:shared:ui:embedAndSignAppleFrameworkForXcode`.                         |
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+The reasoning behind this split, and behind the absence of a Web target, is in [ADR-001](../docs/adr/adr-001-kmp-client-targets.md).
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Commands
 
-### Running tests
+```bash
+./gradlew build                      # Build every target
+./gradlew jvmTest                    # Run the JVM tests
+./gradlew koverXmlReportJvm          # Coverage reports read by SonarCloud
+./gradlew ktlintCheck                # Check formatting
+./gradlew ktlintFormat               # Auto-fix formatting
+./gradlew :desktopApp:run            # Run on Desktop
+./gradlew :androidApp:installDebug   # Install on Android
+```
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+iOS builds from `iosApp/iosApp.xcodeproj` in Xcode.
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
-
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+Contribution rules, including the coverage policy, are in [`AGENTS.md`](../AGENTS.md).
