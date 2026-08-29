@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "FamilyPlanner"
 
 pluginManagement {
@@ -33,4 +35,5 @@ plugins {
 
 include(":androidApp")
 include(":desktopApp")
-include(":shared")
+include(":shared:core")
+include(":shared:ui")
