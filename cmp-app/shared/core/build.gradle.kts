@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.kover)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
 }
@@ -42,4 +44,31 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+}
+
+sonar {
+    properties {
+        // Absolute: the report is then found whatever base directory Sonar resolves against.
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory.file("reports/kover/reportJvm.xml").get().asFile.absolutePath,
+        )
+        // Sonar indexes these files either way and reads their absence from the report as zero
+        // coverage. See the coverage policy in AGENTS.md.
+        property(
+            "sonar.coverage.exclusions",
+            listOf(
+                "**/androidMain/**",
+                "**/iosMain/**",
+            ).joinToString(","),
+        )
+    }
+}
+
+ktlint {
+    debug.set(true)
+    verbose.set(true)
+    android.set(false)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
 }

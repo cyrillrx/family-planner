@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.kover)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
@@ -70,4 +72,60 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
+sonar {
+    properties {
+        // Absolute: the report is then found whatever base directory Sonar resolves against.
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory.file("reports/kover/reportJvm.xml").get().asFile.absolutePath,
+        )
+        // Sonar indexes these files either way and reads their absence from the report as zero
+        // coverage. Every entry here has its counterpart in the kover block below: Kover matches
+        // class names, Sonar matches file paths. See the coverage policy in AGENTS.md.
+        property(
+            "sonar.coverage.exclusions",
+            listOf(
+                "**/presentation/component/**",
+                "**/presentation/theme/**",
+                "**/navigation/**",
+                "**/*Screen.kt",
+                "**/app/**",
+                "**/androidMain/**",
+                "**/iosMain/**",
+            ).joinToString(","),
+        )
+    }
+}
+
+kover {
+    reports {
+        filters {
+            // Coverage only comes from jvmTest and no Compose UI test feeds Kover, so measuring
+            // composables would only count tests that are never collected.
+            excludes {
+                classes(
+                    "*.presentation.component.*",
+                    "*.presentation.theme.*",
+                    "*.navigation.*",
+                    "*.ComposableSingletons*",
+                    "*Screen",
+                    "*ScreenKt",
+                    "*.app.*",
+                    // Generated: Compose resources accessors.
+                    "*.generated.resources.*",
+                )
+            }
+        }
+    }
+}
+
+ktlint {
+    debug.set(true)
+    verbose.set(true)
+    android.set(false)
+    outputToConsole.set(true)
+    // Permissive on the UI module, strict on core — same split as kmp-ttrpg-companion.
+    ignoreFailures.set(true)
 }
