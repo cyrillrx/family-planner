@@ -18,16 +18,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
       - name: Make gradlew executable
         working-directory: cmp-app
         run: chmod +x gradlew
+
+      - name: Check formatting
+        working-directory: cmp-app
+        run: ./gradlew ktlintCheck --no-daemon
 
       - name: Run JVM tests and generate Kover reports
         working-directory: cmp-app
@@ -37,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kover-reports
-          path: cmp-app/**/build/reports/kover/reportJvm.xml
+          path: cmp-app/shared/*/build/reports/kover/reportJvm.xml
 
   sonar:
     name: CMP Client - SonarCloud
@@ -50,10 +54,10 @@ jobs:
         with:
           fetch-depth: 0 # Required for Sonar branch/PR analysis
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
@@ -65,7 +69,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: kover-reports
-          path: cmp-app
+          # The upload globs cmp-app/shared/*/..., so the artifact is rooted at shared/.
+          path: cmp-app/shared
 
       - name: SonarCloud analysis
         working-directory: cmp-app
