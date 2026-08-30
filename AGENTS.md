@@ -48,6 +48,8 @@ This is a monorepo. Each top-level component owns its own build and its own CI w
 | `telegram-bot/` | Notification scripts (Telegram)      | Not yet initialized |
 | `docs/`         | Roadmap, drafts, convention pointers | —                   |
 
+Inside `cmp-app/`, the client splits into two shared modules and three platform wrappers — `shared/core` (domain and data, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. Desktop is a development target, not a product surface: it is what runs the tests and produces coverage. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
+
 Rules that follow from the layout:
 
 - A change touching a single component stays inside that component's directory, and its commit scope names that component (see [`git-and-collaboration.md`](docs/conventions/git-and-collaboration.md)).
@@ -56,9 +58,29 @@ Rules that follow from the layout:
 
 ## 4. Commands
 
-> TODO — added with the Gradle project.
+All commands run from `cmp-app/`:
 
-`cmp-app/` does not exist yet, so there is no build, test or lint command to run. This section is filled in by the PR that initializes the KMP project, alongside the coverage and formatting policy.
+```bash
+./gradlew build                # Build every target
+./gradlew jvmTest              # Run the JVM tests
+./gradlew koverXmlReportJvm    # Generate the coverage reports SonarCloud reads
+./gradlew ktlintCheck          # Check formatting
+./gradlew ktlintFormat         # Auto-fix formatting
+./gradlew :desktopApp:run      # Run on Desktop
+./gradlew :androidApp:installDebug   # Install on Android
+```
+
+ktlint is **strict** in `shared/core` (`ignoreFailures = false`) and permissive in `shared/ui` (`ignoreFailures = true`).
+
+The iOS application is built from `cmp-app/iosApp/iosApp.xcodeproj` in Xcode. Its build phase calls `./gradlew :shared:ui:embedAndSignAppleFrameworkForXcode`, so the framework is produced by Gradle and embedded by Xcode.
+
+### Coverage policy
+
+Coverage comes from `jvmTest` alone and reaches SonarCloud through Kover. Composables, theme tokens and route declarations are excluded: no Compose UI test feeds Kover, so measuring them would count tests that are never collected.
+
+**An exclusion has to be declared on both sides.** Kover decides what lands in the report; Sonar indexes the sources either way and reads a file's absence from the report as zero coverage. Anything excluded in `kover {}` needs its counterpart in `sonar.coverage.exclusions` — the two use different vocabularies, Kover matching class names and Sonar matching file paths.
+
+The practical rule when writing code: **testable logic belongs in `shared/core`**. Kover counts per class and every top-level declaration in a file compiles into a single facade, so a pure function sharing a file with a composable is excluded along with it. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
 
 ## 5. Shared Tooling
 
