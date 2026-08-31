@@ -11,10 +11,10 @@ Family Planner reduces the mental load of running daily life: meal planning, sha
 - **One group is supported today.** Multi-group is not a V1 feature, but no data-model decision may close the door on it. When modeling, keep group scoping in mind even where it is not yet used.
 - **Low cognitive load is a product requirement, not a nice-to-have.** Decisions are made in advance, instructions are explicit, screens stay simple. The app has to be usable when attention is scarce.
 
-Feature scope and phases live in [`docs/roadmap.md`](docs/roadmap.md).
+Feature scope and phases live in [`docs/roadmap.md`](docs/roadmap.md). Agreed product behaviour lives in [`docs/prd/`](docs/prd/) — [PRD-001](docs/prd/prd-001-group-and-synchronization.md) defines the group, what is shared inside it, and what the app guarantees when several devices change the same thing. Everything else builds on it.
 
 > [!IMPORTANT]
-> [`docs/draft-spec.md`](docs/draft-spec.md) is a **draft**, not a specification. Only the KMP/CMP client is a settled decision. Do not treat the data model, the screen list or the notification design in that document as agreed — they will be superseded by PRDs under `docs/prd/`.
+> [`docs/draft-spec.md`](docs/draft-spec.md) is a **draft**, not a specification. Only the KMP/CMP client is a settled decision. Do not treat the data model, the screen list or the notification design in that document as agreed — they are superseded by the PRDs under [`docs/prd/`](docs/prd/) as each one is written. Where a PRD and the draft disagree, the PRD wins.
 
 ## 2. Project Guidelines and Conventions
 
