@@ -26,7 +26,7 @@ family-planner/
 │   ├── prd/            # Product requirements
 │   ├── conventions/    # Pointers to cyrillrx/coding-conventions
 │   ├── draft-spec.md   # Working ideas, not decisions
-│   └── roadmap.md      # V1 / V2 / V3
+│   └── roadmap.md      # V0 / V1 / V2 / V3
 ├── AGENTS.md           # Contributor guide (human and AI)
 └── .github/workflows/  # One workflow per component, filtered by path
 ```
@@ -72,7 +72,7 @@ cp .env.example .env
 | Document                                   | Content                                                                                     |
 |--------------------------------------------|---------------------------------------------------------------------------------------------|
 | [`AGENTS.md`](AGENTS.md)                   | Contributor guide — product framing, conventions, repository rules                          |
-| [`docs/roadmap.md`](docs/roadmap.md)       | Planned phases (V1 / V2 / V3)                                                               |
+| [`docs/roadmap.md`](docs/roadmap.md)       | Planned phases (V0 / V1 / V2 / V3)                                                          |
 | [`docs/prd/`](docs/prd/)                   | Product requirements — what each feature does, and why                                      |
 | [`docs/adr/`](docs/adr/)                   | Architecture decisions and the reasoning behind them                                        |
 | [`docs/draft-spec.md`](docs/draft-spec.md) | Draft feature ideas, data model sketch, screens                                             |
