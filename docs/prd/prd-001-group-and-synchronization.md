@@ -14,7 +14,8 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 
 - A change made by one member is visible to the others without anyone refreshing, retrying or wondering whether it went through.
 - The app is fully usable with no network, and nothing entered offline is ever lost.
-- A group of one works exactly like a group of five, with no extra setup and no dormant "invite people" step in the way.
+- A group of one works exactly like a group of five: no feature is hidden, degraded, or waiting on a second member to arrive.
+- Getting started asks for the minimum — a name to be known by, and one choice — and never more.
 - Two devices changing the same thing at once produce a predictable result, never a silently discarded edit.
 - Nothing in the model prevents a member from belonging to several groups later, even though only one group is supported now.
 
@@ -22,14 +23,15 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 
 ### Phase 1
 
-| As a…         | I want to…                                | So that…                                               |
-|---------------|-------------------------------------------|--------------------------------------------------------|
-| Person alone  | use the app without inviting anyone       | it is useful before it is shared                       |
-| Group founder | invite someone by sharing a link or code  | we both see and edit the same data                     |
-| Member        | find my own edits on my other device      | I never have to remember which device I used           |
-| Member        | see a change another member just made     | we do not both buy the milk                            |
-| Member        | add a task while I have no network        | I do not have to hold it in my head until I get signal |
-| Member        | know when what I am looking at may be old | I can trust the screen when it tells me it is current  |
+| As a…          | I want to…                                | So that…                                                |
+|----------------|-------------------------------------------|---------------------------------------------------------|
+| Person alone   | use the app without inviting anyone       | it is useful before it is shared                        |
+| Group founder  | invite someone by sharing a link or code  | we both see and edit the same data                      |
+| Invited person | join the group on my very first launch    | I land in the shared data instead of my own empty group |
+| Member         | find my own edits on my other device      | I never have to remember which device I used            |
+| Member         | see a change another member just made     | we do not both buy the milk                             |
+| Member         | add a task while I have no network        | I do not have to hold it in my head until I get signal  |
+| Member         | know when what I am looking at may be old | I can trust the screen when it tells me it is current   |
 
 ### Phase 2
 
@@ -45,8 +47,11 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 
 **Group lifecycle**
 
-- [ ] A group exists from the first launch, created without a dedicated setup screen — the app is usable before anything is shared.
+- [ ] The first launch asks for a display name and one explicit choice: **create a new group**, or **join an existing one** with an invitation.
+- [ ] The app never creates a group silently. An invited member who lands in a group of their own has to be extracted from it, and there is no simple way to do that — so the choice is asked for rather than guessed.
+- [ ] Joining requires a valid invitation. Without one, creating a group is the only way forward.
 - [ ] The group has a stable identifier, and every shared record carries it.
+- [ ] The group has a generated default name, displayed nowhere in V1. It becomes editable if multi-group arrives and a group needs to be told apart from another.
 - [ ] A group with a single member behaves identically to a group with several: no feature is hidden or degraded.
 
 **Membership**
@@ -80,8 +85,10 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 ### Phase 2
 
 - [ ] A member can leave the group. The records they authored stay, and remain attributed to them.
-- [ ] A member can be removed from the group, and their devices lose access to its data.
-- [ ] The group survives the departure of the person who created it.
+- [ ] When the **last** member leaves, the group and all of its shared data are deleted. No orphan group is left behind.
+- [ ] Leaving as the only member is therefore the same act as deleting the group. The app says so before it happens, because it cannot be undone.
+- [ ] A member can be removed from the group by another member, and their device loses access to its data.
+- [ ] The group survives the departure of the person who created it. There is no owner privilege to inherit.
 - [ ] A shared record shows its author and its last change in the UI.
 
 ## Non-Functional Requirements
