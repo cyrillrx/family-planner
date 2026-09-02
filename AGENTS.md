@@ -48,7 +48,9 @@ This is a monorepo. Each top-level component owns its own build and its own CI w
 | `telegram-bot/` | Notification scripts (Telegram)      | Not yet initialized |
 | `docs/`         | Roadmap, drafts, convention pointers | —                   |
 
-Inside `cmp-app/`, the client splits into two shared modules and three platform wrappers — `shared/core` (domain and data, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. Desktop is a development target, not a product surface: it is what runs the tests and produces coverage. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
+Inside `cmp-app/`, the client splits into two shared modules and three platform wrappers — `shared/core` (domain and data, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
+
+All three targets are shipped, with **Desktop ranked second** behind iOS and Android ([ADR-002](docs/adr/adr-002-desktop-product-surface.md)). Desktop is also the target that runs the tests and produces coverage. Two rules follow: every client dependency must exist on JVM, and a Desktop-only regression does not block a release — which is not licence to leave it broken.
 
 Rules that follow from the layout:
 
