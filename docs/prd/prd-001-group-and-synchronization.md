@@ -1,6 +1,6 @@
 # PRD-001 — Group and synchronization
 
-> **Status**: Draft | **Version**: 0.1 | **Last updated**: 2026-09-01
+> **Status**: Approved | **Version**: 0.2 | **Last updated**: 2026-09-02
 
 ## Overview
 
@@ -10,7 +10,7 @@ It is a foundation document rather than a feature: the meal planner, the shared 
 
 **Phase 1 delivers synchronization between members, not between one member's devices.** The two halves of the product's core value are separable, and only the second one needs an account: identifying the same person on two devices requires authentication, which Phase 1 does not have. A member is therefore one device, and a second device is a second member — a limitation that is accepted, not overlooked. Phase 2 lifts it, and every requirement that depends on it is filed there.
 
-This PRD describes behaviour only. It does not pick a database, a sync engine or an authentication provider: those are a technical decision, to be recorded in a following ADR once the requirements below are agreed. The client platform is already settled in [ADR-001](../adr/adr-001-kmp-client-targets.md).
+This PRD describes behaviour only. It does not pick a database, a sync engine or an authentication provider: those are a technical decision, and the requirements below are what the ADR that follows has to satisfy. The client platform is already settled in [ADR-001](../adr/adr-001-kmp-client-targets.md).
 
 ## Goals
 
@@ -61,6 +61,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - [ ] A member can produce an invitation that another person redeems to join the group.
 - [ ] An invitation can be revoked before it is used, and stops working after it expires.
 - [ ] All members hold the same rights over shared data. There are no roles and no owner privileges in V1.
+- [ ] Any member can create an invitation, and redeeming one grants that same right in turn. With no roles there is no owner to reserve it for. This is reopened the day roles arrive.
 - [ ] A member is identified by an identifier generated locally on their device. There is no account, no sign-in screen and no authentication in Phase 1.
 - [ ] A member supplies a display name. It is the only thing about them the other members see.
 - [ ] One device per member. A second device is a second member, with its own identifier and its own place in the group.
@@ -77,7 +78,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - [ ] Every shared record carries its group, the moment it was last changed, and who changed it.
 - [ ] A change made on one device reaches the group's other connected devices without a manual refresh.
 - [ ] A change made offline applies locally at once, and propagates on its own when connectivity returns — without the member re-entering it or confirming anything.
-- [ ] Deleting a record propagates as an explicit deletion, so a device that was offline when it happened does not bring the record back.
+- [ ] Deleting a record propagates as an explicit deletion, so a device that was offline when it happened, and made no change of its own to that record, does not bring it back.
 - [ ] The app shows whether what is on screen is current or waiting to sync, without making the member interpret it.
 
 **Concurrent changes**
@@ -86,6 +87,8 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - [ ] Two members editing different fields of the same record both keep their change, where the data allows it.
 - [ ] When two changes genuinely cannot be merged, the winner is decided by a rule that gives the same result on every device, whatever order the changes arrive in.
 - [ ] A change that loses a conflict is never dropped without the member being able to tell: the app either keeps the losing value or says that it was replaced.
+- [ ] **An edit beats a concurrent deletion.** The record stays, carrying the edit. Losing a deletion means an unwanted row is still on screen, which anyone can see and delete again; losing an edit means content is gone for good. Between a visible mistake and an invisible one, the rule protects against the invisible one.
+- [ ] The reappearance this allows is bounded, not open-ended: a returning device can only resurrect a record whose deletion is still retained, so the window is exactly the retention period below and never longer.
 
 ### Phase 2
 
@@ -104,6 +107,8 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - **The bound on durability.** That guarantee covers a live installation. It does not extend to uninstalling the app or losing the device: with no account behind it, a member's identity lives only on their device. In a group of several, the loss costs that member their place, and the others remove the ghost and carry on with the shared data intact. In a **group of one**, it costs everything — nobody is left to remove anyone, nobody is left to leave, and the group's data becomes permanently unreachable. That is an accepted V1 limitation of shipping without authentication, and the strongest argument for not leaving it out for long.
 - **Perceived immediacy.** A change made by one member appears on another connected member's device within a few seconds — the grocery list is used by two people in the same shop at the same time.
 - **Group isolation.** Group scoping is enforced when data is read, not only when it is written. A device never receives records belonging to another group.
+- **Offline window: seven days.** A device that has been offline for up to seven days reconciles with no loss, in either direction. Explicit deletions are therefore retained at least that long. Past the window, the device recovers by reloading the group's whole state rather than a delta, with its own unsent changes replayed on top — slower, but never a failure the member has to act on.
+- **Trust inside, a lock on the door.** The guarantees above are upheld by the client. Members are trusted, so no server-side enforcement defends the data against one of them. The **invitation is the exception**, because it is the boundary rather than the inside: it must be unguessable, revocable and expiring, and its redemption is the one thing that cannot rest on a well-behaved client. This is not about a hostile member, it is about a stranger at the door.
 - **Size independence.** No requirement, screen or data structure assumes a number of members, an upper bound, or a relationship between them.
 - **Shared implementation.** Sync behaviour comes from the shared Kotlin code and is identical on Android and iOS, per [ADR-001](../adr/adr-001-kmp-client-targets.md). Anything a platform cannot honour is a constraint on the design, not a per-platform variation.
 - **Testable without a device pair.** Conflict and offline behaviour must be verifiable in `shared/core` tests, without two phones and without a network — otherwise the guarantees above cannot be part of CI.
@@ -116,14 +121,13 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - **Authentication.** Not in Phase 1 at all — not the mechanism, and not the feature. It is what a member being one identity across devices depends on, and what would make an identity survive a lost phone, so both of those sit in Phase 2 behind it. Bringing it forward is a scope decision, not a technical one.
 - **Notification delivery.** Telegram messages and their scheduling are a separate concern, covered when `telegram-bot/` gets its PRD.
 - **What the shared data means.** The semantics of a week plan, an event or a task belong to the meal, events and tasks PRDs. This document only says they are shared.
-- **Hostile members.** The group is made of people who trust each other. Defending the data against one of its own members is not a V1 requirement.
+- **Hostile members.** The group is made of people who trust each other. Defending the data against one of its own members is not a V1 requirement — which is what makes client-side enforcement acceptable. It says nothing about who is kept out, and the invitation still has to hold.
 
 ## Open Questions
 
-- Does an edit win over a concurrent deletion, or the reverse? The answer differs by data: a resurrected grocery item is harmless, a resurrected event is not.
-- Is the first launch anonymous with an upgrade path to an account, or is an account required before the app opens? This decides how much friction sits in front of a first-time user, and whether local data has to survive an account being attached later.
-- What identifies a member across their devices before authentication exists, and does that identity survive a reinstall?
-- Does redeeming an invitation grant the right to invite others in turn?
-- How long must a device be able to stay offline before it is allowed to fail rather than reconcile? This sets how long explicit deletions have to be retained.
-- Which of these guarantees need server-side enforcement, and which can trust the client, given the "no hostile members" assumption above?
-- Does the group need a name, or is it invisible plumbing for as long as there is only one?
+The seven questions this document opened at version 0.1 are settled in the requirements above. What remains are the holes those answers created.
+
+- Should a group with no active device for a long time be cleaned up? It is the only possible recourse against the group of one whose only member uninstalls — nobody can leave it and nobody can be removed from it, so it can never delete itself.
+- When authentication arrives, how does it attach an **existing anonymous member** to an account without losing their local data? This is the bill for going anonymous first, and it is cheaper to answer now than after the first group exists.
+- What does a resurrected record look like, per feature? An event whose date has passed and a grocery item already bought do not deserve the same treatment. Belongs to the meal, events and tasks PRDs.
+- Is the seven-day offline window fixed, or does it need to be configurable?
