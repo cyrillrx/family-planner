@@ -1,7 +1,9 @@
 # Family Planner — Draft Spec
 
 > [!NOTE]
-> Draft — exploration, not decided. Only the KMP/CMP client is a settled choice; the data model, the screen list and the notification design below are working ideas, not agreements. This document will be superseded by PRDs under `docs/prd/`.
+> Draft — exploration, not decided. Only the KMP/CMP client is a settled choice; the data model, the screen list and the notification design below are working ideas, not agreements. This document is superseded by the PRDs under [`prd/`](prd/) as each one is written.
+>
+> Already superseded: the group, what is shared inside it and the synchronization guarantees are now specified in [PRD-001](prd/prd-001-group-and-synchronization.md). The `Context` section below is kept only for the cognitive-load constraints.
 
 Feature phases live in [`roadmap.md`](roadmap.md). Repository layout and current status are in the [`README.md`](../README.md).
 

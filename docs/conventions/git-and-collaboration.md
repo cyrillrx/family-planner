@@ -24,6 +24,13 @@ Use short, consistent scopes matching this repository's structure:
 
 CI is split per component under [`.github/workflows/`](../../.github/workflows/), each workflow filtered by path. Today that is [`ci-kmp.yml`](../../.github/workflows/ci-kmp.yml) for the `cmp-app/` client. Adding a component means adding its workflow. The relevant checks must pass for a PR to be mergeable.
 
-### ADRs
+### ADRs and PRDs
 
-ADRs will live in `docs/adr/`, created with the first decision that warrants one. Nothing beyond the KMP/CMP client choice is settled yet, so the directory does not exist.
+Both live under `docs/`, numbered in order, and are written from the templates in the canonical repository: [`templates/adr-template.md`](https://github.com/cyrillrx/coding-conventions/blob/main/templates/adr-template.md) and [`templates/prd-template.md`](https://github.com/cyrillrx/coding-conventions/blob/main/templates/prd-template.md).
+
+| Directory   | Holds                                        | First document                                                          |
+|-------------|----------------------------------------------|-------------------------------------------------------------------------|
+| `docs/adr/` | Technical decisions and their reasoning      | [ADR-001](../adr/adr-001-kmp-client-targets.md) — client targets        |
+| `docs/prd/` | Product behaviour, from the user's viewpoint | [PRD-001](../prd/prd-001-group-and-synchronization.md) — group and sync |
+
+A PRD states what the product does; the ADR that follows it states how. When an ADR settles a question a PRD left open, link it from the PRD rather than deleting the question.

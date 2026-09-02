@@ -23,6 +23,7 @@ family-planner/
 ├── telegram-bot/       # Notification scripts            — not yet initialized
 ├── docs/
 │   ├── adr/            # Architecture decisions
+│   ├── prd/            # Product requirements
 │   ├── conventions/    # Pointers to cyrillrx/coding-conventions
 │   ├── draft-spec.md   # Working ideas, not decisions
 │   └── roadmap.md      # V1 / V2 / V3
@@ -72,6 +73,8 @@ cp .env.example .env
 |--------------------------------------------|---------------------------------------------------------------------------------------------|
 | [`AGENTS.md`](AGENTS.md)                   | Contributor guide — product framing, conventions, repository rules                          |
 | [`docs/roadmap.md`](docs/roadmap.md)       | Planned phases (V1 / V2 / V3)                                                               |
+| [`docs/prd/`](docs/prd/)                   | Product requirements — what each feature does, and why                                      |
+| [`docs/adr/`](docs/adr/)                   | Architecture decisions and the reasoning behind them                                        |
 | [`docs/draft-spec.md`](docs/draft-spec.md) | Draft feature ideas, data model sketch, screens                                             |
 | [`docs/conventions/`](docs/conventions/)   | Pointers to [`cyrillrx/coding-conventions`](https://github.com/cyrillrx/coding-conventions) |
 
