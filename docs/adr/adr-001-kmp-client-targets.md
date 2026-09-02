@@ -1,6 +1,9 @@
 # ADR-001: Kotlin Multiplatform client targeting Android, iOS and Desktop
 
-> **Status**: Accepted | **Date**: 2026-08-29 | **Context**: Client bootstrap, before any feature work.
+> **Status**: Accepted, amended by [ADR-002](adr-002-desktop-product-surface.md) | **Date**: 2026-08-29 | **Context**: Client bootstrap, before any feature work.
+
+> [!IMPORTANT]
+> [ADR-002](adr-002-desktop-product-surface.md) reverses one statement below: Desktop **is** a product surface, distributed to users, ranked second behind iOS and Android. The paragraph calling it "a development target, not a product surface" and the section "Why Desktop is kept even though it is not shipped" are kept as written, because the reasoning that led there is still worth reading. Everything else in this ADR stands: the three targets, the absence of a Web target, and the split into `shared/core` and `shared/ui`.
 
 ## Decision
 
