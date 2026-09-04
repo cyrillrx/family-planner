@@ -42,11 +42,11 @@ The conventions live in the shared [`cyrillrx/coding-conventions`](https://githu
 
 This is a monorepo. Each top-level component owns its own build and its own CI workflow.
 
-| Path            | Component                            | Status              |
-|-----------------|--------------------------------------|---------------------|
-| `cmp-app/`      | KMP/CMP client (iOS + Android)       | Not yet initialized |
-| `telegram-bot/` | Notification scripts (Telegram)      | Not yet initialized |
-| `docs/`         | Roadmap, drafts, convention pointers | —                   |
+| Path       | Component                                                                                      | Status              |
+|------------|------------------------------------------------------------------------------------------------|---------------------|
+| `cmp-app/` | KMP/CMP client (iOS + Android)                                                                 | Not yet initialized |
+| `server/`  | Server-side service — notifications, invitation redemption, outbound API calls, secret custody | Not yet initialized |
+| `docs/`    | Roadmap, drafts, convention pointers                                                           | —                   |
 
 Inside `cmp-app/`, the client splits into two shared modules and three platform wrappers — `shared/core` (domain and data, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
 

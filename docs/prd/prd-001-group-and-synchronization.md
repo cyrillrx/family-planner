@@ -1,6 +1,6 @@
 # PRD-001 — Group and synchronization
 
-> **Status**: Approved | **Version**: 0.2 | **Last updated**: 2026-09-02
+> **Status**: Approved | **Version**: 0.3 | **Last updated**: 2026-09-02
 
 ## Overview
 
@@ -78,7 +78,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - [ ] Every shared record carries its group, the moment it was last changed, and who changed it.
 - [ ] A change made on one device reaches the group's other connected devices without a manual refresh.
 - [ ] A change made offline applies locally at once, and propagates on its own when connectivity returns — without the member re-entering it or confirming anything.
-- [ ] Deleting a record propagates as an explicit deletion, so a device that was offline when it happened, and made no change of its own to that record, does not bring it back.
+- [ ] Deleting a record propagates as an explicit deletion, so a device that was offline when it happened does not bring the record back.
 - [ ] The app shows whether what is on screen is current or waiting to sync, without making the member interpret it.
 
 **Concurrent changes**
@@ -87,8 +87,8 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - [ ] Two members editing different fields of the same record both keep their change, where the data allows it.
 - [ ] When two changes genuinely cannot be merged, the winner is decided by a rule that gives the same result on every device, whatever order the changes arrive in.
 - [ ] A change that loses a conflict is never dropped without the member being able to tell: the app either keeps the losing value or says that it was replaced.
-- [ ] **An edit beats a concurrent deletion.** The record stays, carrying the edit. Losing a deletion means an unwanted row is still on screen, which anyone can see and delete again; losing an edit means content is gone for good. Between a visible mistake and an invisible one, the rule protects against the invisible one.
-- [ ] The reappearance this allows is bounded, not open-ended: a returning device can only resurrect a record whose deletion is still retained, so the window is exactly the retention period below and never longer.
+- [ ] **The last write wins, on server time.** A deletion that lands after an edit removes the record; an edit that lands after a deletion is applied to nothing. This is what the store does natively, and adopting it rather than overriding it means there is no conflict layer of our own to write, tune and test. See [ADR-003](../adr/adr-003-persistence-and-sync.md).
+- [ ] The cost is accepted and named: a member can lose an edit to a deletion they never saw. It is bounded by the same seven-day window as everything else — a device cannot lose an edit to a deletion older than the reconciliation period.
 
 ### Phase 2
 
@@ -107,7 +107,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - **The bound on durability.** That guarantee covers a live installation. It does not extend to uninstalling the app or losing the device: with no account behind it, a member's identity lives only on their device. In a group of several, the loss costs that member their place, and the others remove the ghost and carry on with the shared data intact. In a **group of one**, it costs everything — nobody is left to remove anyone, nobody is left to leave, and the group's data becomes permanently unreachable. That is an accepted V1 limitation of shipping without authentication, and the strongest argument for not leaving it out for long.
 - **Perceived immediacy.** A change made by one member appears on another connected member's device within a few seconds — the grocery list is used by two people in the same shop at the same time.
 - **Group isolation.** Group scoping is enforced when data is read, not only when it is written. A device never receives records belonging to another group.
-- **Offline window: seven days.** A device that has been offline for up to seven days reconciles with no loss, in either direction. Explicit deletions are therefore retained at least that long. Past the window, the device recovers by reloading the group's whole state rather than a delta, with its own unsent changes replayed on top — slower, but never a failure the member has to act on.
+- **Offline window: seven days.** A device that has been offline for up to seven days reconciles: everything it did while away is sent, and everything it missed is received, the last-write-wins rule above deciding any collision. Deletions stay knowable for at least that long. Past the window, the device recovers by reloading the group's whole state rather than a delta, with its own unsent changes replayed on top — slower, but never a failure the member has to act on.
 - **Trust inside, a lock on the door.** The guarantees above are upheld by the client. Members are trusted, so no server-side enforcement defends the data against one of them. The **invitation is the exception**, because it is the boundary rather than the inside: it must be unguessable, revocable and expiring, and its redemption is the one thing that cannot rest on a well-behaved client. This is not about a hostile member, it is about a stranger at the door.
 - **Size independence.** No requirement, screen or data structure assumes a number of members, an upper bound, or a relationship between them.
 - **Shared implementation.** Sync behaviour comes from the shared Kotlin code and is identical on Android and iOS, per [ADR-001](../adr/adr-001-kmp-client-targets.md). Anything a platform cannot honour is a constraint on the design, not a per-platform variation.
@@ -119,7 +119,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 - **Roles and permissions.** All members are equal in V1. A read-only or child account is a later product question.
 - **The technology.** Local storage, sync transport, conflict mechanics and authentication provider are decided in a following ADR, not here.
 - **Authentication.** Not in Phase 1 at all — not the mechanism, and not the feature. It is what a member being one identity across devices depends on, and what would make an identity survive a lost phone, so both of those sit in Phase 2 behind it. Bringing it forward is a scope decision, not a technical one.
-- **Notification delivery.** Telegram messages and their scheduling are a separate concern, covered when `telegram-bot/` gets its PRD.
+- **Notification delivery.** Telegram messages and their scheduling are a separate concern, covered when `server/` gets its PRD.
 - **What the shared data means.** The semantics of a week plan, an event or a task belong to the meal, events and tasks PRDs. This document only says they are shared.
 - **Hostile members.** The group is made of people who trust each other. Defending the data against one of its own members is not a V1 requirement — which is what makes client-side enforcement acceptable. It says nothing about who is kept out, and the invitation still has to hold.
 
@@ -129,5 +129,6 @@ The seven questions this document opened at version 0.1 are settled in the requi
 
 - Should a group with no active device for a long time be cleaned up? It is the only possible recourse against the group of one whose only member uninstalls — nobody can leave it and nobody can be removed from it, so it can never delete itself.
 - When authentication arrives, how does it attach an **existing anonymous member** to an account without losing their local data? This is the bill for going anonymous first, and it is cheaper to answer now than after the first group exists.
-- What does a resurrected record look like, per feature? An event whose date has passed and a grocery item already bought do not deserve the same treatment. Belongs to the meal, events and tasks PRDs.
+- ~~What does a resurrected record look like, per feature?~~ Moot since [ADR-003](../adr/adr-003-persistence-and-sync.md): with the last write winning, a deletion is never undone by a concurrent edit, and a device returning after the window adopts the group's state wholesale. Nothing resurrects. Kept here because the question was real under v0.2's rule.
 - Is the seven-day offline window fixed, or does it need to be configurable?
+- Is the recipe library shared across the group, or personal to a member? The shared list above names the week plan, the grocery list, the events and the tasks — recipes are absent, which reads more like an oversight than a decision. It also settles whether any local store beyond the sync cache is needed. Belongs to the meal PRD.
