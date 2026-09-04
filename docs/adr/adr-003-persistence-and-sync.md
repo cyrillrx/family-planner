@@ -1,6 +1,6 @@
 # ADR-003: Firestore for synchronization, with an owned service for privileged work
 
-> **Status**: Proposed | **Date**: 2026-09-02 | **Context**: [PRD-001](../prd/prd-001-group-and-synchronization.md) is agreed; no V1 feature can start until the stack that upholds it is chosen.
+> **Status**: Accepted | **Date**: 2026-09-02 | **Context**: [PRD-001](../prd/prd-001-group-and-synchronization.md) is agreed; no V1 feature can start until the stack that upholds it is chosen.
 
 ## Decision
 
