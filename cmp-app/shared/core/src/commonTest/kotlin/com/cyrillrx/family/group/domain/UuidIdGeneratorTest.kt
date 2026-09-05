@@ -2,7 +2,6 @@ package com.cyrillrx.family.group.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class UuidIdGeneratorTest {
 
@@ -28,15 +27,14 @@ class UuidIdGeneratorTest {
 
     @Test
     fun `produces identifiers the length of a uuid`() {
-        assertTrue(UuidIdGenerator.newGroupId().value.length == UUID_LENGTH)
-        assertTrue(UuidIdGenerator.newMemberId().value.length == UUID_LENGTH)
-        assertTrue(UuidIdGenerator.newInvitationId().value.length == UUID_LENGTH)
+        assertEquals(UUID_LENGTH, UuidIdGenerator.newGroupId().value.length)
+        assertEquals(UUID_LENGTH, UuidIdGenerator.newMemberId().value.length)
+        assertEquals(UUID_LENGTH, UuidIdGenerator.newInvitationId().value.length)
     }
 
     private companion object {
         const val COUNT = 100
 
-        /** 32 hex digits and four hyphens. */
         const val UUID_LENGTH = 36
     }
 }

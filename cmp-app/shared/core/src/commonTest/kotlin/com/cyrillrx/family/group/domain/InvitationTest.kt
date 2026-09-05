@@ -2,6 +2,7 @@ package com.cyrillrx.family.group.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -21,6 +22,13 @@ class InvitationTest {
             InvitationRejection.WRONG_CODE,
             rejectionFor(invitation(), "b".repeat(Invitation.MIN_CODE_LENGTH), at(500)),
         )
+    }
+
+    @Test
+    fun `cannot be built with a code short enough to guess`() {
+        assertFailsWith<IllegalArgumentException> {
+            invitation().copy(code = "a".repeat(Invitation.MIN_CODE_LENGTH - 1))
+        }
     }
 
     @Test
@@ -93,6 +101,6 @@ class InvitationTest {
     private fun at(millis: Long) = Instant.fromEpochMilliseconds(millis)
 
     private companion object {
-        const val CODE = "aaaaaaaaaaaaaaaaaaaaaa"
+        val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
     }
 }

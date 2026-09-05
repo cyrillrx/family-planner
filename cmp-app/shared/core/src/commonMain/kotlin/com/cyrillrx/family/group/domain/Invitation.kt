@@ -12,6 +12,10 @@ data class Invitation(
     val redeemedBy: MemberId? = null,
     val revokedAt: Instant? = null,
 ) {
+    init {
+        require(code.length >= MIN_CODE_LENGTH) { "Invitation code is too short to resist guessing" }
+    }
+
     companion object {
         /** 128 bits in base64url without padding. Shorter is worth guessing. */
         const val MIN_CODE_LENGTH: Int = 22

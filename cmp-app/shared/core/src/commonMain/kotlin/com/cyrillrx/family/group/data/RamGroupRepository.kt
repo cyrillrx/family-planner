@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 
-/** Upholds the [GroupRepository] contract; latency and connectivity loss are not modelled. */
 class RamGroupRepository(
     private val clock: Clock = Clock.System,
     private val idGenerator: IdGenerator = UuidIdGenerator,
@@ -26,6 +25,8 @@ class RamGroupRepository(
     override fun observeMembers(): Flow<List<Member>> = members.asStateFlow()
 
     override suspend fun createGroup(name: String, creator: Member): Group {
+        check(group.value == null) { "A group already exists" }
+
         val created = Group(
             id = idGenerator.newGroupId(),
             name = name,

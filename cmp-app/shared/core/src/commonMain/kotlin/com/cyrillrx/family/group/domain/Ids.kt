@@ -12,7 +12,6 @@ value class MemberId(val value: String)
 @JvmInline
 value class InvitationId(val value: String)
 
-/** Generated here rather than assigned by the store, so they survive a move. */
 interface IdGenerator {
     fun newGroupId(): GroupId
 

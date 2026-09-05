@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -112,8 +113,17 @@ class RamGroupRepositoryTest {
 
         repository.removeMember(MemberId("alice"))
 
-        // Deleting the emptied group is Phase 2; reaching the empty state is what it needs.
         assertEquals(emptyList(), repository.observeMembers().first())
+    }
+
+    @Test
+    fun `refuses to create a second group`() = runTest {
+        val repository = repository()
+        repository.createGroup("Home", member("alice"))
+
+        assertFailsWith<IllegalStateException> {
+            repository.createGroup("Other", member("bob"))
+        }
     }
 
     private fun repository() = RamGroupRepository(
@@ -127,7 +137,6 @@ class RamGroupRepositoryTest {
         joinedAt = FIXED_NOW,
     )
 
-    /** Counts rather than randomises, so an assertion can name the identifier it expects. */
     private class CountingIdGenerator : IdGenerator {
         private var groups = 0
         private var members = 0
