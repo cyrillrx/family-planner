@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 class PlatformTest {
 
     @Test
-    fun platformNameIsNotBlank() {
+    fun `names the platform it runs on`() {
         assertTrue(getPlatform().name.isNotBlank())
     }
 }

@@ -20,7 +20,7 @@ kotlin {
         }
     }
 
-    // Not a shipped target: it is what jvmTest and Kover run on.
+    // Shipped, ranked second (ADR-002), and what jvmTest and Kover run on.
     jvm()
 
     android {
@@ -40,8 +40,12 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            api(libs.kotlinx.coroutinesCore)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }
