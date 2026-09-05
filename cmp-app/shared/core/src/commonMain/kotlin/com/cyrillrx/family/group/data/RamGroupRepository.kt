@@ -22,8 +22,10 @@ class RamGroupRepository : GroupRepository {
         this.group.value = group
     }
 
-    override suspend fun saveMember(member: Member) {
-        members.update { current -> current.filterNot { it.id == member.id } + member }
+    override suspend fun addMember(member: Member) {
+        members.update { current ->
+            if (current.any { it.id == member.id }) current else current + member
+        }
     }
 
     override suspend fun removeMember(id: MemberId) {

@@ -38,7 +38,7 @@ class RamGroupRepositoryTest {
     }
 
     @Test
-    fun `has no members before any is saved`() = runTest {
+    fun `has no members before any is added`() = runTest {
         assertEquals(emptyList(), RamGroupRepository().observeMembers().first())
     }
 
@@ -47,7 +47,7 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.setGroup(group())
 
-        repository.saveMember(member("alice"))
+        repository.addMember(member("alice"))
 
         assertEquals(listOf(member("alice")), repository.observeMembers().first())
     }
@@ -55,38 +55,38 @@ class RamGroupRepositoryTest {
     @Test
     fun `emits the new list after a member joins`() = runTest {
         val repository = RamGroupRepository()
-        repository.saveMember(member("alice"))
+        repository.addMember(member("alice"))
 
-        repository.saveMember(member("bob"))
+        repository.addMember(member("bob"))
 
         assertEquals(listOf(member("alice"), member("bob")), repository.observeMembers().first())
     }
 
     @Test
-    fun `saving the same member twice does not duplicate them`() = runTest {
+    fun `adding the same member twice does not duplicate them`() = runTest {
         val repository = RamGroupRepository()
 
-        repository.saveMember(member("bob"))
-        repository.saveMember(member("bob"))
+        repository.addMember(member("bob"))
+        repository.addMember(member("bob"))
 
         assertEquals(1, repository.observeMembers().first().size)
     }
 
     @Test
-    fun `saving an existing member replaces their record`() = runTest {
+    fun `adding an existing member leaves their record untouched`() = runTest {
         val repository = RamGroupRepository()
-        repository.saveMember(member("bob"))
+        repository.addMember(member("bob"))
 
-        repository.saveMember(member("bob").copy(displayName = "Bobby"))
+        repository.addMember(member("bob").copy(displayName = "Bobby"))
 
-        assertEquals("Bobby", repository.observeMembers().first().single().displayName)
+        assertEquals("bob", repository.observeMembers().first().single().displayName)
     }
 
     @Test
     fun `emits the new list after a member is removed`() = runTest {
         val repository = RamGroupRepository()
-        repository.saveMember(member("alice"))
-        repository.saveMember(member("bob"))
+        repository.addMember(member("alice"))
+        repository.addMember(member("bob"))
 
         repository.removeMember(MemberId("bob"))
 
@@ -96,7 +96,7 @@ class RamGroupRepositoryTest {
     @Test
     fun `removing an unknown member changes nothing`() = runTest {
         val repository = RamGroupRepository()
-        repository.saveMember(member("alice"))
+        repository.addMember(member("alice"))
 
         repository.removeMember(MemberId("nobody"))
 
@@ -106,7 +106,7 @@ class RamGroupRepositoryTest {
     @Test
     fun `removing the last member leaves the group empty`() = runTest {
         val repository = RamGroupRepository()
-        repository.saveMember(member("alice"))
+        repository.addMember(member("alice"))
 
         repository.removeMember(MemberId("alice"))
 

@@ -11,7 +11,7 @@ interface GroupRepository {
 
     suspend fun setGroup(group: Group)
 
-    suspend fun saveMember(member: Member)
+    suspend fun addMember(member: Member)
 
     suspend fun removeMember(id: MemberId)
 }
