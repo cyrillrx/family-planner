@@ -1,11 +1,10 @@
 package com.cyrillrx.family.group.domain
 
 /**
- * Resolves two versions of the same record: the later revision wins, a deletion being one such
- * version.
+ * The later revision wins, a deletion being one such version.
  *
- * This mirrors the store's own resolution rather than replacing it, so that the rule can be
- * asserted without a network. Anything learnt about the store's actual semantics belongs here.
+ * Mirrors the store's own resolution rather than replacing it, so the rule can be asserted
+ * without a network.
  */
 fun <T : SharedRecord> resolveConflict(a: T, b: T): T {
     val byTime = a.revision.updatedAt.compareTo(b.revision.updatedAt)

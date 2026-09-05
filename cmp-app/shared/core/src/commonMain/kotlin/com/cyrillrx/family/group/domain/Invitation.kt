@@ -2,14 +2,10 @@ package com.cyrillrx.family.group.domain
 
 import kotlin.time.Instant
 
-/**
- * A one-time grant to join a group.
- *
- * @param code a secret of at least [MIN_CODE_LENGTH] characters. Never log it.
- */
 data class Invitation(
     val id: InvitationId,
     val groupId: GroupId,
+    /** Never log it. */
     val code: String,
     val createdAt: Instant,
     val expiresAt: Instant,
@@ -22,7 +18,6 @@ data class Invitation(
     }
 }
 
-/** Why an invitation cannot be redeemed. */
 enum class InvitationRejection {
     EXPIRED,
     REVOKED,
@@ -30,12 +25,7 @@ enum class InvitationRejection {
     WRONG_CODE,
 }
 
-/**
- * Whether [invitation] can be redeemed with [presentedCode] at [now]. The result is advisory: only
- * a check the caller cannot skip decides admission to a group.
- *
- * @return null when it can be redeemed, the reason it cannot otherwise.
- */
+/** @return null when [invitation] can be redeemed, the reason it cannot otherwise. */
 fun rejectionFor(
     invitation: Invitation,
     presentedCode: String,
@@ -50,7 +40,6 @@ fun rejectionFor(
         else -> null
     }
 
-/** Shorthand for [rejectionFor] returning null. */
 fun Invitation.acceptsCode(presentedCode: String, now: Instant): Boolean =
     rejectionFor(this, presentedCode, now) == null
 

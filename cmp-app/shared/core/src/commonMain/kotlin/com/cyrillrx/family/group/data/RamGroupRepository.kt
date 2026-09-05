@@ -12,12 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 
-/**
- * Holds the group in memory for as long as the instance lives.
- *
- * It upholds the [GroupRepository] contract and nothing more: latency, connectivity loss and
- * propagation between devices are not modelled.
- */
+/** Upholds the [GroupRepository] contract; latency and connectivity loss are not modelled. */
 class RamGroupRepository(
     private val clock: Clock = Clock.System,
     private val idGenerator: IdGenerator = UuidIdGenerator,
