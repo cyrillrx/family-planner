@@ -45,8 +45,6 @@ class ConflictResolutionTest {
         val one = record(at = 100, by = "alice", label = "milk")
         val other = record(at = 100, by = "bob", label = "oat milk")
 
-        // The rule has to hold here too, or two devices receiving these in opposite orders
-        // would settle on different values and never converge.
         assertEquals(resolveConflict(one, other), resolveConflict(other, one))
     }
 

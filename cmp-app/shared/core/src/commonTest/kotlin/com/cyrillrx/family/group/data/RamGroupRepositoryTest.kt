@@ -46,8 +46,6 @@ class RamGroupRepositoryTest {
         val repository = repository()
         repository.createGroup("Home", member("alice"))
 
-        // PRD-001 requires a group of one to behave exactly like a group of five. An empty list
-        // here would push every caller into treating a solo group as an empty state.
         assertEquals(1, repository.observeMembers().first().size)
     }
 
@@ -114,8 +112,7 @@ class RamGroupRepositoryTest {
 
         repository.removeMember(MemberId("alice"))
 
-        // Deleting the group when it reaches empty is PRD-001 Phase 2 and deliberately not done
-        // here. The repository has to make the empty state reachable for that to be built.
+        // Deleting the emptied group is Phase 2; reaching the empty state is what it needs.
         assertEquals(emptyList(), repository.observeMembers().first())
     }
 

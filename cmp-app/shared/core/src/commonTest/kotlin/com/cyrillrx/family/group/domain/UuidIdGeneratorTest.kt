@@ -12,7 +12,6 @@ class UuidIdGeneratorTest {
         val members = List(COUNT) { UuidIdGenerator.newMemberId() }
         val invitations = List(COUNT) { UuidIdGenerator.newInvitationId() }
 
-        // Catches the generator returning a constant, which types alone would not.
         assertEquals(COUNT, groups.toSet().size)
         assertEquals(COUNT, members.toSet().size)
         assertEquals(COUNT, invitations.toSet().size)

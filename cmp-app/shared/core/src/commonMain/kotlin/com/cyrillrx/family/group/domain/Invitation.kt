@@ -5,14 +5,7 @@ import kotlin.time.Instant
 /**
  * A one-time grant to join a group.
  *
- * The invitation is the boundary of the group: members inside it are trusted, whoever holds a code
- * is not yet anyone (ADR-003). Everything below is therefore stated so that the *server* can check
- * it. The client checks the same rules to fail early and say something useful, never as the
- * decision — a check the client alone performs is a check an attacker skips.
- *
- * [code] is a secret with at least [MIN_CODE_LENGTH] characters of encoded randomness, delivered as
- * a share link or QR rather than typed. It must never reach a log, an analytics event or a crash
- * report.
+ * @param code a secret of at least [MIN_CODE_LENGTH] characters. Never log it.
  */
 data class Invitation(
     val id: InvitationId,
@@ -24,10 +17,7 @@ data class Invitation(
     val revokedAt: Instant? = null,
 ) {
     companion object {
-        /**
-         * 22 characters is what 128 bits comes to in base64url without padding. Below that the code
-         * is short enough to be worth guessing, which would make rate limiting load-bearing.
-         */
+        /** 128 bits in base64url without padding. Shorter is worth guessing. */
         const val MIN_CODE_LENGTH: Int = 22
     }
 }
@@ -41,9 +31,10 @@ enum class InvitationRejection {
 }
 
 /**
- * Whether [invitation] can be redeemed with [presentedCode] at [now].
+ * Whether [invitation] can be redeemed with [presentedCode] at [now]. The result is advisory: only
+ * a check the caller cannot skip decides admission to a group.
  *
- * @return null when it can be, and the reason it cannot otherwise.
+ * @return null when it can be redeemed, the reason it cannot otherwise.
  */
 fun rejectionFor(
     invitation: Invitation,
@@ -51,8 +42,7 @@ fun rejectionFor(
     now: Instant,
 ): InvitationRejection? =
     when {
-        // Checked first: an expired or spent invitation must not become an oracle telling a
-        // caller whether a code was right.
+        // The code is checked last, so a spent invitation cannot answer whether a code was right.
         invitation.revokedAt != null -> InvitationRejection.REVOKED
         invitation.redeemedBy != null -> InvitationRejection.ALREADY_REDEEMED
         now >= invitation.expiresAt -> InvitationRejection.EXPIRED
@@ -64,10 +54,7 @@ fun rejectionFor(
 fun Invitation.acceptsCode(presentedCode: String, now: Instant): Boolean =
     rejectionFor(this, presentedCode, now) == null
 
-/**
- * Compares the whole of both strings rather than stopping at the first difference, so that how
- * long the comparison took says nothing about how much of the code was right.
- */
+/** Reads both strings whole, so how long it took says nothing about how much matched. */
 private fun String.matchesPresented(presented: String): Boolean {
     if (length != presented.length) return false
 

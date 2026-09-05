@@ -13,16 +13,10 @@ import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 
 /**
- * Holds the group in memory. Writes are kept for as long as the instance lives.
+ * Holds the group in memory for as long as the instance lives.
  *
- * This belongs to the main source set, not to a test one: Compose previews depend on it, and
- * ViewModel tests reuse it rather than declaring a double of their own.
- *
- * It is not a stand-in for the storage provider. It upholds the behaviour `GroupRepository`
- * promises so that behaviour can be asserted without a network — which PRD-001 requires — and
- * nothing more. Latency, connectivity loss and cross-device propagation are not modelled here.
- *
- * [clock] is injected so a test can decide what "now" is instead of waiting for it.
+ * It upholds the [GroupRepository] contract and nothing more: latency, connectivity loss and
+ * propagation between devices are not modelled.
  */
 class RamGroupRepository(
     private val clock: Clock = Clock.System,
@@ -48,11 +42,7 @@ class RamGroupRepository(
     }
 
     override suspend fun addMember(member: Member) {
-        // Replaces rather than appends when the id is already known, so a repeated call cannot
-        // put the same member in the group twice.
-        members.update { current ->
-            current.filterNot { it.id == member.id } + member
-        }
+        members.update { current -> current.filterNot { it.id == member.id } + member }
     }
 
     override suspend fun removeMember(id: MemberId) {

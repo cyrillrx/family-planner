@@ -41,8 +41,6 @@ class InvitationTest {
 
     @Test
     fun `treats the expiry instant as already expired`() {
-        // The invitation expires at 1000; accepting exactly at 1000 would make the window one
-        // millisecond longer than it reads.
         assertFalse(invitation().acceptsCode(CODE, at(1_000)))
         assertTrue(invitation().acceptsCode(CODE, at(999)))
     }
@@ -72,7 +70,6 @@ class InvitationTest {
 
     @Test
     fun `reports revocation rather than the code when both are wrong`() {
-        // A spent or revoked invitation must not tell a caller whether the code was right.
         val revoked = invitation().copy(revokedAt = at(200))
 
         assertEquals(InvitationRejection.REVOKED, rejectionFor(revoked, "wrong", at(500)))
