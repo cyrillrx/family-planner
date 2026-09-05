@@ -9,7 +9,7 @@ interface GroupRepository {
 
     fun observeMembers(): Flow<List<Member>>
 
-    suspend fun createGroup(name: String, creator: Member): Group
+    suspend fun setGroup(group: Group)
 
     /** Adds [member], or replaces them if the group already holds that identity. */
     suspend fun addMember(member: Member)
