@@ -11,8 +11,7 @@ interface GroupRepository {
 
     suspend fun setGroup(group: Group)
 
-    /** Adds [member], or replaces them if the group already holds that identity. */
-    suspend fun addMember(member: Member)
+    suspend fun saveMember(member: Member)
 
     suspend fun removeMember(id: MemberId)
 }

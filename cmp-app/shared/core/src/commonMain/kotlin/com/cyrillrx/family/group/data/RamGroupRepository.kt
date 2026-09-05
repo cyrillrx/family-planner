@@ -22,7 +22,7 @@ class RamGroupRepository : GroupRepository {
         this.group.value = group
     }
 
-    override suspend fun addMember(member: Member) {
+    override suspend fun saveMember(member: Member) {
         members.update { current -> current.filterNot { it.id == member.id } + member }
     }
 
