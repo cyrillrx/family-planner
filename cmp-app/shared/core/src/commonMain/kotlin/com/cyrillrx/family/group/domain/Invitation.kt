@@ -56,6 +56,19 @@ data class RevokedInvitation(
     }
 }
 
+fun PendingInvitation.hasExpired(now: Instant): Boolean = now >= expiresAt
+
+/** The transition itself cannot fail; [hasExpired] is what decides whether it may run. */
+fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvitation(
+    id = id,
+    groupId = groupId,
+    code = code,
+    createdAt = createdAt,
+    expiresAt = expiresAt,
+    redeemedBy = member,
+    redeemedAt = now,
+)
+
 private fun requireLongEnough(code: String) =
     require(code.length >= Invitation.MIN_CODE_LENGTH) {
         "Invitation code is too short to resist guessing"
