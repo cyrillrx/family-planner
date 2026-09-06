@@ -8,7 +8,7 @@ The full KMP / Compose Multiplatform conventions (MVVM + UDF, state & event mode
 ## Project-specific additions
 
 - **Module split** — `cmp-app/shared/core` holds the domain and data layers and has no Compose dependency; `cmp-app/shared/ui` holds the Compose layer. `androidApp`, `desktopApp` and `iosApp` are platform wrappers. The rationale is in [ADR-001](../adr/adr-001-kmp-client-targets.md).
-- **Package** — `com.cyrillrx.family`, in both shared modules.
+- **Package** — `com.cyrillrx.family` for everything specific to this product, in both shared modules. Types that carry nothing of the product — `Result`, `Error` — live under `com.cyrillrx.core`, the package `kmp-ttrpg-companion` uses for the same purpose, so they stay copyable between projects and extractable into a library later.
 - **Test location** — tests live in each module's `src/commonTest/`, and run on the JVM target. `jvmTest` is what feeds coverage.
 - **Targets** — Android, iOS and Desktop. No Web target; a library that does not support `wasmJs` is not disqualified today, but see ADR-001 for what that costs later.
 - **Formatting** — ktlint, configured by the repository-root [`.editorconfig`](../../.editorconfig), itself copied from the shared conventions repository. Strict in `core`, permissive in `ui`.
