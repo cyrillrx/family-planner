@@ -31,7 +31,6 @@ sealed interface RedeemInvitationError : Error {
     data object WrongCode : RedeemInvitationError
 }
 
-/** @return the invitation carrying [member], or why it could not be redeemed. */
 fun Invitation.redeem(
     presentedCode: String,
     member: MemberId,
