@@ -6,6 +6,5 @@ data class Member(
     val id: MemberId,
     val displayName: String,
     val joinedAt: Instant,
-    /** Opaque to this module. Null while the member is anonymous. */
-    val credentialId: String? = null,
+    val authenticatedId: String? = null,
 )
