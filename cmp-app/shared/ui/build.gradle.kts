@@ -23,7 +23,6 @@ kotlin {
         }
     }
 
-    // Shipped, ranked second (ADR-002), and what jvmTest and Kover run on.
     jvm()
 
     android {
