@@ -1,27 +1,34 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.core.domain.Result
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class InvitationTest {
 
     @Test
-    fun `accepts the right code before it expires`() {
-        assertNull(rejectionFor(invitation(), CODE, at(500)))
-        assertTrue(invitation().acceptsCode(CODE, at(500)))
+    fun `redeems the right code before it expires`() {
+        val result = invitation().redeem(CODE, JOINER, at(500))
+
+        assertEquals(Result.Success(invitation().copy(redeemedBy = JOINER)), result)
     }
 
     @Test
-    fun `rejects a code that does not match`() {
-        assertEquals(
-            InvitationRejection.WRONG_CODE,
-            rejectionFor(invitation(), "b".repeat(Invitation.MIN_CODE_LENGTH), at(500)),
-        )
+    fun `records who redeemed it`() {
+        val result = invitation().redeem(CODE, JOINER, at(500))
+
+        assertEquals(JOINER, (result as Result.Success).value.redeemedBy)
+    }
+
+    @Test
+    fun `leaves the invitation untouched when it fails`() {
+        val original = invitation()
+
+        original.redeem("b".repeat(Invitation.MIN_CODE_LENGTH), JOINER, at(500))
+
+        assertEquals(null, original.redeemedBy)
     }
 
     @Test
@@ -32,63 +39,88 @@ class InvitationTest {
     }
 
     @Test
+    fun `rejects a code that does not match`() {
+        assertFailure(RedeemInvitationError.WrongCode) {
+            invitation().redeem("b".repeat(Invitation.MIN_CODE_LENGTH), JOINER, at(500))
+        }
+    }
+
+    @Test
     fun `rejects a code of the wrong length`() {
-        assertFalse(invitation().acceptsCode(CODE.dropLast(1), at(500)))
-        assertFalse(invitation().acceptsCode(CODE + "a", at(500)))
+        assertFailure(RedeemInvitationError.WrongCode) {
+            invitation().redeem(CODE.dropLast(1), JOINER, at(500))
+        }
+        assertFailure(RedeemInvitationError.WrongCode) {
+            invitation().redeem(CODE + "a", JOINER, at(500))
+        }
     }
 
     @Test
     fun `rejects an empty code`() {
-        assertFalse(invitation().acceptsCode("", at(500)))
+        assertFailure(RedeemInvitationError.WrongCode) {
+            invitation().redeem("", JOINER, at(500))
+        }
     }
 
     @Test
     fun `rejects the right code once it has expired`() {
-        assertEquals(InvitationRejection.EXPIRED, rejectionFor(invitation(), CODE, at(1_000)))
+        assertFailure(RedeemInvitationError.Expired) {
+            invitation().redeem(CODE, JOINER, at(1_000))
+        }
     }
 
     @Test
     fun `treats the expiry instant as already expired`() {
-        assertFalse(invitation().acceptsCode(CODE, at(1_000)))
-        assertTrue(invitation().acceptsCode(CODE, at(999)))
+        assertFailure(RedeemInvitationError.Expired) {
+            invitation().redeem(CODE, JOINER, at(1_000))
+        }
+        assertEquals(
+            Result.Success(invitation().copy(redeemedBy = JOINER)),
+            invitation().redeem(CODE, JOINER, at(999)),
+        )
     }
 
     @Test
     fun `rejects a revoked invitation`() {
-        val revoked = invitation().copy(revokedAt = at(200))
-
-        assertEquals(InvitationRejection.REVOKED, rejectionFor(revoked, CODE, at(500)))
+        assertFailure(RedeemInvitationError.Revoked) {
+            invitation().copy(revokedAt = at(200)).redeem(CODE, JOINER, at(500))
+        }
     }
 
     @Test
     fun `rejects an invitation that has already been redeemed`() {
-        val spent = invitation().copy(redeemedBy = MemberId("member-1"))
-
-        assertEquals(InvitationRejection.ALREADY_REDEEMED, rejectionFor(spent, CODE, at(500)))
+        assertFailure(RedeemInvitationError.AlreadyRedeemed) {
+            invitation().copy(redeemedBy = MemberId("someone")).redeem(CODE, JOINER, at(500))
+        }
     }
 
     @Test
     fun `cannot be redeemed twice`() {
-        val fresh = invitation()
-        assertTrue(fresh.acceptsCode(CODE, at(500)))
+        val redeemed = (invitation().redeem(CODE, JOINER, at(500)) as Result.Success).value
 
-        val spent = fresh.copy(redeemedBy = MemberId("member-1"))
-        assertFalse(spent.acceptsCode(CODE, at(500)))
+        assertFailure(RedeemInvitationError.AlreadyRedeemed) {
+            redeemed.redeem(CODE, MemberId("gatecrasher"), at(600))
+        }
     }
 
     @Test
     fun `reports revocation rather than the code when both are wrong`() {
-        val revoked = invitation().copy(revokedAt = at(200))
-
-        assertEquals(InvitationRejection.REVOKED, rejectionFor(revoked, "wrong", at(500)))
+        assertFailure(RedeemInvitationError.Revoked) {
+            invitation().copy(revokedAt = at(200)).redeem("wrong", JOINER, at(500))
+        }
     }
 
     @Test
     fun `reports revocation rather than expiry when both apply`() {
-        val revoked = invitation().copy(revokedAt = at(200))
-
-        assertEquals(InvitationRejection.REVOKED, rejectionFor(revoked, CODE, at(5_000)))
+        assertFailure(RedeemInvitationError.Revoked) {
+            invitation().copy(revokedAt = at(200)).redeem(CODE, JOINER, at(5_000))
+        }
     }
+
+    private fun assertFailure(
+        expected: RedeemInvitationError,
+        block: () -> Result<Invitation, RedeemInvitationError>,
+    ) = assertEquals(Result.Failure(expected), block())
 
     private fun invitation() = Invitation(
         id = InvitationId("invitation-1"),
@@ -102,5 +134,6 @@ class InvitationTest {
 
     private companion object {
         val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
+        val JOINER = MemberId("joiner")
     }
 }

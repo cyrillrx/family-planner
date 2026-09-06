@@ -1,5 +1,7 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.core.domain.Error
+import com.cyrillrx.core.domain.Result
 import kotlin.time.Instant
 
 data class Invitation(
@@ -22,30 +24,27 @@ data class Invitation(
     }
 }
 
-enum class InvitationRejection {
-    EXPIRED,
-    REVOKED,
-    ALREADY_REDEEMED,
-    WRONG_CODE,
+sealed interface RedeemInvitationError : Error {
+    data object Revoked : RedeemInvitationError
+    data object AlreadyRedeemed : RedeemInvitationError
+    data object Expired : RedeemInvitationError
+    data object WrongCode : RedeemInvitationError
 }
 
-/** @return null when [invitation] can be redeemed, the reason it cannot otherwise. */
-fun rejectionFor(
-    invitation: Invitation,
+/** @return the invitation carrying [member], or why it could not be redeemed. */
+fun Invitation.redeem(
     presentedCode: String,
+    member: MemberId,
     now: Instant,
-): InvitationRejection? =
+): Result<Invitation, RedeemInvitationError> =
     when {
         // The code is checked last, so a spent invitation cannot answer whether a code was right.
-        invitation.revokedAt != null -> InvitationRejection.REVOKED
-        invitation.redeemedBy != null -> InvitationRejection.ALREADY_REDEEMED
-        now >= invitation.expiresAt -> InvitationRejection.EXPIRED
-        !invitation.code.matchesPresented(presentedCode) -> InvitationRejection.WRONG_CODE
-        else -> null
+        revokedAt != null -> Result.Failure(RedeemInvitationError.Revoked)
+        redeemedBy != null -> Result.Failure(RedeemInvitationError.AlreadyRedeemed)
+        now >= expiresAt -> Result.Failure(RedeemInvitationError.Expired)
+        !code.matchesPresented(presentedCode) -> Result.Failure(RedeemInvitationError.WrongCode)
+        else -> Result.Success(copy(redeemedBy = member))
     }
-
-fun Invitation.acceptsCode(presentedCode: String, now: Instant): Boolean =
-    rejectionFor(this, presentedCode, now) == null
 
 /** Reads both strings whole, so how long it took says nothing about how much matched. */
 private fun String.matchesPresented(presented: String): Boolean {
