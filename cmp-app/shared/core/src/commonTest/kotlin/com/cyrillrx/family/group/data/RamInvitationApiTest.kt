@@ -75,7 +75,6 @@ class RamInvitationApiTest {
             groupId = GroupId("group-1"),
             code = CODE,
             createdAt = at(0),
-            expiresAt = at(10_000),
             revokedAt = at(100),
         )
 

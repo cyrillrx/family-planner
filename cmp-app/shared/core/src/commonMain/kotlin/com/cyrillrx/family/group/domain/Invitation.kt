@@ -9,7 +9,6 @@ sealed interface Invitation {
     /** Never log it. */
     val code: String
     val createdAt: Instant
-    val expiresAt: Instant
 
     companion object {
         /** 128 bits in base64url without padding. Shorter is worth guessing. */
@@ -22,7 +21,7 @@ data class PendingInvitation(
     override val groupId: GroupId,
     override val code: String,
     override val createdAt: Instant,
-    override val expiresAt: Instant,
+    val expiresAt: Instant,
 ) : Invitation {
     init {
         requireLongEnough(code)
@@ -34,7 +33,6 @@ data class RedeemedInvitation(
     override val groupId: GroupId,
     override val code: String,
     override val createdAt: Instant,
-    override val expiresAt: Instant,
     val redeemedBy: MemberId,
     val redeemedAt: Instant,
 ) : Invitation {
@@ -48,7 +46,6 @@ data class RevokedInvitation(
     override val groupId: GroupId,
     override val code: String,
     override val createdAt: Instant,
-    override val expiresAt: Instant,
     val revokedAt: Instant,
 ) : Invitation {
     init {
@@ -64,7 +61,6 @@ fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvit
     groupId = groupId,
     code = code,
     createdAt = createdAt,
-    expiresAt = expiresAt,
     redeemedBy = member,
     redeemedAt = now,
 )

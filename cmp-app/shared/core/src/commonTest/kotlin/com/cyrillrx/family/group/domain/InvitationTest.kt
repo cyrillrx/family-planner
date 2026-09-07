@@ -19,7 +19,6 @@ class InvitationTest {
             groupId = GROUP,
             code = CODE,
             createdAt = at(0),
-            expiresAt = at(1_000),
             redeemedBy = JOINER,
             redeemedAt = at(500),
         )
@@ -34,7 +33,6 @@ class InvitationTest {
             groupId = GROUP,
             code = CODE,
             createdAt = at(0),
-            expiresAt = at(1_000),
             revokedAt = at(200),
         )
 
@@ -45,8 +43,8 @@ class InvitationTest {
     fun `every state exposes the same invitation identity`() {
         val invitations: List<Invitation> = listOf(
             pending(),
-            RedeemedInvitation(ID, GROUP, CODE, at(0), at(1_000), JOINER, at(500)),
-            RevokedInvitation(ID, GROUP, CODE, at(0), at(1_000), at(200)),
+            RedeemedInvitation(ID, GROUP, CODE, at(0), JOINER, at(500)),
+            RevokedInvitation(ID, GROUP, CODE, at(0), at(200)),
         )
 
         assertEquals(listOf(ID, ID, ID), invitations.map { it.id })
