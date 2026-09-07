@@ -41,13 +41,15 @@ class RamInvitationApi(
                 }
         }
     }
-}
 
-private fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvitation(
-    id = id,
-    groupId = groupId,
-    code = code,
-    createdAt = createdAt,
-    redeemedBy = member,
-    redeemedAt = now,
-)
+    companion object {
+        private fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvitation(
+            id = id,
+            groupId = groupId,
+            code = code,
+            createdAt = createdAt,
+            redeemedBy = member,
+            redeemedAt = now,
+        )
+    }
+}
