@@ -7,7 +7,7 @@ import com.cyrillrx.core.domain.Result
  * Redeeming is a privileged operation: the client asks, the server decides and writes (ADR-003).
  * Nothing here can be upheld by the caller.
  */
-interface InvitationGateway {
+interface InvitationApi {
     suspend fun redeem(code: String, member: MemberId): Result<RedeemedInvitation, RedeemInvitationError>
 }
 

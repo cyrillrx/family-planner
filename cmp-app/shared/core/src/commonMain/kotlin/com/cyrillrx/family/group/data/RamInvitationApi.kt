@@ -2,7 +2,7 @@ package com.cyrillrx.family.group.data
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Invitation
-import com.cyrillrx.family.group.domain.InvitationGateway
+import com.cyrillrx.family.group.domain.InvitationApi
 import com.cyrillrx.family.group.domain.MemberId
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 
-class RamInvitationGateway(
+class RamInvitationApi(
     private val clock: Clock = Clock.System,
     initial: List<Invitation> = emptyList(),
-) : InvitationGateway {
+) : InvitationApi {
 
     private val byCode = MutableStateFlow(initial.associateBy { it.code })
 

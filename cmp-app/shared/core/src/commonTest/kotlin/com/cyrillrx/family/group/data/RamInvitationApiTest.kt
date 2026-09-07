@@ -15,15 +15,15 @@ import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-class RamInvitationGatewayTest {
+class RamInvitationApiTest {
 
     @Test
     fun `rejects a code it does not know`() = runTest {
-        val gateway = gateway(pending())
+        val api = api(pending())
 
         assertEquals(
             Result.Failure(RedeemInvitationError.Unknown),
-            gateway.redeem("b".repeat(Invitation.MIN_CODE_LENGTH), JOINER),
+            api.redeem("b".repeat(Invitation.MIN_CODE_LENGTH), JOINER),
         )
     }
 
@@ -31,15 +31,15 @@ class RamInvitationGatewayTest {
     fun `knows no code when it is built empty`() = runTest {
         assertEquals(
             Result.Failure(RedeemInvitationError.Unknown),
-            RamInvitationGateway().redeem(CODE, JOINER),
+            RamInvitationApi().redeem(CODE, JOINER),
         )
     }
 
     @Test
     fun `redeems a pending invitation`() = runTest {
-        val gateway = gateway(pending())
+        val api = api(pending())
 
-        val result = gateway.redeem(CODE, JOINER)
+        val result = api.redeem(CODE, JOINER)
 
         val redeemed = (result as Result.Success).value
         assertEquals(JOINER, redeemed.redeemedBy)
@@ -49,22 +49,22 @@ class RamInvitationGatewayTest {
 
     @Test
     fun `refuses a second redemption of the same code`() = runTest {
-        val gateway = gateway(pending())
-        gateway.redeem(CODE, JOINER)
+        val api = api(pending())
+        api.redeem(CODE, JOINER)
 
         assertEquals(
             Result.Failure(RedeemInvitationError.AlreadyRedeemed),
-            gateway.redeem(CODE, MemberId("gatecrasher")),
+            api.redeem(CODE, MemberId("gatecrasher")),
         )
     }
 
     @Test
     fun `rejects an invitation that was already redeemed before`() = runTest {
-        val gateway = gateway(pending().redeemedBy(JOINER, NOW))
+        val api = api(pending().redeemedBy(JOINER, NOW))
 
         assertEquals(
             Result.Failure(RedeemInvitationError.AlreadyRedeemed),
-            gateway.redeem(CODE, MemberId("gatecrasher")),
+            api.redeem(CODE, MemberId("gatecrasher")),
         )
     }
 
@@ -81,32 +81,32 @@ class RamInvitationGatewayTest {
 
         assertEquals(
             Result.Failure(RedeemInvitationError.Revoked),
-            gateway(revoked).redeem(CODE, JOINER),
+            api(revoked).redeem(CODE, JOINER),
         )
     }
 
     @Test
     fun `rejects an expired invitation`() = runTest {
-        val gateway = gateway(pending().copy(expiresAt = at(100)))
+        val api = api(pending().copy(expiresAt = at(100)))
 
         assertEquals(
             Result.Failure(RedeemInvitationError.Expired),
-            gateway.redeem(CODE, JOINER),
+            api.redeem(CODE, JOINER),
         )
     }
 
     @Test
     fun `treats the expiry instant as already expired`() = runTest {
-        val gateway = gateway(pending().copy(expiresAt = NOW))
+        val api = api(pending().copy(expiresAt = NOW))
 
         assertEquals(
             Result.Failure(RedeemInvitationError.Expired),
-            gateway.redeem(CODE, JOINER),
+            api.redeem(CODE, JOINER),
         )
     }
 
-    private fun gateway(vararg invitations: Invitation) =
-        RamInvitationGateway(clock = FixedClock, initial = invitations.toList())
+    private fun api(vararg invitations: Invitation) =
+        RamInvitationApi(clock = FixedClock, initial = invitations.toList())
 
     private fun pending() = PendingInvitation(
         id = InvitationId("invitation-1"),
