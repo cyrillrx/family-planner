@@ -9,10 +9,10 @@ import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
 import com.cyrillrx.family.group.domain.RevokedInvitation
 import com.cyrillrx.family.group.domain.hasExpired
-import com.cyrillrx.family.group.domain.redeemedBy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 class RamInvitationApi(
     private val clock: Clock = Clock.System,
@@ -42,3 +42,12 @@ class RamInvitationApi(
         }
     }
 }
+
+private fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvitation(
+    id = id,
+    groupId = groupId,
+    code = code,
+    createdAt = createdAt,
+    redeemedBy = member,
+    redeemedAt = now,
+)

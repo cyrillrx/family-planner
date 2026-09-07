@@ -7,8 +7,8 @@ import com.cyrillrx.family.group.domain.InvitationId
 import com.cyrillrx.family.group.domain.MemberId
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
+import com.cyrillrx.family.group.domain.RedeemedInvitation
 import com.cyrillrx.family.group.domain.RevokedInvitation
-import com.cyrillrx.family.group.domain.redeemedBy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -60,11 +60,18 @@ class RamInvitationApiTest {
 
     @Test
     fun `rejects an invitation that was already redeemed before`() = runTest {
-        val api = api(pending().redeemedBy(JOINER, NOW))
+        val redeemed = RedeemedInvitation(
+            id = InvitationId("invitation-1"),
+            groupId = GroupId("group-1"),
+            code = CODE,
+            createdAt = at(0),
+            redeemedBy = JOINER,
+            redeemedAt = NOW,
+        )
 
         assertEquals(
             Result.Failure(RedeemInvitationError.AlreadyRedeemed),
-            api.redeem(CODE, MemberId("gatecrasher")),
+            api(redeemed).redeem(CODE, MemberId("gatecrasher")),
         )
     }
 
