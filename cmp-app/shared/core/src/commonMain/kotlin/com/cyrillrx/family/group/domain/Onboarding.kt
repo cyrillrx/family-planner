@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 class Onboarding(
     private val groupRepository: GroupRepository,
     private val userRepository: UserRepository,
+    private val invitationRepository: InvitationRepository,
     private val currentUserStore: CurrentUserStore,
     private val groupFactory: GroupFactory = GroupFactory(),
     private val ids: IdGenerator = UuidIdGenerator,
@@ -49,6 +50,28 @@ class Onboarding(
 
         return Result.Success(group)
     }
+
+    suspend fun joinGroup(code: String): Result<GroupId, JoinGroupError> {
+        val userId = currentUserStore.observeCurrentUserId().first()
+            ?: return Result.Failure(JoinGroupError.NotRegistered)
+
+        // Refused here rather than at the service: a string this short cannot be a code, and the
+        // fewer paths it travels the fewer places it can end up in a log.
+        if (code.length < Invitation.MIN_CODE_LENGTH) {
+            return Result.Failure(JoinGroupError.InvalidCode)
+        }
+
+        if (groupRepository.observeGroup().first() != null) {
+            return Result.Failure(JoinGroupError.AlreadyInAGroup)
+        }
+
+        // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
+        // redeemed invitation itself stays here — it carries the code.
+        return when (val redeemed = invitationRepository.redeem(code, userId)) {
+            is Result.Success -> Result.Success(redeemed.value.groupId)
+            is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
+        }
+    }
 }
 
 sealed interface RegisterError : Error {
@@ -59,4 +82,11 @@ sealed interface RegisterError : Error {
 sealed interface CreateGroupError : Error {
     data object NotRegistered : CreateGroupError
     data object GroupAlreadyExists : CreateGroupError
+}
+
+sealed interface JoinGroupError : Error {
+    data object NotRegistered : JoinGroupError
+    data object InvalidCode : JoinGroupError
+    data object AlreadyInAGroup : JoinGroupError
+    data class Redemption(val cause: RedeemInvitationError) : JoinGroupError
 }

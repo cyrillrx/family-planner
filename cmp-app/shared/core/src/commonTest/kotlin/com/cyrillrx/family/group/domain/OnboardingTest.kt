@@ -1,9 +1,11 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.data.ApiInvitationRepository
 import com.cyrillrx.family.group.data.ApiUserRepository
 import com.cyrillrx.family.group.data.RamCurrentUserStore
 import com.cyrillrx.family.group.data.RamGroupRepository
+import com.cyrillrx.family.group.data.RamInvitationApi
 import com.cyrillrx.family.group.data.RamUserApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -174,9 +176,11 @@ class OnboardingTest {
         userRepository: UserRepository = ApiUserRepository(RamUserApi()),
         currentUserStore: CurrentUserStore = RamCurrentUserStore(),
         groupRepository: GroupRepository = RamGroupRepository(),
+        invitationRepository: InvitationRepository = SilentInvitationRepository,
     ) = Onboarding(
         groupRepository,
         userRepository,
+        invitationRepository,
         currentUserStore,
         groupFactory = GroupFactory(ids = CountingIdGenerator(), clock = FixedClock),
         ids = CountingIdGenerator(),
@@ -185,6 +189,96 @@ class OnboardingTest {
     private object FixedClock : Clock {
         override fun now(): Instant = NOW
     }
+
+    @Test
+    fun `joins the group behind a valid invitation`() = runTest {
+        val groups = RamGroupRepository()
+        val invitations = ApiInvitationRepository(
+            RamInvitationApi(groups, clock = FixedClock, initial = listOf(pending())),
+        )
+        val onboarding = onboarding(groupRepository = groups, invitationRepository = invitations)
+        onboarding.register("Cyril")
+
+        val result = onboarding.joinGroup(CODE)
+
+        assertEquals(Result.Success(GroupId("group-of-the-inviter")), result)
+        assertEquals(
+            listOf(
+                Member(
+                    userId = UserId("user-1"),
+                    groupId = GroupId("group-of-the-inviter"),
+                    joinedAt = NOW,
+                ),
+            ),
+            groups.observeMembers().first(),
+        )
+    }
+
+    @Test
+    fun `refuses to join before anyone is registered`() = runTest {
+        assertEquals(
+            Result.Failure(JoinGroupError.NotRegistered),
+            onboarding().joinGroup(CODE),
+        )
+    }
+
+    @Test
+    fun `refuses a code too short to be an invitation without calling the service`() = runTest {
+        val invitations = RecordingInvitationRepository()
+        val onboarding = onboarding(invitationRepository = invitations)
+        onboarding.register("Cyril")
+
+        val result = onboarding.joinGroup("too-short")
+
+        assertEquals(Result.Failure(JoinGroupError.InvalidCode), result)
+        assertEquals(0, invitations.calls)
+    }
+
+    @Test
+    fun `refuses to join when this device already has a group`() = runTest {
+        val groups = RamGroupRepository()
+        val invitations = RecordingInvitationRepository()
+        val onboarding = onboarding(groupRepository = groups, invitationRepository = invitations)
+        onboarding.register("Cyril")
+        onboarding.createGroup()
+
+        val result = onboarding.joinGroup(CODE)
+
+        assertEquals(Result.Failure(JoinGroupError.AlreadyInAGroup), result)
+        assertEquals(0, invitations.calls)
+    }
+
+    @Test
+    fun `surfaces the reason a redemption was refused`() = runTest {
+        val onboarding = onboarding(
+            invitationRepository = RefusingInvitationRepository(RedeemInvitationError.Expired),
+        )
+        onboarding.register("Cyril")
+
+        assertEquals(
+            Result.Failure(JoinGroupError.Redemption(RedeemInvitationError.Expired)),
+            onboarding.joinGroup(CODE),
+        )
+    }
+
+    @Test
+    fun `writes no membership itself`() = runTest {
+        val groups = RamGroupRepository()
+        val onboarding = onboarding(groupRepository = groups)
+        onboarding.register("Cyril")
+
+        onboarding.joinGroup(CODE)
+
+        assertEquals(emptyList(), groups.observeMembers().first())
+    }
+
+    private fun pending() = PendingInvitation(
+        id = InvitationId("invitation-1"),
+        groupId = GroupId("group-of-the-inviter"),
+        code = CODE,
+        createdAt = Instant.fromEpochMilliseconds(0),
+        expiresAt = Instant.fromEpochMilliseconds(10_000),
+    )
 
     private class CountingIdGenerator : IdGenerator {
         private var groups = 0
@@ -206,7 +300,36 @@ class OnboardingTest {
         override suspend fun register(user: User) = Result.Failure(RegisterUserError.Unknown)
     }
 
+    /** Redeems without writing anything, so a caller that relies on the write shows up. */
+    private object SilentInvitationRepository : InvitationRepository {
+        override suspend fun redeem(code: String, user: UserId) = Result.Success(
+            RedeemedInvitation(
+                id = InvitationId("invitation-1"),
+                groupId = GroupId("group-of-the-inviter"),
+                code = code,
+                createdAt = Instant.fromEpochMilliseconds(0),
+                redeemedBy = user,
+                redeemedAt = NOW,
+            ),
+        )
+    }
+
+    private class RecordingInvitationRepository : InvitationRepository {
+        var calls = 0
+            private set
+
+        override suspend fun redeem(code: String, user: UserId) =
+            SilentInvitationRepository.redeem(code, user).also { calls++ }
+    }
+
+    private class RefusingInvitationRepository(
+        private val reason: RedeemInvitationError,
+    ) : InvitationRepository {
+        override suspend fun redeem(code: String, user: UserId) = Result.Failure(reason)
+    }
+
     private companion object {
         val NOW: Instant = Instant.fromEpochMilliseconds(1_500)
+        val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
     }
 }
