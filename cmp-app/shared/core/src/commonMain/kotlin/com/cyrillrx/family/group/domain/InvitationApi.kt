@@ -4,7 +4,7 @@ import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
 
 interface InvitationApi {
-    suspend fun redeem(code: String, member: MemberId): Result<RedeemedInvitation, RedeemInvitationError>
+    suspend fun redeem(code: String, user: UserId): Result<RedeemedInvitation, RedeemInvitationError>
 }
 
 sealed interface RedeemInvitationError : Error {

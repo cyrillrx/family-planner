@@ -66,6 +66,6 @@ class InvitationTest {
         val GROUP = GroupId("group-1")
         val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
         val TOO_SHORT = "a".repeat(Invitation.MIN_CODE_LENGTH - 1)
-        val JOINER = MemberId("joiner")
+        val JOINER = UserId("joiner")
     }
 }

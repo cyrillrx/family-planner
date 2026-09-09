@@ -3,11 +3,11 @@ package com.cyrillrx.family.group.data
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Invitation
 import com.cyrillrx.family.group.domain.InvitationApi
-import com.cyrillrx.family.group.domain.MemberId
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
 import com.cyrillrx.family.group.domain.RevokedInvitation
+import com.cyrillrx.family.group.domain.UserId
 import com.cyrillrx.family.group.domain.hasExpired
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,7 +23,7 @@ class RamInvitationApi(
 
     override suspend fun redeem(
         code: String,
-        member: MemberId,
+        user: UserId,
     ): Result<RedeemedInvitation, RedeemInvitationError> {
         val now = clock.now()
 
@@ -35,7 +35,7 @@ class RamInvitationApi(
                 if (invitation.hasExpired(now)) {
                     Result.Failure(RedeemInvitationError.Expired)
                 } else {
-                    val redeemed = invitation.redeemedBy(member, now)
+                    val redeemed = invitation.redeemedBy(user, now)
                     byCode.update { it + (code to redeemed) }
                     Result.Success(redeemed)
                 }
@@ -43,12 +43,12 @@ class RamInvitationApi(
     }
 
     companion object {
-        private fun PendingInvitation.redeemedBy(member: MemberId, now: Instant) = RedeemedInvitation(
+        private fun PendingInvitation.redeemedBy(user: UserId, now: Instant) = RedeemedInvitation(
             id = id,
             groupId = groupId,
             code = code,
             createdAt = createdAt,
-            redeemedBy = member,
+            redeemedBy = user,
             redeemedAt = now,
         )
     }

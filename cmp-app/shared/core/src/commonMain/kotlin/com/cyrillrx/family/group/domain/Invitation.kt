@@ -33,7 +33,7 @@ data class RedeemedInvitation(
     override val groupId: GroupId,
     override val code: String,
     override val createdAt: Instant,
-    val redeemedBy: MemberId,
+    val redeemedBy: UserId,
     val redeemedAt: Instant,
 ) : Invitation {
     init {

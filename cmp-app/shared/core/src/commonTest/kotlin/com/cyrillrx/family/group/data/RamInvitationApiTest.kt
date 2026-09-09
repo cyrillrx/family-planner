@@ -4,11 +4,11 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.GroupId
 import com.cyrillrx.family.group.domain.Invitation
 import com.cyrillrx.family.group.domain.InvitationId
-import com.cyrillrx.family.group.domain.MemberId
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
 import com.cyrillrx.family.group.domain.RevokedInvitation
+import com.cyrillrx.family.group.domain.UserId
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -54,7 +54,7 @@ class RamInvitationApiTest {
 
         assertEquals(
             Result.Failure(RedeemInvitationError.AlreadyRedeemed),
-            api.redeem(CODE, MemberId("gatecrasher")),
+            api.redeem(CODE, UserId("gatecrasher")),
         )
     }
 
@@ -71,7 +71,7 @@ class RamInvitationApiTest {
 
         assertEquals(
             Result.Failure(RedeemInvitationError.AlreadyRedeemed),
-            api(redeemed).redeem(CODE, MemberId("gatecrasher")),
+            api(redeemed).redeem(CODE, UserId("gatecrasher")),
         )
     }
 
@@ -128,7 +128,7 @@ class RamInvitationApiTest {
 
     private companion object {
         val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
-        val JOINER = MemberId("joiner")
+        val JOINER = UserId("joiner")
         val NOW: Instant = Instant.fromEpochMilliseconds(500)
 
         fun at(millis: Long): Instant = Instant.fromEpochMilliseconds(millis)

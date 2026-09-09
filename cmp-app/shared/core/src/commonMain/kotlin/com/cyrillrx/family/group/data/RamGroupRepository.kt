@@ -3,7 +3,7 @@ package com.cyrillrx.family.group.data
 import com.cyrillrx.family.group.domain.Group
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.Member
-import com.cyrillrx.family.group.domain.MemberId
+import com.cyrillrx.family.group.domain.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +28,7 @@ class RamGroupRepository : GroupRepository {
         }
     }
 
-    override suspend fun removeMember(id: MemberId) {
-        members.update { current -> current.filterNot { it.id == id } }
+    override suspend fun removeMember(userId: UserId) {
+        members.update { current -> current.filterNot { it.id == userId } }
     }
 }

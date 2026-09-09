@@ -7,7 +7,7 @@ import kotlin.uuid.Uuid
 value class GroupId(val value: String)
 
 @JvmInline
-value class MemberId(val value: String)
+value class UserId(val value: String)
 
 @JvmInline
 value class InvitationId(val value: String)
@@ -15,7 +15,7 @@ value class InvitationId(val value: String)
 interface IdGenerator {
     fun newGroupId(): GroupId
 
-    fun newMemberId(): MemberId
+    fun newUserId(): UserId
 
     fun newInvitationId(): InvitationId
 }
@@ -23,7 +23,7 @@ interface IdGenerator {
 object UuidIdGenerator : IdGenerator {
     override fun newGroupId(): GroupId = GroupId(Uuid.random().toString())
 
-    override fun newMemberId(): MemberId = MemberId(Uuid.random().toString())
+    override fun newUserId(): UserId = UserId(Uuid.random().toString())
 
     override fun newInvitationId(): InvitationId = InvitationId(Uuid.random().toString())
 }
