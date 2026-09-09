@@ -1,7 +1,9 @@
 package com.cyrillrx.family.group.data
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.Invitation
+import com.cyrillrx.family.group.domain.Member
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
@@ -13,7 +15,12 @@ import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+/**
+ * Plays the owned service of ADR-003, which is the only writer of a group's member list. The target
+ * of that write is the whole point, so it is not defaulted.
+ */
 class RamInvitationApi(
+    private val groups: GroupRepository,
     private val clock: Clock = Clock.System,
     initial: List<Invitation> = emptyList(),
 ) : InvitationApi {
@@ -35,6 +42,11 @@ class RamInvitationApi(
                     Result.Failure(RedeemInvitationError.Expired)
                 } else {
                     val redeemed = invitation.redeemedBy(user, now)
+                    // The real service writes both in one transaction. Here the membership goes
+                    // first, so a failure cannot burn a single-use code for nothing.
+                    groups.addMember(
+                        Member(userId = user, groupId = redeemed.groupId, joinedAt = now),
+                    )
                     byCode.update { it + (code to redeemed) }
                     Result.Success(redeemed)
                 }

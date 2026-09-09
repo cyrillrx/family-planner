@@ -4,11 +4,13 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.GroupId
 import com.cyrillrx.family.group.domain.Invitation
 import com.cyrillrx.family.group.domain.InvitationId
+import com.cyrillrx.family.group.domain.Member
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
 import com.cyrillrx.family.group.domain.RevokedInvitation
 import com.cyrillrx.family.group.domain.UserId
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,7 +33,7 @@ class RamInvitationApiTest {
     fun `knows no code when it is built empty`() = runTest {
         assertEquals(
             Result.Failure(RedeemInvitationError.Unknown),
-            RamInvitationApi().redeem(CODE, JOINER),
+            RamInvitationApi(RamGroupRepository()).redeem(CODE, JOINER),
         )
     }
 
@@ -111,8 +113,33 @@ class RamInvitationApiTest {
         )
     }
 
-    private fun api(vararg invitations: Invitation) =
-        RamInvitationApi(clock = FixedClock, initial = invitations.toList())
+    @Test
+    fun `writes the membership of the user who redeemed it`() = runTest {
+        val groups = RamGroupRepository()
+
+        val redeemed = api(groups, pending()).redeem(CODE, JOINER)
+
+        val invitation = (redeemed as Result.Success).value
+        assertEquals(
+            listOf(Member(userId = JOINER, groupId = invitation.groupId, joinedAt = NOW)),
+            groups.observeMembers().first(),
+        )
+        assertEquals(invitation.redeemedAt, groups.observeMembers().first().single().joinedAt)
+    }
+
+    @Test
+    fun `writes no membership when the code is refused`() = runTest {
+        val groups = RamGroupRepository()
+
+        api(groups, pending().copy(expiresAt = NOW)).redeem(CODE, JOINER)
+
+        assertEquals(emptyList(), groups.observeMembers().first())
+    }
+
+    private fun api(vararg invitations: Invitation) = api(RamGroupRepository(), *invitations)
+
+    private fun api(groups: RamGroupRepository, vararg invitations: Invitation) =
+        RamInvitationApi(groups, clock = FixedClock, initial = invitations.toList())
 
     private fun pending() = PendingInvitation(
         id = InvitationId("invitation-1"),
