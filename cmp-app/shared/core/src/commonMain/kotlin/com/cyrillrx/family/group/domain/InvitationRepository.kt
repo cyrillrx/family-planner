@@ -3,7 +3,7 @@ package com.cyrillrx.family.group.domain
 import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
 
-interface InvitationApi {
+interface InvitationRepository {
     suspend fun redeem(code: String, user: UserId): Result<RedeemedInvitation, RedeemInvitationError>
 }
 

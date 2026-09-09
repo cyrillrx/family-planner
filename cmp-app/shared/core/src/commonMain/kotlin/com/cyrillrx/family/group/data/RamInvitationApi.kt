@@ -2,7 +2,6 @@ package com.cyrillrx.family.group.data
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Invitation
-import com.cyrillrx.family.group.domain.InvitationApi
 import com.cyrillrx.family.group.domain.PendingInvitation
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RedeemedInvitation
