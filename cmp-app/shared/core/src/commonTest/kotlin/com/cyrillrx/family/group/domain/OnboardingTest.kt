@@ -3,6 +3,7 @@ package com.cyrillrx.family.group.domain
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.data.ApiUserRepository
 import com.cyrillrx.family.group.data.RamCurrentUserStore
+import com.cyrillrx.family.group.data.RamGroupRepository
 import com.cyrillrx.family.group.data.RamUserApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -11,6 +12,8 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class OnboardingTest {
 
@@ -99,10 +102,89 @@ class OnboardingTest {
         assertNull(store.observeCurrentUserId().first())
     }
 
+    @Test
+    fun `creates a group for the registered user`() = runTest {
+        val groups = RamGroupRepository()
+        val onboarding = onboarding(groupRepository = groups)
+        onboarding.register("Cyril")
+
+        val result = onboarding.createGroup()
+
+        val group = (result as Result.Success).value
+        assertEquals(GroupId("group-1"), group.id)
+        assertEquals(group, groups.observeGroup().first())
+        assertEquals(
+            listOf(Member(userId = UserId("user-1"), groupId = group.id, joinedAt = NOW)),
+            groups.observeMembers().first(),
+        )
+    }
+
+    @Test
+    fun `names the group without borrowing the founder's name`() = runTest {
+        val onboarding = onboarding()
+        onboarding.register("Cyril")
+
+        assertEquals("Family", (onboarding.createGroup() as Result.Success).value.name)
+    }
+
+    @Test
+    fun `refuses to create a group before anyone is registered`() = runTest {
+        assertEquals(
+            Result.Failure(CreateGroupError.NotRegistered),
+            onboarding().createGroup(),
+        )
+    }
+
+    @Test
+    fun `writes nothing when nobody is registered`() = runTest {
+        val groups = RamGroupRepository()
+
+        onboarding(groupRepository = groups).createGroup()
+
+        assertNull(groups.observeGroup().first())
+        assertEquals(emptyList(), groups.observeMembers().first())
+    }
+
+    @Test
+    fun `refuses to create a second group`() = runTest {
+        val onboarding = onboarding()
+        onboarding.register("Cyril")
+        onboarding.createGroup()
+
+        assertEquals(
+            Result.Failure(CreateGroupError.GroupAlreadyExists),
+            onboarding.createGroup(),
+        )
+    }
+
+    @Test
+    fun `leaves the first group and its member untouched when a second is refused`() = runTest {
+        val groups = RamGroupRepository()
+        val onboarding = onboarding(groupRepository = groups)
+        onboarding.register("Cyril")
+        val first = (onboarding.createGroup() as Result.Success).value
+
+        onboarding.createGroup()
+
+        assertEquals(first, groups.observeGroup().first())
+        assertEquals(1, groups.observeMembers().first().size)
+    }
+
     private fun onboarding(
         userRepository: UserRepository = ApiUserRepository(RamUserApi()),
         currentUserStore: CurrentUserStore = RamCurrentUserStore(),
-    ) = Onboarding(userRepository, currentUserStore, ids = CountingIdGenerator())
+        groupRepository: GroupRepository = RamGroupRepository(),
+    ) = Onboarding(
+        groupRepository,
+        userRepository,
+        currentUserStore,
+        groupFactory = GroupFactory(ids = CountingIdGenerator(), clock = FixedClock),
+        ids = CountingIdGenerator(),
+    )
+
+    private object FixedClock : Clock {
+        override fun now(): Instant = NOW
+    }
 
     private class CountingIdGenerator : IdGenerator {
         private var groups = 0
@@ -122,5 +204,9 @@ class OnboardingTest {
         override fun observeUsers(ids: Set<UserId>): Flow<List<User>> = flowOf(emptyList())
 
         override suspend fun register(user: User) = Result.Failure(RegisterUserError.Unknown)
+    }
+
+    private companion object {
+        val NOW: Instant = Instant.fromEpochMilliseconds(1_500)
     }
 }

@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.first
  * own cannot be extracted from it.
  */
 class Onboarding(
+    private val groupRepository: GroupRepository,
     private val userRepository: UserRepository,
     private val currentUserStore: CurrentUserStore,
+    private val groupFactory: GroupFactory = GroupFactory(),
     private val ids: IdGenerator = UuidIdGenerator,
 ) {
 
@@ -28,9 +30,33 @@ class Onboarding(
             is Result.Failure -> Result.Failure(RegisterError.Failed(registered.error))
         }
     }
+
+    suspend fun createGroup(): Result<Group, CreateGroupError> {
+        val userId = currentUserStore.observeCurrentUserId().first()
+            ?: return Result.Failure(CreateGroupError.NotRegistered)
+
+        if (groupRepository.observeGroup().first() != null) {
+            return Result.Failure(CreateGroupError.GroupAlreadyExists)
+        }
+
+        val group = groupFactory.newGroup()
+
+        groupRepository.setGroup(group)
+        // The founder joins the moment the group exists, so both dates come from one reading.
+        groupRepository.addMember(
+            Member(userId = userId, groupId = group.id, joinedAt = group.createdAt),
+        )
+
+        return Result.Success(group)
+    }
 }
 
 sealed interface RegisterError : Error {
     data object BlankDisplayName : RegisterError
     data class Failed(val cause: RegisterUserError) : RegisterError
+}
+
+sealed interface CreateGroupError : Error {
+    data object NotRegistered : CreateGroupError
+    data object GroupAlreadyExists : CreateGroupError
 }
