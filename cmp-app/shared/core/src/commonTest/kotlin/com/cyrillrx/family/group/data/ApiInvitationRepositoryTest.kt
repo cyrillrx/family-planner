@@ -35,7 +35,7 @@ class ApiInvitationRepositoryTest {
     }
 
     private fun api(vararg invitations: Invitation) =
-        RamInvitationApi(clock = FixedClock, initial = invitations.toList())
+        RamInvitationApi(RamGroupRepository(), clock = FixedClock, initial = invitations.toList())
 
     private fun pending() = PendingInvitation(
         id = InvitationId("invitation-1"),
