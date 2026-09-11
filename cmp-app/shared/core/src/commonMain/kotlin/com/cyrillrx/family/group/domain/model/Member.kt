@@ -1,4 +1,4 @@
-package com.cyrillrx.family.group.domain
+package com.cyrillrx.family.group.domain.model
 
 import kotlin.time.Instant
 

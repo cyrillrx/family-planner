@@ -1,9 +1,8 @@
-package com.cyrillrx.family.group.data
+package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.family.group.domain.Group
-import com.cyrillrx.family.group.domain.GroupRepository
-import com.cyrillrx.family.group.domain.Member
-import com.cyrillrx.family.group.domain.UserId
+import com.cyrillrx.family.group.domain.model.Group
+import com.cyrillrx.family.group.domain.model.Member
+import com.cyrillrx.family.group.domain.model.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

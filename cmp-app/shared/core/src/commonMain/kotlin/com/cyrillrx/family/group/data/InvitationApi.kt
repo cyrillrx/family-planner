@@ -1,14 +1,12 @@
 package com.cyrillrx.family.group.data
 
-import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.domain.RedeemInvitationError
-import com.cyrillrx.family.group.domain.RedeemedInvitation
-import com.cyrillrx.family.group.domain.UserId
+import com.cyrillrx.family.group.data.model.ApiInvitation
+import com.cyrillrx.family.group.data.model.ApiResponse
 
 /**
- * Request and response models arrive with the first real transport. Until then the api speaks
- * domain types, which the data layer may see; the domain never sees this interface.
+ * Transport only. Redemption itself is the owned service's job (ADR-003) — validating the code,
+ * writing the membership, deciding the refusal. Nothing here knows what an invitation means.
  */
 interface InvitationApi {
-    suspend fun redeem(code: String, user: UserId): Result<RedeemedInvitation, RedeemInvitationError>
+    suspend fun redeem(code: String, userId: String): ApiResponse<ApiInvitation>
 }

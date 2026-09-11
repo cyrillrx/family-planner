@@ -1,5 +1,8 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.family.group.domain.model.Group
+import com.cyrillrx.family.group.domain.model.Member
+import com.cyrillrx.family.group.domain.model.UserId
 import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
