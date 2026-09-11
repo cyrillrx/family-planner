@@ -1,22 +1,17 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.core.data.model.ApiError
+import com.cyrillrx.core.data.model.ApiResponse
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.data.InvitationApi
-import com.cyrillrx.family.group.data.model.ApiError
 import com.cyrillrx.family.group.data.model.ApiInvitation
-import com.cyrillrx.family.group.data.model.ApiResponse
 import com.cyrillrx.family.group.domain.model.GroupId
 import com.cyrillrx.family.group.domain.model.InvitationId
 import com.cyrillrx.family.group.domain.model.RedeemedInvitation
 import com.cyrillrx.family.group.domain.model.UserId
-import kotlinx.coroutines.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 
-/**
- * Translates what the api answers. It decides nothing about invitations — the service does that
- * (ADR-003) — so no date is compared here: an expired code is a refusal the server sends, not a
- * conclusion this class draws.
- */
 class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepository {
 
     override suspend fun redeem(
@@ -27,7 +22,7 @@ class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepos
             api.redeem(code, user.value).toDomain()
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (transport: Exception) {
+        } catch (e: Exception) {
             Result.Failure(RedeemInvitationError.Unknown)
         }
 }

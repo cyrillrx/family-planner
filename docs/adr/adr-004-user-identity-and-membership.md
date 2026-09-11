@@ -28,6 +28,8 @@ data class Group(val id: GroupId, val name: String, val createdAt: Instant)
 
 `data` is transport. Its types are dictated by the wire, so `InvitationApi.redeem(code: String, userId: String)` takes a `String` where the domain has a `UserId`, and answers an `ApiResponse<ApiInvitation>` whose every field is nullable. Translating that into the domain is the repository implementation's whole job, and it lives in `domain` because that is where the result belongs.
 
+The transport types that carry nothing of the product — the `ApiResponse` envelope and its `ApiError` — sit under `com.cyrillrx.core.data.model`, beside the `Result` and `Error` of `com.cyrillrx.core.domain` and for the same reason: they belong to no feature, and stay copyable to another project. Only a feature's own payloads, such as `ApiInvitation`, live under its `data/model/`.
+
 `InvitationApi` therefore moves from `group/domain/` to `group/data/`, and `InvitationRepositoryImpl` joins `InvitationRepository` in the domain.
 
 **Registration precedes redemption.** Joining a group runs in this order, and the domain enforces it:

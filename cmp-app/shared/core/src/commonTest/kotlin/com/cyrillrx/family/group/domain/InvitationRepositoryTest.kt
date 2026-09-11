@@ -1,17 +1,17 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.core.data.model.ApiError
+import com.cyrillrx.core.data.model.ApiResponse
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.data.InvitationApi
-import com.cyrillrx.family.group.data.model.ApiError
 import com.cyrillrx.family.group.data.model.ApiInvitation
-import com.cyrillrx.family.group.data.model.ApiResponse
 import com.cyrillrx.family.group.domain.model.GroupId
 import com.cyrillrx.family.group.domain.model.Invitation
 import com.cyrillrx.family.group.domain.model.InvitationId
 import com.cyrillrx.family.group.domain.model.RedeemedInvitation
 import com.cyrillrx.family.group.domain.model.UserId
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
