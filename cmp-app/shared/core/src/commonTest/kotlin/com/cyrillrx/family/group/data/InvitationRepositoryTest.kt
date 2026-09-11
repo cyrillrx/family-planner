@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-class ApiInvitationRepositoryTest {
+class InvitationRepositoryTest {
 
     @Test
     fun `hands a redemption to the api`() = runTest {

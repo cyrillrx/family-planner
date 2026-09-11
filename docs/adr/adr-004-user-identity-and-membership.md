@@ -7,26 +7,28 @@
 **A person and their place in a group are two types.** `User` is the identity; `Member` is the membership, and carries nothing else.
 
 ```kotlin
-// group/domain/
+// group/domain/model/
 data class User(val id: UserId, val displayName: String, val authenticatedId: String? = null)
 data class Member(val userId: UserId, val groupId: GroupId, val joinedAt: Instant)
 data class Group(val id: GroupId, val name: String, val createdAt: Instant)
 ```
 
-`MemberId` is removed. A membership is identified by the pair (groupId, userId): two memberships of the same user in the same group are meaningless, so a separate identifier would have nothing to distinguish. `RedeemedInvitation.redeemedBy` is a `UserId`, and `InvitationApi.redeem` takes a `UserId`.
+`MemberId` is removed. A membership is identified by the pair (groupId, userId): two memberships of the same user in the same group are meaningless, so a separate identifier would have nothing to distinguish. `RedeemedInvitation.redeemedBy` is a `UserId`; `InvitationApi` sees only its `String` value, being transport.
 
 **The display name is not duplicated.** It lives on `User`, in one copy. Listing a group's members is a join, not a read of one collection.
 
 **The group carries no creator.** There is no `createdBy` field. Creation order is not a product concept in V1.
 
-**API interfaces belong to the data layer, repository interfaces to the domain.**
+**Dependencies point one way: UI → domain → data.** A lower layer never knows a higher one.
 
-| Layer | Holds |
-| --- | --- |
-| `domain/` | Entities, repository interfaces, use cases, `CurrentUserStore` |
-| `data/` | API interfaces, request and response models, repository implementations, mappers |
+| Layer | Holds | Knows |
+| --- | --- | --- |
+| `domain/` | Entities under `model/`, repositories — interface, implementation and in-memory doubles — use cases, `CurrentUserStore` | `data` |
+| `data/` | API interfaces and their request and response models under `model/` | nothing of the domain |
 
-An API interface speaks in `Api*` request and response types, and those live in `data`. Declaring such an interface in `domain` would pull the data layer into it. Repository interfaces stay in `domain` because they speak the domain. `InvitationApi` therefore moves from `group/domain/` to `group/data/`, with an `InvitationRepository` in the domain in front of it, and use cases depend on `domain` alone.
+`data` is transport. Its types are dictated by the wire, so `InvitationApi.redeem(code: String, userId: String)` takes a `String` where the domain has a `UserId`, and answers an `ApiResponse<ApiInvitation>` whose every field is nullable. Translating that into the domain is the repository implementation's whole job, and it lives in `domain` because that is where the result belongs.
+
+`InvitationApi` therefore moves from `group/domain/` to `group/data/`, and `InvitationRepositoryImpl` joins `InvitationRepository` in the domain.
 
 **Registration precedes redemption.** Joining a group runs in this order, and the domain enforces it:
 
@@ -65,11 +67,13 @@ The two operations fail differently. A failed registration costs a user record t
 
 This is a guarantee of sequence, not of type, and it is enforced by `NotRegistered`: `joinGroup(code)` will not run without a registered user. Nothing in a signature could express it.
 
-### Why API interfaces live in the data layer
+### Why the transport layer knows nothing of the domain
 
-An API interface is defined by its wire types. `UserApi.register(request: ApiRegisterUserRequest): ApiUser` names two types whose fields are dictated by the transport, not by the product — a request omits what the server derives, a response carries what the server decides. Those types belong to `data`.
+An API interface is defined by its wire types. `UserApi.register(request: ApiRegisterUserRequest): ApiUser` names two types whose fields are dictated by the transport, not by the product — a request omits what the server derives, a response carries what the server decides. Those types belong to `data`, and letting a domain type such as `UserId` appear in one of their signatures would make the lower layer depend on the higher, which is the direction this decision closes.
 
-Placing the interface in `domain` would put those types in `domain` too, or force the interface to speak domain types and mediate the mapping somewhere unnamed. Repository interfaces do not have the problem: they speak the domain by construction, which is why they stay where they are and why the use cases only ever see them.
+The refusal travels the same way. `ApiResponse` carries either a payload or an `ApiError` whose `id` the server chooses, and the repository maps that id to a `RedeemInvitationError`. Nothing is recomputed: an expired code is an answer, not a date the client compares. That distinction is what keeps redemption a privileged operation rather than a client-side rule wearing a server's name.
+
+A consequence worth stating plainly: **a fake API is not production code.** `RamInvitationApi` implemented the whole of the service — which code is unknown, which is revoked, which has expired — and its tests specified `server/` rather than this application. Those belong where the service is written. What this side owes a test is the translation, and that is what `InvitationRepositoryTest` covers.
 
 ### Why the group carries no creator
 
