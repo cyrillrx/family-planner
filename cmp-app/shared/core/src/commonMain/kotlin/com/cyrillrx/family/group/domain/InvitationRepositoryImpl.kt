@@ -59,7 +59,7 @@ internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, RedeemInvita
     ),
 )
 
-private fun missing(field: InvitationField) = Result.Failure(RedeemInvitationError.Malformed(field))
+private fun missing(field: InvitationField) = Result.Failure(RedeemInvitationError.IncompleteResponse(field))
 
 private const val REVOKED = "invitation_revoked"
 private const val ALREADY_REDEEMED = "invitation_already_redeemed"
