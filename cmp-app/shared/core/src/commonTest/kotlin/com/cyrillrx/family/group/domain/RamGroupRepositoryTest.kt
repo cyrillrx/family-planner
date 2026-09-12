@@ -77,9 +77,19 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("bob"))
 
-        repository.addMember(member("bob").copy(displayName = "Bobby"))
+        repository.addMember(member("bob").copy(joinedAt = LATER))
 
-        assertEquals("bob", repository.observeMembers().first().single().displayName)
+        assertEquals(FIXED_NOW, repository.observeMembers().first().single().joinedAt)
+    }
+
+    @Test
+    fun `keeps the same user's memberships of two groups apart`() = runTest {
+        val repository = RamGroupRepository()
+        repository.addMember(member("alice"))
+
+        repository.addMember(member("alice").copy(groupId = GroupId("group-2")))
+
+        assertEquals(2, repository.observeMembers().first().size)
     }
 
     @Test
@@ -119,13 +129,14 @@ class RamGroupRepositoryTest {
         createdAt = FIXED_NOW,
     )
 
-    private fun member(id: String) = Member(
-        id = UserId(id),
-        displayName = id,
+    private fun member(userId: String) = Member(
+        userId = UserId(userId),
+        groupId = GroupId("group-1"),
         joinedAt = FIXED_NOW,
     )
 
     private companion object {
         val FIXED_NOW: Instant = Instant.fromEpochMilliseconds(1_700_000_000_000)
+        val LATER: Instant = Instant.fromEpochMilliseconds(1_800_000_000_000)
     }
 }

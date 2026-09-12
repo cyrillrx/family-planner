@@ -23,11 +23,15 @@ class RamGroupRepository : GroupRepository {
 
     override suspend fun addMember(member: Member) {
         members.update { current ->
-            if (current.any { it.id == member.id }) current else current + member
+            if (current.any { it.groupId == member.groupId && it.userId == member.userId }) {
+                current
+            } else {
+                current + member
+            }
         }
     }
 
     override suspend fun removeMember(userId: UserId) {
-        members.update { current -> current.filterNot { it.id == userId } }
+        members.update { current -> current.filterNot { it.userId == userId } }
     }
 }
