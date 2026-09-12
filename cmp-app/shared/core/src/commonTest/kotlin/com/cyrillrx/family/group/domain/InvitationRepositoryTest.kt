@@ -89,23 +89,33 @@ class InvitationRepositoryTest {
     }
 
     @Test
-    fun `refuses an answer missing any field the domain requires`() = runTest {
+    fun `names the field an answer left out`() {
         val incomplete = listOf(
-            "id" to redeemed().copy(id = null),
-            "groupId" to redeemed().copy(groupId = null),
-            "code" to redeemed().copy(code = null),
-            "createdAt" to redeemed().copy(createdAt = null),
-            "redeemedBy" to redeemed().copy(redeemedBy = null),
-            "redeemedAt" to redeemed().copy(redeemedAt = null),
+            InvitationField.ID to redeemed().copy(id = null),
+            InvitationField.GROUP_ID to redeemed().copy(groupId = null),
+            InvitationField.CODE to redeemed().copy(code = null),
+            InvitationField.CREATED_AT to redeemed().copy(createdAt = null),
+            InvitationField.REDEEMED_BY to redeemed().copy(redeemedBy = null),
+            InvitationField.REDEEMED_AT to redeemed().copy(redeemedAt = null),
         )
 
         incomplete.forEach { (missing, payload) ->
             assertEquals(
-                Result.Failure(RedeemInvitationError.Unknown),
-                repository(answering(ApiResponse(payload = payload))).redeem(CODE, JOINER),
-                "an answer without $missing should be refused",
+                Result.Failure(MalformedInvitationError(missing)),
+                payload.toRedeemed(),
+                "an answer without $missing should name it",
             )
         }
+    }
+
+    @Test
+    fun `keeps a malformed answer out of the domain`() = runTest {
+        val incomplete = redeemed().copy(redeemedAt = null)
+
+        assertEquals(
+            Result.Failure(RedeemInvitationError.Unknown),
+            repository(answering(ApiResponse(payload = incomplete))).redeem(CODE, JOINER),
+        )
     }
 
     @Test
