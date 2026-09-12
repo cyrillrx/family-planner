@@ -89,6 +89,16 @@ class InvitationRepositoryTest {
     }
 
     @Test
+    fun `lets the error win when an answer carries both`() = runTest {
+        val both = ApiResponse(payload = redeemed(), error = ApiError(id = "invitation_revoked"))
+
+        assertEquals(
+            Result.Failure(RedeemInvitationError.Revoked),
+            repository(answering(both)).redeem(CODE, JOINER),
+        )
+    }
+
+    @Test
     fun `names each field an answer left out`() {
         val incomplete = listOf(
             InvitationField.ID to redeemed().copy(id = null),
