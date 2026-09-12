@@ -1,6 +1,6 @@
 # ADR-004: User identity is separated from group membership
 
-> **Status**: Proposed | **Date**: 2026-09-09 | **Context**: V0 onboarding, before implementation — writing the first caller of the group domain exposed a hole in it.
+> **Status**: Accepted | **Date**: 2026-09-12 | **Context**: V0 onboarding, before implementation — writing the first caller of the group domain exposed a hole in it.
 
 ## Decision
 
@@ -97,7 +97,7 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 
 ## Alternatives considered
 
-**Denormalising the display name onto `Member`** — Rejected: the single read it buys costs two copies of every name, and a rename that must sweep each membership. A stale name is invisible to the member reading it.
+**Denormalising the display name onto `Member`** — Rejected: the single read it buys costs two copies of every name, and a rename that must sweep each membership. A stale name is invisible to the member reading it. This rejects denormalised **storage**, not a denormalised **response**: an api that returns a name alongside a membership projects it at read time from the one copy, which costs no consistency and stays open if the join proves expensive.
 
 **Widening `redeem` to carry the name** — Rejected: it repairs the call and leaves the cause, a type that means two things. Every later operation creating a membership would carry the same passenger.
 
