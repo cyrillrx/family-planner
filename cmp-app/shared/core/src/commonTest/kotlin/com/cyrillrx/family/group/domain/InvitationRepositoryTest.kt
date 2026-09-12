@@ -101,7 +101,7 @@ class InvitationRepositoryTest {
 
         incomplete.forEach { (missing, payload) ->
             assertEquals(
-                Result.Failure(RedeemInvitationError.Malformed(listOf(missing))),
+                Result.Failure(RedeemInvitationError.Malformed(missing)),
                 payload.toRedeemed(),
                 "an answer without $missing should name it",
             )
@@ -109,23 +109,10 @@ class InvitationRepositoryTest {
     }
 
     @Test
-    fun `names every missing field at once rather than only the first`() {
-        val empty = ApiInvitation()
-
+    fun `names the first missing field when several are absent`() {
         assertEquals(
-            Result.Failure(
-                RedeemInvitationError.Malformed(
-                    listOf(
-                        InvitationField.ID,
-                        InvitationField.GROUP_ID,
-                        InvitationField.CODE,
-                        InvitationField.CREATED_AT,
-                        InvitationField.REDEEMED_BY,
-                        InvitationField.REDEEMED_AT,
-                    ),
-                ),
-            ),
-            empty.toRedeemed(),
+            Result.Failure(RedeemInvitationError.Malformed(InvitationField.ID)),
+            ApiInvitation().toRedeemed(),
         )
     }
 
@@ -134,7 +121,7 @@ class InvitationRepositoryTest {
         val incomplete = redeemed().copy(redeemedAt = null)
 
         assertEquals(
-            Result.Failure(RedeemInvitationError.Malformed(listOf(InvitationField.REDEEMED_AT))),
+            Result.Failure(RedeemInvitationError.Malformed(InvitationField.REDEEMED_AT)),
             repository(answering(ApiResponse(payload = incomplete))).redeem(CODE, JOINER),
         )
     }

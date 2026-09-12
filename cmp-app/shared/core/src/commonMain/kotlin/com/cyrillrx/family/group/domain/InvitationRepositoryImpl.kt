@@ -48,28 +48,18 @@ private fun ApiError.toDomain() = when (id) {
     else -> RedeemInvitationError.Unknown
 }
 
-internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, RedeemInvitationError> =
-    redeemedOrNull()
-        ?.let { Result.Success(it) }
-        ?: Result.Failure(RedeemInvitationError.Malformed(missingFields()))
-
-private fun ApiInvitation.redeemedOrNull(): RedeemedInvitation? = RedeemedInvitation(
-    id = InvitationId(id ?: return null),
-    groupId = GroupId(groupId ?: return null),
-    code = code ?: return null,
-    createdAt = Instant.fromEpochMilliseconds(createdAt ?: return null),
-    redeemedBy = UserId(redeemedBy ?: return null),
-    redeemedAt = Instant.fromEpochMilliseconds(redeemedAt ?: return null),
+internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, RedeemInvitationError> = Result.Success(
+    RedeemedInvitation(
+        id = InvitationId(id ?: return missing(ID)),
+        groupId = GroupId(groupId ?: return missing(GROUP_ID)),
+        code = code ?: return missing(CODE),
+        createdAt = Instant.fromEpochMilliseconds(createdAt ?: return missing(CREATED_AT)),
+        redeemedBy = UserId(redeemedBy ?: return missing(REDEEMED_BY)),
+        redeemedAt = Instant.fromEpochMilliseconds(redeemedAt ?: return missing(REDEEMED_AT)),
+    ),
 )
 
-private fun ApiInvitation.missingFields() = buildList {
-    if (id == null) add(ID)
-    if (groupId == null) add(GROUP_ID)
-    if (code == null) add(CODE)
-    if (createdAt == null) add(CREATED_AT)
-    if (redeemedBy == null) add(REDEEMED_BY)
-    if (redeemedAt == null) add(REDEEMED_AT)
-}
+private fun missing(field: InvitationField) = Result.Failure(RedeemInvitationError.Malformed(field))
 
 private const val REVOKED = "invitation_revoked"
 private const val ALREADY_REDEEMED = "invitation_already_redeemed"
