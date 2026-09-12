@@ -1,4 +1,4 @@
-package com.cyrillrx.family.group.domain
+package com.cyrillrx.family.group.domain.model
 
 import kotlin.time.Instant
 
@@ -33,7 +33,7 @@ data class RedeemedInvitation(
     override val groupId: GroupId,
     override val code: String,
     override val createdAt: Instant,
-    val redeemedBy: MemberId,
+    val redeemedBy: UserId,
     val redeemedAt: Instant,
 ) : Invitation {
     init {

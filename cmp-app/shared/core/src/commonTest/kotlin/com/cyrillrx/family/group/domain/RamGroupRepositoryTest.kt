@@ -1,9 +1,9 @@
-package com.cyrillrx.family.group.data
+package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.family.group.domain.Group
-import com.cyrillrx.family.group.domain.GroupId
-import com.cyrillrx.family.group.domain.Member
-import com.cyrillrx.family.group.domain.MemberId
+import com.cyrillrx.family.group.domain.model.Group
+import com.cyrillrx.family.group.domain.model.GroupId
+import com.cyrillrx.family.group.domain.model.Member
+import com.cyrillrx.family.group.domain.model.UserId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -88,7 +88,7 @@ class RamGroupRepositoryTest {
         repository.addMember(member("alice"))
         repository.addMember(member("bob"))
 
-        repository.removeMember(MemberId("bob"))
+        repository.removeMember(UserId("bob"))
 
         assertEquals(listOf(member("alice")), repository.observeMembers().first())
     }
@@ -98,7 +98,7 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("alice"))
 
-        repository.removeMember(MemberId("nobody"))
+        repository.removeMember(UserId("nobody"))
 
         assertEquals(listOf(member("alice")), repository.observeMembers().first())
     }
@@ -108,7 +108,7 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("alice"))
 
-        repository.removeMember(MemberId("alice"))
+        repository.removeMember(UserId("alice"))
 
         assertEquals(emptyList(), repository.observeMembers().first())
     }
@@ -120,7 +120,7 @@ class RamGroupRepositoryTest {
     )
 
     private fun member(id: String) = Member(
-        id = MemberId(id),
+        id = UserId(id),
         displayName = id,
         joinedAt = FIXED_NOW,
     )

@@ -1,6 +1,6 @@
 # PRD-001 — Group and synchronization
 
-> **Status**: Approved | **Version**: 0.3 | **Last updated**: 2026-09-02
+> **Status**: Approved | **Version**: 0.4 | **Last updated**: 2026-09-09
 
 ## Overview
 
@@ -58,14 +58,16 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 
 **Membership**
 
+A *user* is a person's identity and their display name; a *membership* is that user's place in a group. "Member" below means a user seen through their membership. The two are separate in the model — see [ADR-004](../adr/adr-004-user-identity-and-membership.md).
+
 - [ ] A member can produce an invitation that another person redeems to join the group.
 - [ ] An invitation can be revoked before it is used, and stops working after it expires.
 - [ ] All members hold the same rights over shared data. There are no roles and no owner privileges in V1.
 - [ ] Any member can create an invitation, and redeeming one grants that same right in turn. With no roles there is no owner to reserve it for. This is reopened the day roles arrive.
-- [ ] A member is identified by an identifier generated locally on their device. There is no account, no sign-in screen and no authentication in Phase 1.
-- [ ] A member supplies a display name. It is the only thing about them the other members see.
-- [ ] One device per member. A second device is a second member, with its own identifier and its own place in the group.
-- [ ] A member's identity does not survive uninstalling the app or losing the device. It cannot be recovered, and reinstalling produces a new member who has to be invited again.
+- [ ] A user is identified by an identifier generated locally on their device. There is no account, no sign-in screen and no authentication in Phase 1.
+- [ ] A user supplies a display name. It is the only thing about them the other members see.
+- [ ] One device per user. A second device is a second user, and therefore a second member, with its own identifier and its own place in the group.
+- [ ] A user's identity does not survive uninstalling the app or losing the device. It cannot be recovered, and reinstalling produces a new user who has to be invited again.
 
 **Shared and personal data**
 
@@ -128,7 +130,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 The seven questions this document opened at version 0.1 are settled in the requirements above. What remains are the holes those answers created.
 
 - Should a group with no active device for a long time be cleaned up? It is the only possible recourse against the group of one whose only member uninstalls — nobody can leave it and nobody can be removed from it, so it can never delete itself.
-- When authentication arrives, how does it attach an **existing anonymous member** to an account without losing their local data? This is the bill for going anonymous first, and it is cheaper to answer now than after the first group exists.
+- When authentication arrives, how does it attach an **existing anonymous user** to an account without losing their local data? This is the bill for going anonymous first, and it is cheaper to answer now than after the first group exists. [ADR-004](../adr/adr-004-user-identity-and-membership.md) narrows it: the identifier and the credential both sit on the user, so linking touches one type. The mechanism is still open.
 - ~~What does a resurrected record look like, per feature?~~ Moot since [ADR-003](../adr/adr-003-persistence-and-sync.md): with the last write winning, a deletion is never undone by a concurrent edit, and a device returning after the window adopts the group's state wholesale. Nothing resurrects. Kept here because the question was real under v0.2's rule.
 - Is the seven-day offline window fixed, or does it need to be configurable?
 - Is the recipe library shared across the group, or personal to a member? The shared list above names the week plan, the grocery list, the events and the tasks — recipes are absent, which reads more like an oversight than a decision. It also settles whether any local store beyond the sync cache is needed. Belongs to the meal PRD.

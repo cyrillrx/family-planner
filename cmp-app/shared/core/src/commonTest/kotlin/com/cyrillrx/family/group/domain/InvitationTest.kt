@@ -1,8 +1,18 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.family.group.domain.model.GroupId
+import com.cyrillrx.family.group.domain.model.Invitation
+import com.cyrillrx.family.group.domain.model.InvitationId
+import com.cyrillrx.family.group.domain.model.PendingInvitation
+import com.cyrillrx.family.group.domain.model.RedeemedInvitation
+import com.cyrillrx.family.group.domain.model.RevokedInvitation
+import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.domain.model.hasExpired
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class InvitationTest {
@@ -40,6 +50,16 @@ class InvitationTest {
     }
 
     @Test
+    fun `a pending invitation has not expired before its expiry instant`() {
+        assertFalse(pending().hasExpired(at(999)))
+    }
+
+    @Test
+    fun `a pending invitation treats its expiry instant as already expired`() {
+        assertTrue(pending().hasExpired(at(1_000)))
+    }
+
+    @Test
     fun `every state exposes the same invitation identity`() {
         val invitations: List<Invitation> = listOf(
             pending(),
@@ -66,6 +86,6 @@ class InvitationTest {
         val GROUP = GroupId("group-1")
         val CODE = "a".repeat(Invitation.MIN_CODE_LENGTH)
         val TOO_SHORT = "a".repeat(Invitation.MIN_CODE_LENGTH - 1)
-        val JOINER = MemberId("joiner")
+        val JOINER = UserId("joiner")
     }
 }

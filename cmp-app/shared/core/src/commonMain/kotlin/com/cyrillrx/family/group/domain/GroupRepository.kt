@@ -1,5 +1,8 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.family.group.domain.model.Group
+import com.cyrillrx.family.group.domain.model.Member
+import com.cyrillrx.family.group.domain.model.UserId
 import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
@@ -13,5 +16,5 @@ interface GroupRepository {
 
     suspend fun addMember(member: Member)
 
-    suspend fun removeMember(id: MemberId)
+    suspend fun removeMember(userId: UserId)
 }

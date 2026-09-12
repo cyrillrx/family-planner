@@ -1,21 +1,14 @@
 package com.cyrillrx.family.group.domain
 
-import kotlin.jvm.JvmInline
+import com.cyrillrx.family.group.domain.model.GroupId
+import com.cyrillrx.family.group.domain.model.InvitationId
+import com.cyrillrx.family.group.domain.model.UserId
 import kotlin.uuid.Uuid
-
-@JvmInline
-value class GroupId(val value: String)
-
-@JvmInline
-value class MemberId(val value: String)
-
-@JvmInline
-value class InvitationId(val value: String)
 
 interface IdGenerator {
     fun newGroupId(): GroupId
 
-    fun newMemberId(): MemberId
+    fun newUserId(): UserId
 
     fun newInvitationId(): InvitationId
 }
@@ -23,7 +16,7 @@ interface IdGenerator {
 object UuidIdGenerator : IdGenerator {
     override fun newGroupId(): GroupId = GroupId(Uuid.random().toString())
 
-    override fun newMemberId(): MemberId = MemberId(Uuid.random().toString())
+    override fun newUserId(): UserId = UserId(Uuid.random().toString())
 
     override fun newInvitationId(): InvitationId = InvitationId(Uuid.random().toString())
 }

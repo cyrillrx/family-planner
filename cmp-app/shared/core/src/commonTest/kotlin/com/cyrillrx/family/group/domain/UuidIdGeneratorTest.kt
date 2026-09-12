@@ -8,27 +8,27 @@ class UuidIdGeneratorTest {
     @Test
     fun `never returns the same identifier twice`() {
         val groups = List(COUNT) { UuidIdGenerator.newGroupId() }
-        val members = List(COUNT) { UuidIdGenerator.newMemberId() }
+        val users = List(COUNT) { UuidIdGenerator.newUserId() }
         val invitations = List(COUNT) { UuidIdGenerator.newInvitationId() }
 
         assertEquals(COUNT, groups.toSet().size)
-        assertEquals(COUNT, members.toSet().size)
+        assertEquals(COUNT, users.toSet().size)
         assertEquals(COUNT, invitations.toSet().size)
     }
 
     @Test
     fun `does not draw from a shared sequence`() {
         val group = UuidIdGenerator.newGroupId()
-        val member = UuidIdGenerator.newMemberId()
+        val user = UuidIdGenerator.newUserId()
         val invitation = UuidIdGenerator.newInvitationId()
 
-        assertEquals(3, setOf(group.value, member.value, invitation.value).size)
+        assertEquals(3, setOf(group.value, user.value, invitation.value).size)
     }
 
     @Test
     fun `produces identifiers the length of a uuid`() {
         assertEquals(UUID_LENGTH, UuidIdGenerator.newGroupId().value.length)
-        assertEquals(UUID_LENGTH, UuidIdGenerator.newMemberId().value.length)
+        assertEquals(UUID_LENGTH, UuidIdGenerator.newUserId().value.length)
         assertEquals(UUID_LENGTH, UuidIdGenerator.newInvitationId().value.length)
     }
 
