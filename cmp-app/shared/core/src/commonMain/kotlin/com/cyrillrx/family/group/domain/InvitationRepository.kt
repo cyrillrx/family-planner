@@ -14,4 +14,9 @@ sealed interface RedeemInvitationError : Error {
     data object Revoked : RedeemInvitationError
     data object AlreadyRedeemed : RedeemInvitationError
     data object Expired : RedeemInvitationError
+
+    /** The server answered without something the domain requires. Its own bug, not the member's. */
+    data class Malformed(val missing: InvitationField) : RedeemInvitationError
 }
+
+enum class InvitationField { ID, GROUP_ID, CODE, CREATED_AT, REDEEMED_BY, REDEEMED_AT }

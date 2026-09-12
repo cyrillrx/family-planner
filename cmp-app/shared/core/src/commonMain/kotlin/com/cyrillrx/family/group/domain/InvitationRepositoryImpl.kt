@@ -2,7 +2,6 @@ package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.data.model.ApiError
 import com.cyrillrx.core.data.model.ApiResponse
-import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.data.InvitationApi
 import com.cyrillrx.family.group.data.model.ApiInvitation
@@ -34,20 +33,12 @@ class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepos
         }
 }
 
-/** Which field an answer left out. A malformed answer is a server bug, so it never reaches the UI. */
-internal enum class InvitationField { ID, GROUP_ID, CODE, CREATED_AT, REDEEMED_BY, REDEEMED_AT }
-
-internal data class MalformedInvitationError(val missing: InvitationField) : Error
-
 private fun ApiResponse<ApiInvitation>.toDomain(): Result<RedeemedInvitation, RedeemInvitationError> {
     error?.let { return Result.Failure(it.toDomain()) }
 
     val payload = payload ?: return Result.Failure(RedeemInvitationError.Unknown)
 
-    return when (val redeemed = payload.toRedeemed()) {
-        is Result.Success -> redeemed
-        is Result.Failure -> Result.Failure(RedeemInvitationError.Unknown)
-    }
+    return payload.toRedeemed()
 }
 
 private fun ApiError.toDomain() = when (id) {
@@ -57,7 +48,7 @@ private fun ApiError.toDomain() = when (id) {
     else -> RedeemInvitationError.Unknown
 }
 
-internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, MalformedInvitationError> {
+internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, RedeemInvitationError> {
     val id = id ?: return missing(ID)
     val groupId = groupId ?: return missing(GROUP_ID)
     val code = code ?: return missing(CODE)
@@ -77,7 +68,7 @@ internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, MalformedInv
     )
 }
 
-private fun missing(field: InvitationField) = Result.Failure(MalformedInvitationError(field))
+private fun missing(field: InvitationField) = Result.Failure(RedeemInvitationError.Malformed(field))
 
 private const val REVOKED = "invitation_revoked"
 private const val ALREADY_REDEEMED = "invitation_already_redeemed"

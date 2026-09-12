@@ -101,7 +101,7 @@ class InvitationRepositoryTest {
 
         incomplete.forEach { (missing, payload) ->
             assertEquals(
-                Result.Failure(MalformedInvitationError(missing)),
+                Result.Failure(RedeemInvitationError.Malformed(missing)),
                 payload.toRedeemed(),
                 "an answer without $missing should name it",
             )
@@ -109,11 +109,11 @@ class InvitationRepositoryTest {
     }
 
     @Test
-    fun `keeps a malformed answer out of the domain`() = runTest {
+    fun `carries the malformed answer through to the caller`() = runTest {
         val incomplete = redeemed().copy(redeemedAt = null)
 
         assertEquals(
-            Result.Failure(RedeemInvitationError.Unknown),
+            Result.Failure(RedeemInvitationError.Malformed(InvitationField.REDEEMED_AT)),
             repository(answering(ApiResponse(payload = incomplete))).redeem(CODE, JOINER),
         )
     }
