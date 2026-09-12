@@ -14,6 +14,7 @@ sealed interface RedeemInvitationError : Error {
     data object Revoked : RedeemInvitationError
     data object AlreadyRedeemed : RedeemInvitationError
     data object Expired : RedeemInvitationError
+    data object EmptyResponse : RedeemInvitationError
     data class IncompleteResponse(val missing: InvitationField) : RedeemInvitationError
 }
 

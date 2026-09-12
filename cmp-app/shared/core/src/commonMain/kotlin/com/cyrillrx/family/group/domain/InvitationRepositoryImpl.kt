@@ -36,7 +36,7 @@ class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepos
 private fun ApiResponse<ApiInvitation>.toDomain(): Result<RedeemedInvitation, RedeemInvitationError> {
     error?.let { return Result.Failure(it.toDomain()) }
 
-    val payload = payload ?: return Result.Failure(RedeemInvitationError.Unknown)
+    val payload = payload ?: return Result.Failure(RedeemInvitationError.EmptyResponse)
 
     return payload.toRedeemed()
 }

@@ -83,7 +83,7 @@ class InvitationRepositoryTest {
     @Test
     fun `refuses an answer that carries neither a payload nor an error`() = runTest {
         assertEquals(
-            Result.Failure(RedeemInvitationError.Unknown),
+            Result.Failure(RedeemInvitationError.EmptyResponse),
             repository(answering(ApiResponse())).redeem(CODE, JOINER),
         )
     }
