@@ -109,7 +109,7 @@ class InvitationRepositoryTest {
     }
 
     @Test
-    fun `names every missing field at once, not just the first`() {
+    fun `names every missing field at once rather than only the first`() {
         val empty = ApiInvitation()
 
         assertEquals(
