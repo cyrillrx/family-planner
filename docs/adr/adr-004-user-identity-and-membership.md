@@ -23,7 +23,7 @@ data class Group(val id: GroupId, val name: String, val createdAt: Instant)
 
 | Layer | Holds | Knows |
 | --- | --- | --- |
-| `domain/` | Entities under `model/`, repositories — interface, implementation and in-memory doubles — use cases, `CurrentUserStore` | `data` |
+| `domain/` | Entities under `model/`, repositories — interface, implementation and in-memory doubles — use cases | `data` |
 | `data/` | API interfaces and their request and response models under `model/` | nothing of the domain |
 
 `data` is transport. Its types are dictated by the wire, so `InvitationApi.redeem(code: String, userId: String)` takes a `String` where the domain has a `UserId`, and answers an `ApiResponse<ApiInvitation>` whose every field is nullable. Translating that into the domain is the repository implementation's whole job, and it lives in `domain` because that is where the result belongs.
@@ -93,6 +93,7 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 - **`InvitationApi` moves**, and every future API follows the same rule. The convention is now written, so the next transport does not reopen the question.
 - **The guard on group creation must not block cold.** `createGroup()` refuses when a group already exists, which means reading the current value. A production repository has to emit from cache — `null` included — without waiting for the server, or the first launch offline hangs.
 - **PRD-001 is revised to v0.4** in the same change: three requirements phrase identity as a property of the membership, which is what produced this hole, and a vocabulary entry is added under *Membership*.
+- **Which user this device is belongs to `UserRepository`**, not to a store of its own. That Firebase Auth persists the identifier while Firestore holds the record is infrastructure, and hiding several sources behind one interface is what a repository is for. Registering is what makes a user this device's own, so no caller has to write the identifier back — and none can name one that was never registered.
 - **Phase 2 gains a clearer target.** ADR-003 keeps our identifier and the Firebase UID as two values so that leaving Firebase stays possible; both now sit on `User`, next to each other, instead of on a record that also encodes a group. Linking an anonymous identity to an account touches one type.
 
 ## Alternatives considered
