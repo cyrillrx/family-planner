@@ -39,7 +39,7 @@ class RamGroupRepositoryTest {
 
     @Test
     fun `has no members before any is added`() = runTest {
-        assertEquals(emptyList(), RamGroupRepository().observeMembers().first())
+        assertEquals(emptyList(), RamGroupRepository().observeMembers(GROUP).first())
     }
 
     @Test
@@ -49,7 +49,7 @@ class RamGroupRepositoryTest {
 
         repository.addMember(member("alice"))
 
-        assertEquals(listOf(member("alice")), repository.observeMembers().first())
+        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
     }
 
     @Test
@@ -59,7 +59,10 @@ class RamGroupRepositoryTest {
 
         repository.addMember(member("bob"))
 
-        assertEquals(listOf(member("alice"), member("bob")), repository.observeMembers().first())
+        assertEquals(
+            listOf(member("alice"), member("bob")),
+            repository.observeMembers(GROUP).first(),
+        )
     }
 
     @Test
@@ -69,7 +72,7 @@ class RamGroupRepositoryTest {
         repository.addMember(member("bob"))
         repository.addMember(member("bob"))
 
-        assertEquals(1, repository.observeMembers().first().size)
+        assertEquals(1, repository.observeMembers(GROUP).first().size)
     }
 
     @Test
@@ -79,7 +82,7 @@ class RamGroupRepositoryTest {
 
         repository.addMember(member("bob").copy(joinedAt = LATER))
 
-        assertEquals(FIXED_NOW, repository.observeMembers().first().single().joinedAt)
+        assertEquals(FIXED_NOW, repository.observeMembers(GROUP).first().single().joinedAt)
     }
 
     @Test
@@ -87,9 +90,22 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("alice"))
 
-        repository.addMember(member("alice").copy(groupId = GroupId("group-2")))
+        repository.addMember(member("alice").copy(groupId = OTHER_GROUP))
 
-        assertEquals(2, repository.observeMembers().first().size)
+        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
+        assertEquals(
+            listOf(member("alice").copy(groupId = OTHER_GROUP)),
+            repository.observeMembers(OTHER_GROUP).first(),
+        )
+    }
+
+    @Test
+    fun `never emits the members of another group`() = runTest {
+        val repository = RamGroupRepository()
+
+        repository.addMember(member("bob").copy(groupId = OTHER_GROUP))
+
+        assertEquals(emptyList(), repository.observeMembers(GROUP).first())
     }
 
     @Test
@@ -98,9 +114,9 @@ class RamGroupRepositoryTest {
         repository.addMember(member("alice"))
         repository.addMember(member("bob"))
 
-        repository.removeMember(UserId("bob"))
+        repository.removeMember(GROUP, UserId("bob"))
 
-        assertEquals(listOf(member("alice")), repository.observeMembers().first())
+        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
     }
 
     @Test
@@ -108,9 +124,9 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("alice"))
 
-        repository.removeMember(UserId("nobody"))
+        repository.removeMember(GROUP, UserId("nobody"))
 
-        assertEquals(listOf(member("alice")), repository.observeMembers().first())
+        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
     }
 
     @Test
@@ -118,24 +134,41 @@ class RamGroupRepositoryTest {
         val repository = RamGroupRepository()
         repository.addMember(member("alice"))
 
-        repository.removeMember(UserId("alice"))
+        repository.removeMember(GROUP, UserId("alice"))
 
-        assertEquals(emptyList(), repository.observeMembers().first())
+        assertEquals(emptyList(), repository.observeMembers(GROUP).first())
+    }
+
+    @Test
+    fun `removing a member from one group leaves their other memberships alone`() = runTest {
+        val repository = RamGroupRepository()
+        repository.addMember(member("alice"))
+        repository.addMember(member("alice").copy(groupId = OTHER_GROUP))
+
+        repository.removeMember(GROUP, UserId("alice"))
+
+        assertEquals(emptyList(), repository.observeMembers(GROUP).first())
+        assertEquals(
+            listOf(member("alice").copy(groupId = OTHER_GROUP)),
+            repository.observeMembers(OTHER_GROUP).first(),
+        )
     }
 
     private fun group() = Group(
-        id = GroupId("group-1"),
+        id = GROUP,
         name = "Home",
         createdAt = FIXED_NOW,
     )
 
     private fun member(userId: String) = Member(
         userId = UserId(userId),
-        groupId = GroupId("group-1"),
+        groupId = GROUP,
         joinedAt = FIXED_NOW,
     )
 
     private companion object {
+        val GROUP = GroupId("group-1")
+        val OTHER_GROUP = GroupId("group-2")
         val FIXED_NOW: Instant = Instant.fromEpochMilliseconds(1_700_000_000_000)
         val LATER: Instant = Instant.fromEpochMilliseconds(1_800_000_000_000)
     }
