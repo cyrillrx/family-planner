@@ -47,7 +47,7 @@ private fun ApiResponse<ApiUser>.toDomain(): Result<User, RegisterUserError> {
 internal fun ApiUser.toUser(): Result<User, RegisterUserError> = Result.Success(
     User(
         id = UserId(id ?: return missing(ID)),
-        displayName = displayName ?: return missing(DISPLAY_NAME),
+        displayName = displayName?.takeIf { it.isNotBlank() } ?: return missing(DISPLAY_NAME),
         authenticatedId = authenticatedId,
     ),
 )

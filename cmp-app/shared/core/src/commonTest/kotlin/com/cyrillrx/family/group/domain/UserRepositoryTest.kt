@@ -84,6 +84,19 @@ class UserRepositoryTest {
     }
 
     @Test
+    fun `treats a blank name as an answer that left it out`() {
+        val blank = listOf("", "   ")
+
+        blank.forEach { name ->
+            assertEquals(
+                Result.Failure(RegisterUserError.IncompleteResponse(UserField.DISPLAY_NAME)),
+                cyril().copy(displayName = name).toUser(),
+                "a name made of '$name' names nobody",
+            )
+        }
+    }
+
+    @Test
     fun `carries the incomplete answer through to the caller`() = runTest {
         val incomplete = ApiResponse(payload = cyril().copy(displayName = null))
         val repository = UserRepositoryImpl(RecordingUserApi(incomplete))
