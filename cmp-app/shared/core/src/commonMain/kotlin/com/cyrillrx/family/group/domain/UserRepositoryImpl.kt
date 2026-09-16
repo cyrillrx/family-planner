@@ -9,14 +9,27 @@ import com.cyrillrx.family.group.domain.UserField.DISPLAY_NAME
 import com.cyrillrx.family.group.domain.UserField.ID
 import com.cyrillrx.family.group.domain.model.User
 import com.cyrillrx.family.group.domain.model.UserId
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.coroutines.cancellation.CancellationException
 
-class UserRepositoryImpl(
+class UserRepositoryImpl internal constructor(
     private val api: UserApi,
-    private var current: UserId? = null,
+    initial: UserId?,
 ) : UserRepository {
 
-    override suspend fun registeredUserId(): UserId? = current
+    constructor(api: UserApi) : this(api, null)
+
+    /**
+     * A thread-safe box rather than a stream: nobody but [register] writes it, and it resumes
+     * on whatever dispatcher the api used, so the write needs to be visible to the next reader.
+     */
+    private val current = MutableStateFlow(initial)
+
+    /**
+     * Forgotten when the process dies. Persisting the identifier is infrastructure and belongs
+     * to the Firebase implementation, per ADR-004.
+     */
+    override suspend fun registeredUserId(): UserId? = current.value
 
     override suspend fun register(user: User): Result<User, RegisterUserError> {
         val registered = try {
@@ -27,7 +40,7 @@ class UserRepositoryImpl(
             Result.Failure(RegisterUserError.Unknown)
         }
 
-        if (registered is Result.Success) current = registered.value.id
+        if (registered is Result.Success) current.value = registered.value.id
 
         return registered
     }
@@ -37,7 +50,8 @@ internal fun User.toRegisterRequest() =
     ApiRegisterUserRequest(id = id.value, displayName = displayName)
 
 private fun ApiResponse<ApiUser>.toDomain(): Result<User, RegisterUserError> {
-    error?.let { return Result.Failure(RegisterUserError.Unknown) }
+    // The id is deliberately ignored: `server/` names the refusals, and the mapping lands with it.
+    if (error != null) return Result.Failure(RegisterUserError.Unknown)
 
     val payload = payload ?: return Result.Failure(RegisterUserError.EmptyResponse)
 
