@@ -23,7 +23,7 @@ data class Group(val id: GroupId, val name: String, val createdAt: Instant)
 
 | Layer | Holds | Knows |
 | --- | --- | --- |
-| `domain/` | Entities under `model/`, repositories — interface, implementation and in-memory doubles — use cases, `CurrentUserStore` | `data` |
+| `domain/` | Entities under `model/`, repositories — interface, implementation and in-memory doubles — use cases | `data` |
 | `data/` | API interfaces and their request and response models under `model/` | nothing of the domain |
 
 `data` is transport. Its types are dictated by the wire, so `InvitationApi.redeem(code: String, userId: String)` takes a `String` where the domain has a `UserId`, and answers an `ApiResponse<ApiInvitation>` whose every field is nullable. Translating that into the domain is the repository implementation's whole job, and it lives in `domain` because that is where the result belongs.
@@ -93,6 +93,7 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 - **`InvitationApi` moves**, and every future API follows the same rule. The convention is now written, so the next transport does not reopen the question.
 - **The guard on group creation must not block cold.** `createGroup()` refuses when a group already exists, which means reading the current value. A production repository has to emit from cache — `null` included — without waiting for the server, or the first launch offline hangs.
 - **PRD-001 is revised to v0.4** in the same change: three requirements phrase identity as a property of the membership, which is what produced this hole, and a vocabulary entry is added under *Membership*.
+- **Which user this device is belongs to `UserRepository`**, not to a store of its own. That Firebase Auth persists the identifier while Firestore holds the record is infrastructure, and hiding several sources behind one interface is what a repository is for. Registering is what makes a user this device's own, so no caller has to write the identifier back — and none can name one that was never registered.
 - **Phase 2 gains a clearer target.** ADR-003 keeps our identifier and the Firebase UID as two values so that leaving Firebase stays possible; both now sit on `User`, next to each other, instead of on a record that also encodes a group. Linking an anonymous identity to an account touches one type.
 
 ## Alternatives considered
@@ -111,6 +112,6 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 
 ## Open Questions
 
-- **What authorizes a founder to write their own membership?** ADR-003 denies every client write to the member list, which the founder's own first membership contradicts. The answer is persistence, not domain: a rule anchored on a value the client cannot forge, or a signed write through `server/`. It is decided with the real rules in hand; nothing is deployed, so deferring it costs no migration.
+- **What authorizes a founder to write their own membership, and what shape does the write take?** ADR-003 denies every client write to the member list, which the founder's own first membership contradicts. Half the answer is persistence: a rule anchored on a value the client cannot forge, or a signed write through `server/`. The other half is the domain signature, which this entry first set aside and should not have. `GroupRepository.addMember(member: Member)` asks the client for all three fields of a membership, and it owns none of them on the path that matters — the `groupId` comes from the invitation the service validated, and `joinedAt` is the service's own clock, which PRD-001 makes authoritative by resolving conflicts on server time. Narrowing the parameter to a `UserId` does not repair it: whoever reads a clock on the client is still reading the wrong one. The question is who calls, not what they pass, and today nobody does — `setGroup`, `addMember` and `removeMember` have no caller. The likely shape is that membership writes leave the domain interface altogether: the production repository never writes the member list, the sync listener fills the local cache, `RamGroupRepository` keeps a way to be seeded as a double, and `setGroup` stays because creating a group is local. It is decided with the real rules and the first onboarding use case in hand; nothing is deployed, so deferring it costs no migration.
 - **Does a user document exist before any group?** Registration creates one, and a person who registers then abandons onboarding leaves it behind. Harmless while it is one document per device, and worth revisiting if it ever needs cleaning up.
 - **Where does the display name get edited?** `UserRepository.register` is idempotent and updates the name, which makes it the accidental answer. A deliberate one belongs to a settings PRD.
