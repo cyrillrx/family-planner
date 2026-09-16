@@ -15,7 +15,7 @@ class RamGroupRepositoryTest {
 
     @Test
     fun `has no group before one is set`() = runTest {
-        assertNull(RamGroupRepository().observeGroup().first())
+        assertNull(RamGroupRepository().group())
     }
 
     @Test
@@ -24,7 +24,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group())
 
-        assertEquals(group(), repository.observeGroup().first())
+        assertEquals(group(), repository.group())
     }
 
     @Test
@@ -34,7 +34,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group().copy(name = "Other"))
 
-        assertEquals("Other", repository.observeGroup().first()?.name)
+        assertEquals("Other", repository.group()?.name)
     }
 
     @Test
