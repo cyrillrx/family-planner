@@ -8,7 +8,7 @@ class GroupFactory(
     private val clock: Clock = Clock.System,
 ) {
 
-    fun newGroup() = Group(id = idGenerator.newGroupId(), name = DEFAULT_NAME, createdAt = clock.now())
+    fun create() = Group(id = idGenerator.newGroupId(), name = DEFAULT_NAME, createdAt = clock.now())
 
     private companion object {
         const val DEFAULT_NAME = "Family"

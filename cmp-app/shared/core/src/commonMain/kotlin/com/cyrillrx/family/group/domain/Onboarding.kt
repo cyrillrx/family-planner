@@ -33,7 +33,7 @@ class Onboarding(
             return Result.Failure(CreateGroupError.GroupAlreadyExists)
         }
 
-        val group = groupFactory.newGroup()
+        val group = groupFactory.create()
 
         groupRepository.setGroup(group)
         // The founder joins the moment the group exists, so both dates come from one reading.
