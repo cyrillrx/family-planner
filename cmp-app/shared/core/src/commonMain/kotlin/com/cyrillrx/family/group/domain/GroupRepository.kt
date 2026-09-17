@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
 
-    /** Emits null until a group exists. */
-    fun observeGroup(): Flow<Group?>
+    /** Null until a group exists. */
+    suspend fun group(): Group?
 
     fun observeMembers(groupId: GroupId): Flow<List<Member>>
 
