@@ -184,6 +184,30 @@ class OnboardingTest {
     }
 
     @Test
+    fun `trims the invitation code`() = runTest {
+        val invitations = RecordingInvitationRepository()
+        val onboarding = onboarding(invitationRepository = invitations)
+        onboarding.register("Cyril")
+
+        onboarding.joinGroup("  $CODE\n")
+
+        assertEquals(CODE, invitations.lastCode)
+    }
+
+    @Test
+    fun `refuses a code only long enough because of its padding`() = runTest {
+        val invitations = RecordingInvitationRepository()
+        val onboarding = onboarding(invitationRepository = invitations)
+        onboarding.register("Cyril")
+
+        assertEquals(
+            Result.Failure(JoinGroupError.InvalidCode),
+            onboarding.joinGroup("a".padEnd(Invitation.MIN_CODE_LENGTH)),
+        )
+        assertEquals(0, invitations.calls)
+    }
+
+    @Test
     fun `refuses to join when this device already has a group`() = runTest {
         val invitations = RecordingInvitationRepository()
         val onboarding = onboarding(invitationRepository = invitations)
@@ -248,8 +272,14 @@ class OnboardingTest {
         var calls = 0
             private set
 
+        var lastCode: String? = null
+            private set
+
         override suspend fun redeem(code: String, user: UserId) =
-            SilentInvitationRepository.redeem(code, user).also { calls++ }
+            SilentInvitationRepository.redeem(code, user).also {
+                calls++
+                lastCode = code
+            }
     }
 
     private class RefusingInvitationRepository(

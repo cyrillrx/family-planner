@@ -48,9 +48,12 @@ class Onboarding(
         val userId = userRepository.registeredUserId()
             ?: return Result.Failure(JoinGroupError.NotRegistered)
 
+        // Trimmed like the display name: a code pasted from a message carries what surrounds it.
+        val trimmed = code.trim()
+
         // Refused here rather than at the service: a string this short cannot be a code, and the
         // fewer paths it travels the fewer places it can end up in a log.
-        if (code.length < Invitation.MIN_CODE_LENGTH) {
+        if (trimmed.length < Invitation.MIN_CODE_LENGTH) {
             return Result.Failure(JoinGroupError.InvalidCode)
         }
 
@@ -60,7 +63,7 @@ class Onboarding(
 
         // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
         // redeemed invitation stays here — it carries the code.
-        return when (val redeemed = invitationRepository.redeem(code, userId)) {
+        return when (val redeemed = invitationRepository.redeem(trimmed, userId)) {
             is Result.Success -> Result.Success(redeemed.value.groupId)
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
         }
