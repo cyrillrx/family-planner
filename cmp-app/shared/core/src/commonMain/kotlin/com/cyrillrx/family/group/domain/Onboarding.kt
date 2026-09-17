@@ -35,6 +35,7 @@ class Onboarding(
 
         val group = groupFactory.create()
 
+        // TODO(#16): one guarded write — a failure between the two strands the founder outside the group.
         groupRepository.setGroup(group)
         // The founder joins the moment the group exists, so both dates come from one reading.
         groupRepository.addMember(
