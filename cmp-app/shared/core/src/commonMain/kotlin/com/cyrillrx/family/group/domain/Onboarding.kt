@@ -12,8 +12,8 @@ class Onboarding(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val invitationRepository: InvitationRepository,
-    private val groupFactory: GroupFactory = GroupFactory(),
     private val idGenerator: IdGenerator = UuidIdGenerator,
+    private val groupFactory: GroupFactory = GroupFactory(idGenerator),
 ) {
 
     suspend fun register(displayName: String): Result<User, RegisterUserError> {

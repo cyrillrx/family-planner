@@ -246,13 +246,18 @@ class OnboardingTest {
         userRepository: UserRepository = UserRepositoryImpl(EchoingUserApi()),
         groupRepository: GroupRepository = RamGroupRepository(),
         invitationRepository: InvitationRepository = SilentInvitationRepository,
-    ) = Onboarding(
-        userRepository,
-        groupRepository,
-        invitationRepository,
-        groupFactory = GroupFactory(CountingIdGenerator(), FixedClock),
-        idGenerator = CountingIdGenerator(),
-    )
+    ): Onboarding {
+        // One generator for both, as the production default does: the factory derives its own from it.
+        val ids = CountingIdGenerator()
+
+        return Onboarding(
+            userRepository,
+            groupRepository,
+            invitationRepository,
+            idGenerator = ids,
+            groupFactory = GroupFactory(ids, FixedClock),
+        )
+    }
 
     /** Redeems without writing anything, so a caller that relies on the write shows up. */
     private object SilentInvitationRepository : InvitationRepository {
