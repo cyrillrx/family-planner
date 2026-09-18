@@ -41,6 +41,8 @@ class Onboarding(
         // TODO(#16): one guarded write — a failure between the two strands the founder outside the group.
         groupRepository.setGroup(group)
         // The founder joins the moment the group exists, so both dates come from one reading.
+        // TODO(ADR-004, open question): createdAt and joinedAt read the client clock, and PRD-001
+        //  resolves conflicts on server time. Settled with whoever ends up writing the membership.
         groupRepository.addMember(
             Member(userId = userId, groupId = group.id, joinedAt = group.createdAt),
         )
