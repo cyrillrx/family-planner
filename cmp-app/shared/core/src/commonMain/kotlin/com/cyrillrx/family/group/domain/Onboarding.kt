@@ -16,13 +16,16 @@ class Onboarding(
     private val groupFactory: GroupFactory = GroupFactory(idGenerator),
 ) {
 
-    suspend fun register(displayName: String): Result<User, RegisterUserError> {
+    suspend fun register(displayName: String): Result<User, RegisterError> {
         val name = displayName.trim()
-        if (name.isEmpty()) return Result.Failure(RegisterUserError.BlankDisplayName)
+        if (name.isEmpty()) return Result.Failure(RegisterError.BlankDisplayName)
 
         val id = userRepository.registeredUserId() ?: idGenerator.newUserId()
 
-        return userRepository.register(User(id = id, displayName = name))
+        return when (val registered = userRepository.register(User(id = id, displayName = name))) {
+            is Result.Success -> registered
+            is Result.Failure -> Result.Failure(RegisterError.Registration(registered.error))
+        }
     }
 
     suspend fun createGroup(): Result<Group, CreateGroupError> {
@@ -69,6 +72,11 @@ class Onboarding(
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
         }
     }
+}
+
+sealed interface RegisterError : Error {
+    data object BlankDisplayName : RegisterError
+    data class Registration(val cause: RegisterUserError) : RegisterError
 }
 
 sealed interface CreateGroupError : Error {

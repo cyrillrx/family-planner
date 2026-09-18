@@ -54,7 +54,7 @@ class OnboardingTest {
     @Test
     fun `rejects a blank display name`() = runTest {
         assertEquals(
-            Result.Failure(RegisterUserError.BlankDisplayName),
+            Result.Failure(RegisterError.BlankDisplayName),
             onboarding().register(""),
         )
     }
@@ -62,7 +62,7 @@ class OnboardingTest {
     @Test
     fun `rejects a display name of only whitespace`() = runTest {
         assertEquals(
-            Result.Failure(RegisterUserError.BlankDisplayName),
+            Result.Failure(RegisterError.BlankDisplayName),
             onboarding().register("   "),
         )
     }
@@ -89,7 +89,7 @@ class OnboardingTest {
     @Test
     fun `reports a registration failure`() = runTest {
         assertEquals(
-            Result.Failure(RegisterUserError.Unknown),
+            Result.Failure(RegisterError.Registration(RegisterUserError.Unknown)),
             onboarding(FailingUserRepository).register("Cyril"),
         )
     }

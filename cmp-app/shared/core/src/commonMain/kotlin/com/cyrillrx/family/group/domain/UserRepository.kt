@@ -13,7 +13,6 @@ interface UserRepository {
 }
 
 sealed interface RegisterUserError : Error {
-    data object BlankDisplayName : RegisterUserError
     data object Unknown : RegisterUserError
     data object EmptyResponse : RegisterUserError
     data class IncompleteResponse(val missing: UserField) : RegisterUserError
