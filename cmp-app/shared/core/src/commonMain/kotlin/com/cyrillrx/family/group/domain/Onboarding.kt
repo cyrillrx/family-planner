@@ -60,7 +60,7 @@ class Onboarding(
         // Refused here rather than at the service: a string this short cannot be a code, and the
         // fewer paths it travels the fewer places it can end up in a log.
         if (trimmed.length < Invitation.MIN_CODE_LENGTH) {
-            return Result.Failure(JoinGroupError.InvalidCode)
+            return Result.Failure(JoinGroupError.CodeTooShort)
         }
 
         if (groupRepository.group() != null) {
@@ -88,7 +88,7 @@ sealed interface CreateGroupError : Error {
 
 sealed interface JoinGroupError : Error {
     data object NotRegistered : JoinGroupError
-    data object InvalidCode : JoinGroupError
+    data object CodeTooShort : JoinGroupError
     data object AlreadyInAGroup : JoinGroupError
     data class Redemption(val cause: RedeemInvitationError) : JoinGroupError
 }

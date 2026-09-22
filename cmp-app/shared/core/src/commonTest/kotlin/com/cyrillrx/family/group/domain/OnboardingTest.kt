@@ -179,7 +179,7 @@ class OnboardingTest {
         val onboarding = onboarding(invitationRepository = invitations)
         onboarding.register("Cyril")
 
-        assertEquals(Result.Failure(JoinGroupError.InvalidCode), onboarding.joinGroup("too-short"))
+        assertEquals(Result.Failure(JoinGroupError.CodeTooShort), onboarding.joinGroup("too-short"))
         assertEquals(0, invitations.calls)
     }
 
@@ -201,7 +201,7 @@ class OnboardingTest {
         onboarding.register("Cyril")
 
         assertEquals(
-            Result.Failure(JoinGroupError.InvalidCode),
+            Result.Failure(JoinGroupError.CodeTooShort),
             onboarding.joinGroup("a".padEnd(Invitation.MIN_CODE_LENGTH)),
         )
         assertEquals(0, invitations.calls)
