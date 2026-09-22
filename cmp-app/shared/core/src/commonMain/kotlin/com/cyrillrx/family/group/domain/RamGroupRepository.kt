@@ -6,7 +6,6 @@ import com.cyrillrx.family.group.domain.model.Member
 import com.cyrillrx.family.group.domain.model.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
@@ -15,7 +14,7 @@ class RamGroupRepository : GroupRepository {
     private val group = MutableStateFlow<Group?>(null)
     private val members = MutableStateFlow<List<Member>>(emptyList())
 
-    override fun observeGroup(): Flow<Group?> = group.asStateFlow()
+    override suspend fun group(): Group? = group.value
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
         members.map { current -> current.filter { it.groupId == groupId } }
