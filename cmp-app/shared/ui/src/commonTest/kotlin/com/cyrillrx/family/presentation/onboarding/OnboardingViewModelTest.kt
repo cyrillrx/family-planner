@@ -40,7 +40,6 @@ class OnboardingViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-
     @Test
     fun `opens by asking for a name`() = runTest {
         assertEquals(OnboardingState.Name(), viewModel().state.value)
@@ -144,8 +143,6 @@ class OnboardingViewModelTest {
         )
     }
 
-
-
     @Test
     fun `creates a group and lands in it`() = runTest {
         val viewModel = atChoice()
@@ -221,8 +218,6 @@ class OnboardingViewModelTest {
 
         assertEquals(OnboardingState.Done(groupName = "Family"), viewModel.state.value)
     }
-
-
 
     @Test
     fun `keeps the code that is typed`() = runTest {
@@ -391,8 +386,6 @@ class OnboardingViewModelTest {
         )
     }
 
-
-
     @Test
     fun `ignores the name actions once the name is behind us`() = runTest {
         val viewModel = atChoice()
@@ -426,7 +419,6 @@ class OnboardingViewModelTest {
 
         assertEquals(OnboardingState.Name(), viewModel.state.value)
     }
-
 
     private fun TestScope.assertRefuses(
         code: String,
