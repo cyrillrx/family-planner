@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun OnboardingStep(
+fun OnboardingStepLayout(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,

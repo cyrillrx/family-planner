@@ -113,6 +113,9 @@ kover {
                     "*.ComposableSingletons*",
                     "*Screen",
                     "*ScreenKt",
+                    // Nested: the lambdas of a screen compile into ScreenKt$Screen$1$1 and the
+                    // exact-match pattern above does not reach them.
+                    "*ScreenKt$*",
                     "*.app.*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",

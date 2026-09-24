@@ -1,4 +1,4 @@
-package com.cyrillrx.family.presentation.onboarding
+package com.cyrillrx.family.presentation.onboarding.joingroup
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -6,10 +6,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.cyrillrx.family.presentation.component.OnboardingErrorText
-import com.cyrillrx.family.presentation.component.OnboardingStep
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cyrillrx.family.group.domain.JoinGroupError
+import com.cyrillrx.family.navigation.OnboardingRouter
+import com.cyrillrx.family.presentation.component.ErrorText
+import com.cyrillrx.family.presentation.component.OnboardingStepLayout
+import com.cyrillrx.family.presentation.component.message
 import familyplanner.shared.ui.generated.resources.Res
 import familyplanner.shared.ui.generated.resources.onboarding_join_back
 import familyplanner.shared.ui.generated.resources.onboarding_join_label
@@ -20,13 +25,30 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun JoinGroupScreen(
-    state: OnboardingState.Join,
+    viewModel: JoinGroupViewModel,
+    router: OnboardingRouter,
+    modifier: Modifier = Modifier,
+) {
+    LaunchedEffect(viewModel) { viewModel.joined.collect { router.openHome() } }
+
+    JoinGroupScreen(
+        state = viewModel.state.collectAsStateWithLifecycle().value,
+        onCodeChanged = viewModel::changeInvitationCode,
+        onJoinClicked = viewModel::joinGroup,
+        onBackClicked = router::navigateUp,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun JoinGroupScreen(
+    state: JoinGroupState,
     onCodeChanged: (String) -> Unit,
     onJoinClicked: () -> Unit,
     onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OnboardingStep(
+    OnboardingStepLayout(
         title = stringResource(Res.string.onboarding_join_title),
         subtitle = stringResource(Res.string.onboarding_join_subtitle),
         modifier = modifier,
@@ -41,7 +63,7 @@ fun JoinGroupScreen(
             isError = state.error != null,
         )
 
-        state.error?.let { OnboardingErrorText(it) }
+        state.error?.let { ErrorText(it.message()) }
 
         Button(
             onClick = onJoinClicked,
@@ -65,7 +87,7 @@ fun JoinGroupScreen(
 @Composable
 private fun JoinGroupScreenPreview() {
     JoinGroupScreen(
-        state = OnboardingState.Join(code = "accepted-invitation-01"),
+        state = JoinGroupState(code = "accepted-invitation-01"),
         onCodeChanged = {},
         onJoinClicked = {},
         onBackClicked = {},
@@ -76,7 +98,7 @@ private fun JoinGroupScreenPreview() {
 @Composable
 private fun JoinGroupScreenRefusedPreview() {
     JoinGroupScreen(
-        state = OnboardingState.Join(code = "short", error = OnboardingError.CodeTooShort),
+        state = JoinGroupState(code = "short", error = JoinGroupError.CodeTooShort),
         onCodeChanged = {},
         onJoinClicked = {},
         onBackClicked = {},
