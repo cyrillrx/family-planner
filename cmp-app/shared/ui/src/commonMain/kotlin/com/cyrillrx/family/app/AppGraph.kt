@@ -8,9 +8,9 @@ import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.UserRepository
 
-class AppDependencies(
+class AppGraph(
     userRepository: UserRepository = RamUserRepository(),
-    groupRepository: GroupRepository = RamGroupRepository(),
+    val groupRepository: GroupRepository = RamGroupRepository(),
     invitationRepository: InvitationRepository = SampleInvitationRepository(),
 ) {
     val onboarding = Onboarding(userRepository, groupRepository, invitationRepository)

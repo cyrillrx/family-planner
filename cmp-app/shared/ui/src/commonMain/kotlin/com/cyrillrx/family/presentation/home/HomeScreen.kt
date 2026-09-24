@@ -13,14 +13,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import familyplanner.shared.ui.generated.resources.Res
 import familyplanner.shared.ui.generated.resources.home_in_group
 import familyplanner.shared.ui.generated.resources.home_waiting_for_group
 import org.jetbrains.compose.resources.stringResource
 
-/** Where onboarding ends, until there is an application behind it. */
 @Composable
-fun HomeScreen(groupName: String?, modifier: Modifier = Modifier) {
+fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.silentRefresh() }
+
+    HomeScreen(state = viewModel.state.collectAsStateWithLifecycle().value, modifier = modifier)
+}
+
+@Composable
+fun HomeScreen(state: HomeState, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -29,22 +38,35 @@ fun HomeScreen(groupName: String?, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            text = if (groupName == null) {
-                stringResource(Res.string.home_waiting_for_group)
-            } else {
-                stringResource(Res.string.home_in_group, groupName)
-            },
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-        )
+        when (val body = state.body) {
+            HomeState.Body.Loading -> Unit
+
+            HomeState.Body.WaitingForTheGroup -> HomeMessage(
+                stringResource(Res.string.home_waiting_for_group),
+            )
+
+            is HomeState.Body.InGroup -> HomeMessage(
+                stringResource(Res.string.home_in_group, body.groupName),
+            )
+        }
     }
+}
+
+@Composable
+private fun HomeMessage(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.headlineSmall,
+        textAlign = TextAlign.Center,
+    )
 }
 
 @Preview
 @Composable
-private fun HomeScreenFounderPreview() = HomeScreen(groupName = "Family")
+private fun HomeScreenFounderPreview() =
+    HomeScreen(state = HomeState(HomeState.Body.InGroup("Family")))
 
 @Preview
 @Composable
-private fun HomeScreenJoinerPreview() = HomeScreen(groupName = null)
+private fun HomeScreenJoinerPreview() =
+    HomeScreen(state = HomeState(HomeState.Body.WaitingForTheGroup))

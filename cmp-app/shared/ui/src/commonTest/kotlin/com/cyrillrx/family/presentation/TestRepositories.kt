@@ -1,6 +1,7 @@
 package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.InvitationRepository
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
@@ -45,6 +46,15 @@ internal class CountingUserRepository : UserRepository {
     override suspend fun registeredUserId() = delegate.registeredUserId()
 
     override suspend fun register(user: User) = delegate.register(user).also { registrations++ }
+}
+
+internal class CountingGroupRepository(
+    private val delegate: RamGroupRepository = RamGroupRepository(),
+) : GroupRepository by delegate {
+    var reads = 0
+        private set
+
+    override suspend fun group() = delegate.group().also { reads++ }
 }
 
 internal class CountingInvitationRepository : InvitationRepository {

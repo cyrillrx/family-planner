@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyrillrx.family.presentation.home.HomeScreen
+import com.cyrillrx.family.presentation.home.HomeViewModel
 import com.cyrillrx.family.presentation.onboarding.DisplayNameScreen
 import com.cyrillrx.family.presentation.onboarding.GroupChoiceScreen
 import com.cyrillrx.family.presentation.onboarding.JoinGroupScreen
@@ -19,10 +20,10 @@ import com.cyrillrx.family.presentation.onboarding.OnboardingViewModel
 
 @Composable
 @Preview
-fun App(dependencies: AppDependencies = remember { AppDependencies() }) {
+fun App(graph: AppGraph = remember { AppGraph() }) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val viewModel = viewModel { OnboardingViewModel(dependencies.onboarding) }
+            val viewModel = viewModel { OnboardingViewModel(graph.onboarding) }
             val state by viewModel.state.collectAsStateWithLifecycle()
 
             when (val current = state) {
@@ -45,7 +46,7 @@ fun App(dependencies: AppDependencies = remember { AppDependencies() }) {
                     onBackClicked = viewModel::backToChoice,
                 )
 
-                is OnboardingState.Done -> HomeScreen(groupName = current.groupName)
+                is OnboardingState.Done -> HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
             }
         }
     }
