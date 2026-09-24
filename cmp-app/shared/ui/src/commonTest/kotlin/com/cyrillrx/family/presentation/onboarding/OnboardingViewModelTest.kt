@@ -40,7 +40,6 @@ class OnboardingViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-    // region The name step
 
     @Test
     fun `opens by asking for a name`() = runTest {
@@ -145,9 +144,7 @@ class OnboardingViewModelTest {
         )
     }
 
-    // endregion
 
-    // region The choice step
 
     @Test
     fun `creates a group and lands in it`() = runTest {
@@ -225,9 +222,7 @@ class OnboardingViewModelTest {
         assertEquals(OnboardingState.Done(groupName = "Family"), viewModel.state.value)
     }
 
-    // endregion
 
-    // region The join step
 
     @Test
     fun `keeps the code that is typed`() = runTest {
@@ -396,9 +391,7 @@ class OnboardingViewModelTest {
         )
     }
 
-    // endregion
 
-    // region Actions that do not belong to the step on screen
 
     @Test
     fun `ignores the name actions once the name is behind us`() = runTest {
@@ -434,7 +427,6 @@ class OnboardingViewModelTest {
         assertEquals(OnboardingState.Name(), viewModel.state.value)
     }
 
-    // endregion
 
     private fun TestScope.assertRefuses(
         code: String,
@@ -484,7 +476,6 @@ class OnboardingViewModelTest {
         setGroup(Group(id = GroupId("group-1"), name = "Home", createdAt = NOW))
     }
 
-    /** Registers, then forgets — the founder guard then reads what a lost write would leave. */
     private class AmnesicUserRepository : UserRepository {
         override suspend fun registeredUserId(): UserId? = null
 

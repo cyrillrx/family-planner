@@ -87,7 +87,6 @@ class OnboardingViewModel(private val onboarding: Onboarding) : ViewModel() {
 
         viewModelScope.launch {
             state.value = when (val joined = onboarding.joinGroup(current.code)) {
-                // Nothing to name: the group is the service's write and arrives by synchronization.
                 is Result.Success -> OnboardingState.Done()
                 is Result.Failure -> current.copy(
                     submitting = false,
@@ -98,10 +97,6 @@ class OnboardingViewModel(private val onboarding: Onboarding) : ViewModel() {
     }
 }
 
-/**
- * [OnboardingError.Unexpected] is where the refusals the flow already prevents land: reaching
- * `NotRegistered` after a successful registration is a bug in the flow, not something to act on.
- */
 private fun RegisterError.toOnboardingError(): OnboardingError = when (this) {
     RegisterError.BlankDisplayName -> OnboardingError.BlankDisplayName
     is RegisterError.Registration -> OnboardingError.Unexpected

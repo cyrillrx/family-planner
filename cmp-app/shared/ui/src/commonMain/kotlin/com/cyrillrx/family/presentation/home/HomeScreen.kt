@@ -18,10 +18,7 @@ import familyplanner.shared.ui.generated.resources.home_in_group
 import familyplanner.shared.ui.generated.resources.home_waiting_for_group
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Where onboarding ends, until there is an application behind it. A null [groupName] is the
- * member who joined: the group is the service's write and has not reached this device yet.
- */
+/** Where onboarding ends, until there is an application behind it. */
 @Composable
 fun HomeScreen(groupName: String?, modifier: Modifier = Modifier) {
     Column(
@@ -33,10 +30,10 @@ fun HomeScreen(groupName: String?, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = if (groupName != null) {
-                stringResource(Res.string.home_in_group, groupName)
-            } else {
+            text = if (groupName == null) {
                 stringResource(Res.string.home_waiting_for_group)
+            } else {
+                stringResource(Res.string.home_in_group, groupName)
             },
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,

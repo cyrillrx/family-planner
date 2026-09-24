@@ -25,7 +25,6 @@ fun App(dependencies: AppDependencies = remember { AppDependencies() }) {
             val viewModel = viewModel { OnboardingViewModel(dependencies.onboarding) }
             val state by viewModel.state.collectAsStateWithLifecycle()
 
-            // The step is state, not a route: the flow is linear and nothing deep-links into it.
             when (val current = state) {
                 is OnboardingState.Name -> DisplayNameScreen(
                     state = current,

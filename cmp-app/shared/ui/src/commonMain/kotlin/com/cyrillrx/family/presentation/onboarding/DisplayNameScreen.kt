@@ -38,7 +38,7 @@ fun DisplayNameScreen(
             isError = state.error != null,
         )
 
-        if (state.error != null) OnboardingErrorText(state.error)
+        state.error?.let { OnboardingErrorText(it) }
 
         Button(
             onClick = onContinueClicked,

@@ -28,7 +28,7 @@ fun GroupChoiceScreen(
         subtitle = stringResource(Res.string.onboarding_choice_subtitle),
         modifier = modifier,
     ) {
-        if (state.error != null) OnboardingErrorText(state.error)
+        state.error?.let { OnboardingErrorText(it) }
 
         Button(
             onClick = onCreateGroupClicked,

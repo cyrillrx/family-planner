@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/** The frame every onboarding step shares: one question, one line of context, then the fields. */
 @Composable
 fun OnboardingStep(
     title: String,
