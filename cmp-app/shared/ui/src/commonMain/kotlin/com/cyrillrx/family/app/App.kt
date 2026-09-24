@@ -1,4 +1,4 @@
-package com.cyrillrx.family
+package com.cyrillrx.family.app
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.cyrillrx.family.getPlatform
 
 @Composable
 @Preview
