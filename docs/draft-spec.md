@@ -134,7 +134,7 @@ ANTHROPIC_API_KEY      # For contextual message generation
 
 ### Fallback
 
-If Claude Code Routines are unavailable (research preview) → same Python scripts on Raspberry Pi with system cron. No code changes required.
+If Claude Code Routines are unavailable (research preview) → same Python scripts run by system cron on a self-hosted machine. No code changes required.
 
 ## Screens V1
 
