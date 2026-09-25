@@ -1,6 +1,8 @@
 package com.cyrillrx.family.navigation
 
-import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import com.cyrillrx.family.app.MainRoute
 
 interface OnboardingRouter {
     fun openGroupChoice()
@@ -12,25 +14,23 @@ interface OnboardingRouter {
     fun navigateUp()
 }
 
-class NavOnboardingRouter(private val navController: NavHostController) : OnboardingRouter {
+class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : OnboardingRouter {
 
     override fun openGroupChoice() {
-        navController.navigate(OnboardingStep.GroupChoice.route) {
-            popUpTo(OnboardingStep.DisplayName.route) { inclusive = true }
-        }
+        backStack.clear()
+        backStack.add(OnboardingRoute.GroupChoice)
     }
 
     override fun openJoinGroup() {
-        navController.navigate(OnboardingStep.JoinGroup.route)
+        backStack.add(OnboardingRoute.JoinGroup)
     }
 
     override fun openHome() {
-        navController.navigate(OnboardingStep.Home.route) {
-            popUpTo(OnboardingStep.GroupChoice.route) { inclusive = true }
-        }
+        backStack.clear()
+        backStack.add(MainRoute.Home)
     }
 
     override fun navigateUp() {
-        navController.navigateUp()
+        backStack.navigateUp()
     }
 }

@@ -8,48 +8,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.cyrillrx.family.navigation.NavOnboardingRouter
-import com.cyrillrx.family.navigation.OnboardingStep
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.cyrillrx.family.navigation.handleOnboardingRoutes
+import com.cyrillrx.family.navigation.navigateUp
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
-import com.cyrillrx.family.presentation.onboarding.displayname.DisplayNameScreen
-import com.cyrillrx.family.presentation.onboarding.displayname.DisplayNameViewModel
-import com.cyrillrx.family.presentation.onboarding.groupchoice.GroupChoiceScreen
-import com.cyrillrx.family.presentation.onboarding.groupchoice.GroupChoiceViewModel
-import com.cyrillrx.family.presentation.onboarding.joingroup.JoinGroupScreen
-import com.cyrillrx.family.presentation.onboarding.joingroup.JoinGroupViewModel
 
 @Composable
 @Preview
 fun App(graph: AppGraph = remember { AppGraph() }) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val navController = rememberNavController()
-            val router = remember(navController) { NavOnboardingRouter(navController) }
+            val backStack = rememberAppBackStack()
 
-            NavHost(
-                navController = navController,
-                startDestination = OnboardingStep.DisplayName.route,
-            ) {
-                composable(OnboardingStep.DisplayName.route) {
-                    DisplayNameScreen(viewModel { DisplayNameViewModel(graph.onboarding) }, router)
-                }
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.navigateUp() },
+                entryProvider = entryProvider {
+                    handleOnboardingRoutes(backStack, graph)
 
-                composable(OnboardingStep.GroupChoice.route) {
-                    GroupChoiceScreen(viewModel { GroupChoiceViewModel(graph.onboarding) }, router)
-                }
-
-                composable(OnboardingStep.JoinGroup.route) {
-                    JoinGroupScreen(viewModel { JoinGroupViewModel(graph.onboarding) }, router)
-                }
-
-                composable(OnboardingStep.Home.route) {
-                    HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
-                }
-            }
+                    entry<MainRoute.Home> {
+                        HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
+                    }
+                },
+            )
         }
     }
 }
