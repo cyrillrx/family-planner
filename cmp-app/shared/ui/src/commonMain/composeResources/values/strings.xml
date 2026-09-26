@@ -1,0 +1,28 @@
+<resources>
+    <string name="onboarding_name_title">What should we call you?</string>
+    <string name="onboarding_name_subtitle">The other members of your group will see this name.</string>
+    <string name="onboarding_name_label">Your name</string>
+    <string name="onboarding_name_continue">Continue</string>
+
+    <string name="onboarding_choice_title">Your group</string>
+    <string name="onboarding_choice_subtitle">Create one, or join the one you were invited to.</string>
+    <string name="onboarding_choice_create">Create a group</string>
+    <string name="onboarding_choice_join">I have an invitation code</string>
+
+    <string name="onboarding_join_title">Your invitation code</string>
+    <string name="onboarding_join_subtitle">Paste the code a member of the group sent you.</string>
+    <string name="onboarding_join_label">Invitation code</string>
+    <string name="onboarding_join_submit">Join the group</string>
+    <string name="onboarding_join_back">Back</string>
+
+    <string name="onboarding_error_blank_display_name">Enter a name to continue.</string>
+    <string name="onboarding_error_code_too_short">This code is too short to be an invitation.</string>
+    <string name="onboarding_error_code_revoked">This invitation was revoked. Ask for a new one.</string>
+    <string name="onboarding_error_code_already_redeemed">This invitation has already been used.</string>
+    <string name="onboarding_error_code_expired">This invitation has expired. Ask for a new one.</string>
+    <string name="onboarding_error_already_in_a_group">You already belong to a group.</string>
+    <string name="onboarding_error_unexpected">Something went wrong. Try again.</string>
+
+    <string name="home_in_group">You are in %1$s.</string>
+    <string name="home_waiting_for_group">You are in. Waiting for the group to reach this device…</string>
+</resources>
