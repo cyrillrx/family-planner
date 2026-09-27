@@ -1,5 +1,6 @@
 package com.cyrillrx.family.navigation
 
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.cyrillrx.family.app.MainRoute
@@ -26,9 +27,13 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
         backStack.add(OnboardingRoute.JoinGroup)
     }
 
+    // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
+    // leave it empty in between.
     override fun openHome() {
-        backStack.clear()
-        backStack.add(MainRoute.Home)
+        Snapshot.withMutableSnapshot {
+            backStack.clear()
+            backStack.add(MainRoute.Home)
+        }
     }
 
     override fun navigateUp() {
