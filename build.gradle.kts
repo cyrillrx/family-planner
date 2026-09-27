@@ -48,7 +48,7 @@ kover {
 
 dependencies {
     kover(projects.core.model)
-    kover(projects.app.shared.core)
+    kover(projects.app.shared.domain)
     kover(projects.app.shared.ui)
 }
 

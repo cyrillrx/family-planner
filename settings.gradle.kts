@@ -37,5 +37,5 @@ include(":core:model")
 
 include(":app:androidApp")
 include(":app:desktopApp")
-include(":app:shared:core")
+include(":app:shared:domain")
 include(":app:shared:ui")

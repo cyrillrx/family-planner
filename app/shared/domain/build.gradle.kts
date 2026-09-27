@@ -13,17 +13,17 @@ kotlin {
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "Core"
+            baseName = "Domain"
             isStatic = true
             // Without it Kotlin/Native cannot infer one and warns on every link.
-            binaryOption("bundleId", "com.cyrillrx.family.core")
+            binaryOption("bundleId", "com.cyrillrx.family.domain")
         }
     }
 
     jvm()
 
     android {
-        namespace = "com.cyrillrx.family.core"
+        namespace = "com.cyrillrx.family.domain"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
