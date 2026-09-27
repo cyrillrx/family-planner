@@ -1,13 +1,5 @@
-package com.cyrillrx.family.group.domain
+package com.cyrillrx.family.group.model
 
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.Invitation
-import com.cyrillrx.family.group.domain.model.InvitationId
-import com.cyrillrx.family.group.domain.model.PendingInvitation
-import com.cyrillrx.family.group.domain.model.RedeemedInvitation
-import com.cyrillrx.family.group.domain.model.RevokedInvitation
-import com.cyrillrx.family.group.domain.model.UserId
-import com.cyrillrx.family.group.domain.model.hasExpired
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

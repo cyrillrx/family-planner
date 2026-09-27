@@ -1,4 +1,4 @@
-package com.cyrillrx.family.group.domain.model
+package com.cyrillrx.family.group.model
 
 import kotlin.jvm.JvmInline
 

@@ -1,8 +1,8 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.InvitationId
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.GroupId
+import com.cyrillrx.family.group.model.InvitationId
+import com.cyrillrx.family.group.model.UserId
 import kotlin.uuid.Uuid
 
 interface IdGenerator {

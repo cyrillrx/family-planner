@@ -1,4 +1,4 @@
-package com.cyrillrx.family.group.data.model
+package com.cyrillrx.family.group.api
 
 data class ApiRegisterUserRequest(
     val id: String,

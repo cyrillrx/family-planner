@@ -6,10 +6,10 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.ALR
 import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.EXPIRED_CODE
 import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.GROUP_ID
 import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.REVOKED_CODE
-import com.cyrillrx.family.group.domain.model.Invitation
-import com.cyrillrx.family.group.domain.model.InvitationId
-import com.cyrillrx.family.group.domain.model.RedeemedInvitation
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.Invitation
+import com.cyrillrx.family.group.model.InvitationId
+import com.cyrillrx.family.group.model.RedeemedInvitation
+import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

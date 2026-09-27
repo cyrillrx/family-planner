@@ -2,11 +2,11 @@ package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.domain.model.Group
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.Invitation
-import com.cyrillrx.family.group.domain.model.Member
-import com.cyrillrx.family.group.domain.model.User
+import com.cyrillrx.family.group.model.Group
+import com.cyrillrx.family.group.model.GroupId
+import com.cyrillrx.family.group.model.Invitation
+import com.cyrillrx.family.group.model.Member
+import com.cyrillrx.family.group.model.User
 
 class Onboarding(
     private val userRepository: UserRepository,

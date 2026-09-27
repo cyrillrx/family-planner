@@ -1,20 +1,20 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.core.data.model.ApiError
-import com.cyrillrx.core.data.model.ApiResponse
+import com.cyrillrx.core.api.ApiError
+import com.cyrillrx.core.api.ApiResponse
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.api.ApiInvitation
 import com.cyrillrx.family.group.data.InvitationApi
-import com.cyrillrx.family.group.data.model.ApiInvitation
 import com.cyrillrx.family.group.domain.InvitationField.CODE
 import com.cyrillrx.family.group.domain.InvitationField.CREATED_AT
 import com.cyrillrx.family.group.domain.InvitationField.GROUP_ID
 import com.cyrillrx.family.group.domain.InvitationField.ID
 import com.cyrillrx.family.group.domain.InvitationField.REDEEMED_AT
 import com.cyrillrx.family.group.domain.InvitationField.REDEEMED_BY
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.InvitationId
-import com.cyrillrx.family.group.domain.model.RedeemedInvitation
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.GroupId
+import com.cyrillrx.family.group.model.InvitationId
+import com.cyrillrx.family.group.model.RedeemedInvitation
+import com.cyrillrx.family.group.model.UserId
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 

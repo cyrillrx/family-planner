@@ -1,9 +1,9 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.family.group.domain.model.Group
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.Member
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.Group
+import com.cyrillrx.family.group.model.GroupId
+import com.cyrillrx.family.group.model.Member
+import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

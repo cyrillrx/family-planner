@@ -1,13 +1,13 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.core.data.model.ApiError
-import com.cyrillrx.core.data.model.ApiResponse
+import com.cyrillrx.core.api.ApiError
+import com.cyrillrx.core.api.ApiResponse
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.api.ApiRegisterUserRequest
+import com.cyrillrx.family.group.api.ApiUser
 import com.cyrillrx.family.group.data.UserApi
-import com.cyrillrx.family.group.data.model.ApiRegisterUserRequest
-import com.cyrillrx.family.group.data.model.ApiUser
-import com.cyrillrx.family.group.domain.model.User
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.User
+import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test

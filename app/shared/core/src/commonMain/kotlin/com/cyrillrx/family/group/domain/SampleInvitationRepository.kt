@@ -1,10 +1,10 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.domain.model.GroupId
-import com.cyrillrx.family.group.domain.model.Invitation
-import com.cyrillrx.family.group.domain.model.RedeemedInvitation
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.GroupId
+import com.cyrillrx.family.group.model.Invitation
+import com.cyrillrx.family.group.model.RedeemedInvitation
+import com.cyrillrx.family.group.model.UserId
 import kotlin.time.Clock
 
 /**

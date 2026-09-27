@@ -1,4 +1,4 @@
-package com.cyrillrx.core.data.model
+package com.cyrillrx.core.api
 
 /**
  * What every endpoint answers: a payload, or a reason it refused.

@@ -1,8 +1,8 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.domain.model.User
-import com.cyrillrx.family.group.domain.model.UserId
+import com.cyrillrx.family.group.model.User
+import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

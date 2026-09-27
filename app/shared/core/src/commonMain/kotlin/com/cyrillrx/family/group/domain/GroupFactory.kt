@@ -1,6 +1,6 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.family.group.domain.model.Group
+import com.cyrillrx.family.group.model.Group
 import kotlin.time.Clock
 
 class GroupFactory(
