@@ -4,6 +4,9 @@ import com.cyrillrx.core.api.ApiError
 import com.cyrillrx.core.api.ApiResponse
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.api.ApiInvitation
+import com.cyrillrx.family.group.api.INVITATION_ALREADY_REDEEMED
+import com.cyrillrx.family.group.api.INVITATION_EXPIRED
+import com.cyrillrx.family.group.api.INVITATION_REVOKED
 import com.cyrillrx.family.group.data.InvitationApi
 import com.cyrillrx.family.group.domain.InvitationField.CODE
 import com.cyrillrx.family.group.domain.InvitationField.CREATED_AT
@@ -42,9 +45,9 @@ private fun ApiResponse<ApiInvitation>.toDomain(): Result<RedeemedInvitation, Re
 }
 
 private fun ApiError.toDomain() = when (id) {
-    REVOKED -> RedeemInvitationError.Revoked
-    ALREADY_REDEEMED -> RedeemInvitationError.AlreadyRedeemed
-    EXPIRED -> RedeemInvitationError.Expired
+    INVITATION_REVOKED -> RedeemInvitationError.Revoked
+    INVITATION_ALREADY_REDEEMED -> RedeemInvitationError.AlreadyRedeemed
+    INVITATION_EXPIRED -> RedeemInvitationError.Expired
     else -> RedeemInvitationError.Unknown
 }
 
@@ -60,7 +63,3 @@ internal fun ApiInvitation.toRedeemed(): Result<RedeemedInvitation, RedeemInvita
 )
 
 private fun missing(field: InvitationField) = Result.Failure(RedeemInvitationError.IncompleteResponse(field))
-
-private const val REVOKED = "invitation_revoked"
-private const val ALREADY_REDEEMED = "invitation_already_redeemed"
-private const val EXPIRED = "invitation_expired"
