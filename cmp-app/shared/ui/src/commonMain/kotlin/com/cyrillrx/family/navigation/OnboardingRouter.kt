@@ -16,8 +16,9 @@ interface OnboardingRouter {
 
 class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : OnboardingRouter {
 
+    // The name step stays behind: it is the only screen that can register a user, and the name it
+    // takes is the one every other member reads.
     override fun openGroupChoice() {
-        backStack.clear()
         backStack.add(OnboardingRoute.GroupChoice)
     }
 

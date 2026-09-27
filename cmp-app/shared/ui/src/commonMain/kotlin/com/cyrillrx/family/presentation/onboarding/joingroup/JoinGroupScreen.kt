@@ -16,7 +16,7 @@ import com.cyrillrx.family.presentation.component.ErrorText
 import com.cyrillrx.family.presentation.component.OnboardingStepLayout
 import com.cyrillrx.family.presentation.component.message
 import familyplanner.shared.ui.generated.resources.Res
-import familyplanner.shared.ui.generated.resources.onboarding_join_back
+import familyplanner.shared.ui.generated.resources.onboarding_back
 import familyplanner.shared.ui.generated.resources.onboarding_join_label
 import familyplanner.shared.ui.generated.resources.onboarding_join_submit
 import familyplanner.shared.ui.generated.resources.onboarding_join_subtitle
@@ -78,7 +78,7 @@ fun JoinGroupScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.submitting,
         ) {
-            Text(stringResource(Res.string.onboarding_join_back))
+            Text(stringResource(Res.string.onboarding_back))
         }
     }
 }

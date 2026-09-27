@@ -1,4 +1,6 @@
 <resources>
+    <string name="onboarding_back">Back</string>
+
     <string name="onboarding_name_title">What should we call you?</string>
     <string name="onboarding_name_subtitle">The other members of your group will see this name.</string>
     <string name="onboarding_name_label">Your name</string>
@@ -13,7 +15,6 @@
     <string name="onboarding_join_subtitle">Paste the code a member of the group sent you.</string>
     <string name="onboarding_join_label">Invitation code</string>
     <string name="onboarding_join_submit">Join the group</string>
-    <string name="onboarding_join_back">Back</string>
 
     <string name="onboarding_error_blank_display_name">Enter a name to continue.</string>
     <string name="onboarding_error_code_too_short">This code is too short to be an invitation.</string>

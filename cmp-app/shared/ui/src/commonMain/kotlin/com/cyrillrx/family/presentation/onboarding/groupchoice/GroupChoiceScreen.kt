@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -14,6 +15,7 @@ import com.cyrillrx.family.presentation.component.ErrorText
 import com.cyrillrx.family.presentation.component.OnboardingStepLayout
 import com.cyrillrx.family.presentation.component.message
 import familyplanner.shared.ui.generated.resources.Res
+import familyplanner.shared.ui.generated.resources.onboarding_back
 import familyplanner.shared.ui.generated.resources.onboarding_choice_create
 import familyplanner.shared.ui.generated.resources.onboarding_choice_join
 import familyplanner.shared.ui.generated.resources.onboarding_choice_subtitle
@@ -32,6 +34,7 @@ fun GroupChoiceScreen(
         state = viewModel.state.collectAsStateWithLifecycle().value,
         onCreateGroupClicked = viewModel::createGroup,
         onJoinGroupClicked = router::openJoinGroup,
+        onBackClicked = router::navigateUp,
         modifier = modifier,
     )
 }
@@ -41,6 +44,7 @@ fun GroupChoiceScreen(
     state: GroupChoiceState,
     onCreateGroupClicked: () -> Unit,
     onJoinGroupClicked: () -> Unit,
+    onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OnboardingStepLayout(
@@ -65,6 +69,14 @@ fun GroupChoiceScreen(
         ) {
             Text(stringResource(Res.string.onboarding_choice_join))
         }
+
+        TextButton(
+            onClick = onBackClicked,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.submitting,
+        ) {
+            Text(stringResource(Res.string.onboarding_back))
+        }
     }
 }
 
@@ -75,5 +87,6 @@ private fun GroupChoiceScreenPreview() {
         state = GroupChoiceState(),
         onCreateGroupClicked = {},
         onJoinGroupClicked = {},
+        onBackClicked = {},
     )
 }
