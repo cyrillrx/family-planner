@@ -12,11 +12,12 @@ A single group is supported for now. Multi-group is not planned for V1, but no d
 
 ## Repository structure
 
-Monorepo. Each component owns its own build and its own CI workflow.
+Monorepo, built as one Gradle project rooted here. Each component owns its own CI workflow.
 
 ```
 family-planner/
-├── cmp-app/            # KMP/CMP client (Android, iOS, Desktop)
+├── settings.gradle.kts  gradle/   # one Gradle build for the whole repository
+├── app/                # KMP/CMP client (Android, iOS, Desktop)
 │   ├── shared/core/    # domain and data — no Compose
 │   ├── shared/ui/      # Compose UI
 │   ├── androidApp/  desktopApp/  iosApp/
@@ -51,13 +52,12 @@ _Decided_ means an accepted ADR stands behind it. _Proposed_ means the ADR is wr
 The client builds with the Gradle wrapper, on Java 21:
 
 ```bash
-cd cmp-app
-./gradlew jvmTest              # Run the tests
-./gradlew :desktopApp:run      # Run on Desktop
-./gradlew :androidApp:installDebug   # Install on Android
+./gradlew jvmTest                        # Run the tests
+./gradlew :app:desktopApp:run            # Run on Desktop
+./gradlew :app:androidApp:installDebug   # Install on Android
 ```
 
-For iOS, open `cmp-app/iosApp/iosApp.xcodeproj` in Xcode and run it on a simulator. The full command list is in [`AGENTS.md`](AGENTS.md).
+For iOS, open `app/iosApp/iosApp.xcodeproj` in Xcode and run it on a simulator. The full command list is in [`AGENTS.md`](AGENTS.md).
 
 The notification scripts read their configuration from a `.env` file at the repository root:
 

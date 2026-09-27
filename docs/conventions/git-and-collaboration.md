@@ -15,14 +15,14 @@ Use short, consistent scopes matching this repository's structure:
 |---------------------------|------------------------------------------------------------|
 | `project`                 | Root-level tooling, README, repository-wide changes        |
 | `agents`                  | AI agent configuration and rules (`AGENTS.md`, `.claude/`) |
-| `cmp-app`                 | The KMP/CMP client                                         |
+| `app`                     | The KMP/CMP client                                         |
 | `server`                  | The server-side service (notifications, privileged writes) |
 | `docs`                    | Documentation that is not tied to a single component       |
 | `meal`, `events`, `tasks` | Feature-scoped changes, once features exist                |
 
 ### CI pipeline
 
-CI is split per component under [`.github/workflows/`](../../.github/workflows/), each workflow filtered by path. Today that is [`ci-kmp.yml`](../../.github/workflows/ci-kmp.yml) for the `cmp-app/` client. Adding a component means adding its workflow. The relevant checks must pass for a PR to be mergeable.
+CI is split per component under [`.github/workflows/`](../../.github/workflows/), each workflow filtered by path. Today that is [`ci-kmp.yml`](../../.github/workflows/ci-kmp.yml) for the `app/` client. Adding a component means adding its workflow. The relevant checks must pass for a PR to be mergeable.
 
 ### ADRs and PRDs
 

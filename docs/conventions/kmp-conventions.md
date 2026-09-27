@@ -3,11 +3,11 @@
 > [!IMPORTANT]
 > **Canonical source of truth** (shared, project-agnostic): [`conventions/kmp-conventions.md`](https://github.com/cyrillrx/coding-conventions/blob/main/conventions/kmp-conventions.md) — do not duplicate here.
 
-The full KMP / Compose Multiplatform conventions (MVVM + UDF, state & event modeling, navigation, lifecycle-aware refresh, Compose rules, naming, formatting, testing) live in the canonical document and apply as-is to the `cmp-app/` client.
+The full KMP / Compose Multiplatform conventions (MVVM + UDF, state & event modeling, navigation, lifecycle-aware refresh, Compose rules, naming, formatting, testing) live in the canonical document and apply as-is to the `app/` client.
 
 ## Project-specific additions
 
-- **Module split** — `cmp-app/shared/core` holds the domain and data layers and has no Compose dependency; `cmp-app/shared/ui` holds the Compose layer. `androidApp`, `desktopApp` and `iosApp` are platform wrappers. The rationale is in [ADR-001](../adr/adr-001-kmp-client-targets.md).
+- **Module split** — `app/shared/core` holds the domain and data layers and has no Compose dependency; `app/shared/ui` holds the Compose layer. `androidApp`, `desktopApp` and `iosApp` are platform wrappers. The rationale is in [ADR-001](../adr/adr-001-kmp-client-targets.md).
 - **Package** — `com.cyrillrx.family` for everything specific to this product, in both shared modules. Types that carry nothing of the product — `Result`, `Error` — live under `com.cyrillrx.core`, the package `kmp-ttrpg-companion` uses for the same purpose, so they stay copyable between projects and extractable into a library later.
 - **Test location** — tests live in each module's `src/commonTest/`, and run on the JVM target. `jvmTest` is what feeds coverage.
 - **Targets** — Android, iOS and Desktop. No Web target; a library that does not support `wasmJs` is not disqualified today, but see ADR-001 for what that costs later.
