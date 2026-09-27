@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Onboarding
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
@@ -15,8 +16,10 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<GroupChoiceState>
         field = MutableStateFlow(GroupChoiceState())
 
-    val groupCreated: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(replay = 1)
+    // Buffered so an emission with no collector is not lost, consumed once so coming back to
+    // the step does not navigate away from it again.
+    private val groupCreations = Channel<Unit>(Channel.BUFFERED)
+    val groupCreated: Flow<Unit> = groupCreations.receiveAsFlow()
 
     fun createGroup() {
         val beforeSubmit = state.value
@@ -28,7 +31,7 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
             when (val creation = onboarding.createGroup()) {
                 is Result.Success -> {
                     state.value = beforeSubmit.copy(error = null)
-                    groupCreated.emit(Unit)
+                    groupCreations.send(Unit)
                 }
 
                 is Result.Failure -> state.value = beforeSubmit.copy(error = creation.error)

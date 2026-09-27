@@ -59,6 +59,32 @@ class GroupChoiceViewModelTest {
     }
 
     @Test
+    fun `announces the group to a collector that arrives after it`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        val creations = collectCreations(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(1, creations.size)
+    }
+
+    @Test
+    fun `does not announce the group again to the collector that follows`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        viewModel.createGroup()
+        advanceUntilIdle()
+        collectCreations(viewModel)
+        advanceUntilIdle()
+
+        val laterCreations = collectCreations(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(0, laterCreations.size)
+    }
+
+    @Test
     fun `stops working once the group exists`() = runTest {
         val viewModel = viewModel(registeredUserRepository())
 

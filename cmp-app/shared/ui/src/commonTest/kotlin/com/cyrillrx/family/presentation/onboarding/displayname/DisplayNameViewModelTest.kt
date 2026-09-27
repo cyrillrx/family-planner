@@ -98,6 +98,34 @@ class DisplayNameViewModelTest {
     }
 
     @Test
+    fun `announces the registration to a collector that arrives after it`() = runTest {
+        val viewModel = viewModel()
+        viewModel.changeDisplayName("Alice")
+        viewModel.register()
+        advanceUntilIdle()
+
+        val registrations = collectRegistrations(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(1, registrations.size)
+    }
+
+    @Test
+    fun `does not announce the registration again to the collector that follows`() = runTest {
+        val viewModel = viewModel()
+        viewModel.changeDisplayName("Alice")
+        viewModel.register()
+        advanceUntilIdle()
+        collectRegistrations(viewModel)
+        advanceUntilIdle()
+
+        val laterRegistrations = collectRegistrations(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(0, laterRegistrations.size)
+    }
+
+    @Test
     fun `stops working once registered`() = runTest {
         val viewModel = viewModel()
         viewModel.changeDisplayName("Alice")

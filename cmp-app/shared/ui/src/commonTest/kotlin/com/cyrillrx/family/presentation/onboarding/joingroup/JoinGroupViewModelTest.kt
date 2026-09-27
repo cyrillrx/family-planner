@@ -103,6 +103,34 @@ class JoinGroupViewModelTest {
     }
 
     @Test
+    fun `announces the join to a collector that arrives after it`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        val joins = collectJoins(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(1, joins.size)
+    }
+
+    @Test
+    fun `does not announce the join again to the collector that follows`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+        viewModel.joinGroup()
+        advanceUntilIdle()
+        collectJoins(viewModel)
+        advanceUntilIdle()
+
+        val laterJoins = collectJoins(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(0, laterJoins.size)
+    }
+
+    @Test
     fun `stops working once joined`() = runTest {
         val viewModel = viewModel(registeredUserRepository())
         viewModel.changeInvitationCode(ACCEPTED_CODE)

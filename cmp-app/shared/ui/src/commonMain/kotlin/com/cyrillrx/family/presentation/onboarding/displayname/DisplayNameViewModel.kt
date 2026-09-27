@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Onboarding
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
@@ -15,8 +16,10 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<DisplayNameState>
         field = MutableStateFlow(DisplayNameState())
 
-    val registered: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(replay = 1)
+    // Buffered so an emission with no collector is not lost, consumed once so coming back to
+    // the step does not navigate away from it again.
+    private val registrations = Channel<Unit>(Channel.BUFFERED)
+    val registered: Flow<Unit> = registrations.receiveAsFlow()
 
     fun changeDisplayName(displayName: String) {
         val beforeSubmit = state.value
@@ -35,7 +38,7 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
                 is Result.Success -> {
                     state.value = beforeSubmit.copy(error = null)
-                    registered.emit(Unit)
+                    registrations.send(Unit)
                 }
 
                 is Result.Failure -> state.value = beforeSubmit.copy(error = registration.error)
