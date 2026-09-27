@@ -15,6 +15,7 @@ import familyplanner.shared.ui.generated.resources.onboarding_error_code_already
 import familyplanner.shared.ui.generated.resources.onboarding_error_code_expired
 import familyplanner.shared.ui.generated.resources.onboarding_error_code_revoked
 import familyplanner.shared.ui.generated.resources.onboarding_error_code_too_short
+import familyplanner.shared.ui.generated.resources.onboarding_error_code_unknown
 import familyplanner.shared.ui.generated.resources.onboarding_error_unexpected
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,7 +54,8 @@ fun RedeemInvitationError.message(): String = when (this) {
     RedeemInvitationError.Revoked -> stringResource(Res.string.onboarding_error_code_revoked)
     RedeemInvitationError.AlreadyRedeemed -> stringResource(Res.string.onboarding_error_code_already_redeemed)
     RedeemInvitationError.Expired -> stringResource(Res.string.onboarding_error_code_expired)
-    RedeemInvitationError.Unknown,
+    // The likeliest refusal of them all: a code typed by hand, or pasted one character short.
+    RedeemInvitationError.Unknown -> stringResource(Res.string.onboarding_error_code_unknown)
     RedeemInvitationError.EmptyResponse,
     is RedeemInvitationError.IncompleteResponse,
     -> stringResource(Res.string.onboarding_error_unexpected)

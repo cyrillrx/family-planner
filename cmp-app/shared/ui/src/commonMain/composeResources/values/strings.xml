@@ -21,6 +21,7 @@
     <string name="onboarding_error_code_revoked">This invitation was revoked. Ask for a new one.</string>
     <string name="onboarding_error_code_already_redeemed">This invitation has already been used.</string>
     <string name="onboarding_error_code_expired">This invitation has expired. Ask for a new one.</string>
+    <string name="onboarding_error_code_unknown">No invitation matches this code. Check it and try again.</string>
     <string name="onboarding_error_already_in_a_group">You already belong to a group.</string>
     <string name="onboarding_error_unexpected">Something went wrong. Try again.</string>
 
