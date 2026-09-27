@@ -44,11 +44,12 @@ This is a monorepo. It builds as **one Gradle project rooted at the repository**
 
 | Path       | Component                                                                                      | Status              |
 |------------|------------------------------------------------------------------------------------------------|---------------------|
+| `core/`    | Shared with the server — the entities and the wire types                                       | Initialized         |
 | `app/`     | KMP/CMP client (Android, iOS, Desktop)                                                         | Initialized         |
 | `server/`  | Server-side service — notifications, invitation redemption, outbound API calls, secret custody | Not yet initialized |
 | `docs/`    | Roadmap, drafts, convention pointers                                                           | —                   |
 
-Inside `app/`, the client splits into two shared modules and three platform wrappers — `shared/core` (domain and data, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
+Inside `app/`, the client splits into two shared modules and three platform wrappers — `shared/domain` (repositories and use cases, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md). `core/model` sits outside `app/` because the server depends on it too ([ADR-005](docs/adr/adr-005-kotlin-server.md)); it declares no Android target, since an Android consumer reads its `jvm` variant.
 
 All three targets are shipped, with **Desktop ranked second** behind iOS and Android ([ADR-002](docs/adr/adr-002-desktop-product-surface.md)). Desktop is also the target that runs the tests and produces coverage. Two rules follow: every client dependency must exist on JVM, and a Desktop-only regression does not block a release — which is not licence to leave it broken.
 
@@ -72,17 +73,17 @@ All commands run from the repository root:
 ./gradlew :app:androidApp:installDebug   # Install on Android
 ```
 
-ktlint is **strict** in `app/shared/core` (`ignoreFailures = false`) and permissive in `app/shared/ui` (`ignoreFailures = true`).
+ktlint is **strict** in `core/model` and `app/shared/domain` (`ignoreFailures = false`) and permissive in `app/shared/ui` (`ignoreFailures = true`).
 
 The iOS application is built from `app/iosApp/iosApp.xcodeproj` in Xcode. Its build phase calls `./gradlew :app:shared:ui:embedAndSignAppleFrameworkForXcode`, so the framework is produced by Gradle and embedded by Xcode.
 
 ### Coverage policy
 
-Coverage comes from `jvmTest` alone and reaches SonarCloud through Kover. Composables, theme tokens and route declarations are excluded: no Compose UI test feeds Kover, so measuring them would count tests that are never collected.
+Coverage comes from `jvmTest` alone and reaches SonarCloud through Kover, as **one aggregated report** produced at the root. Measuring per module stopped describing anything once a type and the tests exercising it landed in different modules. Composables, theme tokens and route declarations are excluded: no Compose UI test feeds Kover, so measuring them would count tests that are never collected.
 
 **An exclusion has to be declared on both sides.** Kover decides what lands in the report; Sonar indexes the sources either way and reads a file's absence from the report as zero coverage. Anything excluded in `kover {}` needs its counterpart in `sonar.coverage.exclusions` — the two use different vocabularies, Kover matching class names and Sonar matching file paths.
 
-The practical rule when writing code: **testable logic belongs in `app/shared/core`**. Kover counts per class and every top-level declaration in a file compiles into a single facade, so a pure function sharing a file with a composable is excluded along with it. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
+The practical rule when writing code: **testable logic belongs in `core/model` or `app/shared/domain`**. Kover counts per class and every top-level declaration in a file compiles into a single facade, so a pure function sharing a file with a composable is excluded along with it. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
 
 ## 5. Shared Tooling
 

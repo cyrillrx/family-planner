@@ -3,10 +3,10 @@ name: KMP Client CI
 on:
   pull_request:
     branches: [main]
-    paths: ['app/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
   push:
     branches: [main]
-    paths: ['app/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
   workflow_dispatch:
 
 jobs:
@@ -31,14 +31,14 @@ jobs:
       - name: Check formatting
         run: ./gradlew ktlintCheck --no-daemon
 
-      - name: Run JVM tests and generate Kover reports
-        run: ./gradlew jvmTest koverXmlReportJvm --no-daemon
+      - name: Run JVM tests and generate the Kover report
+        run: ./gradlew jvmTest koverXmlReport --no-daemon
 
-      - name: Upload Kover reports
+      - name: Upload the Kover report
         uses: actions/upload-artifact@v4
         with:
-          name: kover-reports
-          path: app/shared/*/build/reports/kover/reportJvm.xml
+          name: kover-report
+          path: build/reports/kover/report.xml
 
   sonar:
     name: CMP Client - SonarCloud
@@ -61,12 +61,12 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Download Kover reports
+      - name: Download the Kover report
         uses: actions/download-artifact@v4
         with:
-          name: kover-reports
-          # The upload globs app/shared/*/..., so the artifact is rooted at shared/.
-          path: app/shared
+          name: kover-report
+          # One aggregated report, where every module's sonar block points.
+          path: build/reports/kover
 
       - name: SonarCloud analysis
         env:

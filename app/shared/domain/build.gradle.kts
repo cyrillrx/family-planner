@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.kover)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -15,30 +13,24 @@ kotlin {
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            // Kept as "Shared" so iosApp/ContentView.swift keeps importing `Shared`.
-            baseName = "Shared"
+            baseName = "Domain"
             isStatic = true
             // Without it Kotlin/Native cannot infer one and warns on every link.
-            binaryOption("bundleId", "com.cyrillrx.family.ui")
+            binaryOption("bundleId", "com.cyrillrx.family.domain")
         }
     }
 
     jvm()
 
     android {
-        namespace = "com.cyrillrx.family.ui"
+        namespace = "com.cyrillrx.family.domain"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
         }
-        androidResources {
-            enable = true
-        }
-        withHostTest {
-            isIncludeAndroidResources = true
-        }
+        withHostTest {}
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
         }.configure {
@@ -48,29 +40,14 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.app.shared.domain)
-
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-        }
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.compose.uiTooling)
+            api(projects.core.model)
+            api(libs.kotlinx.coroutinesCore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
-}
-
-dependencies {
-    androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
 sonar {
@@ -83,15 +60,10 @@ sonar {
             rootProject.layout.buildDirectory.file("reports/kover/report.xml").get().asFile.absolutePath,
         )
         // Sonar indexes these files either way and reads their absence from the report as zero
-        // coverage. Every entry here has its counterpart in the kover block below: Kover matches
-        // class names, Sonar matches file paths. See the coverage policy in AGENTS.md.
+        // coverage. See the coverage policy in AGENTS.md.
         property(
             "sonar.coverage.exclusions",
             listOf(
-                "**/presentation/component/**",
-                "**/presentation/theme/**",
-                "**/navigation/**",
-                "**/*Screen.kt",
                 "**/androidMain/**",
                 "**/iosMain/**",
             ).joinToString(","),
@@ -104,6 +76,5 @@ ktlint {
     verbose.set(true)
     android.set(false)
     outputToConsole.set(true)
-    // Permissive on the UI module, strict on core — same split as kmp-ttrpg-companion.
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
 }
