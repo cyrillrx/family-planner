@@ -1,6 +1,6 @@
 # ADR-003: Firestore for synchronization, with an owned service for privileged work
 
-> **Status**: Accepted | **Date**: 2026-09-02 | **Amended by**: [ADR-004](adr-004-user-identity-and-membership.md) | **Context**: [PRD-001](../prd/prd-001-group-and-synchronization.md) is agreed; no V1 feature can start until the stack that upholds it is chosen.
+> **Status**: Accepted | **Date**: 2026-09-02 | **Amended by**: [ADR-004](adr-004-user-identity-and-membership.md), [ADR-005](adr-005-kotlin-server.md) | **Context**: [PRD-001](../prd/prd-001-group-and-synchronization.md) is agreed; no V1 feature can start until the stack that upholds it is chosen.
 
 ## Decision
 
@@ -113,7 +113,7 @@ With Firestore's cache serving reads, a second store for shared data would need 
 ## Open Questions
 
 - **Is the recipe library shared across the group, or personal to a member?** PRD-001's shared list names the week plan, the grocery list, the events and the tasks — recipes are absent, which looks like an oversight rather than a decision. The answer settles whether any local database other than Firestore's cache is needed, and belongs to the meal PRD.
-- **Where does `server/` run?** It has to be reachable on a schedule for the notifications and on demand for redemption — two different availability needs in one component. The draft spec offers Claude Code Routines with a Raspberry Pi as fallback; neither is decided.
-- **What language is `server/` written in?** The draft spec assumes Python. Kotlin with Ktor would let it depend on `shared/core`, which already targets JVM, giving one definition of the domain model on both sides of the wire — the single advantage the full-custom backend had, and it survives in this shape. Weighed against Python being the shorter path for scripting and for the `firebase-admin` calls.
+- **Where does `server/` run?** It has to be reachable on a schedule for the notifications and on demand for redemption — two different availability needs in one component. The draft spec offers Claude Code Routines, with a self-hosted fallback; neither is decided. [ADR-005](adr-005-kotlin-server.md) narrows it: choosing Ktor assumes a long-running service, so the remaining question is which machine hosts it.
+- **What language is `server/` written in?** The draft spec assumes Python. Kotlin with Ktor would let it depend on `shared/core`, which already targets JVM, giving one definition of the domain model on both sides of the wire — the single advantage the full-custom backend had, and it survives in this shape. Weighed against Python being the shorter path for scripting and for the `firebase-admin` calls. **Settled by [ADR-005](adr-005-kotlin-server.md): Kotlin with Ktor, in one Gradle build, sharing a `contract/` module rather than `shared/core` itself.**
 - **Does anonymous-account linking work through the JVM port?** To be tested before Phase 2 depends on it.
 - **What is the retention and backup story for the group's data?** Firestore's free tier includes no scheduled export, and the PRD's durability guarantee stops at the device.
