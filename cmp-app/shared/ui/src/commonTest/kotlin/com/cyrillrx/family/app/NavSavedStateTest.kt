@@ -26,12 +26,8 @@ class NavSavedStateTest {
     }
 
     @Test
-    fun `resets a back stack the fallback filled with one key`() {
-        val backStack = backStackOf(
-            OnboardingRoute.DisplayName,
-            OnboardingRoute.DisplayName,
-            OnboardingRoute.DisplayName,
-        )
+    fun `resets a back stack the fallback filled entirely`() {
+        val backStack = backStackOf(UnrecognizedRoute, UnrecognizedRoute, UnrecognizedRoute)
 
         backStack.resetIfRestoredThroughFallback()
 
@@ -39,8 +35,17 @@ class NavSavedStateTest {
     }
 
     @Test
-    fun `resets when the first step shows up behind another route`() {
-        val backStack = backStackOf(MainRoute.Home, OnboardingRoute.DisplayName)
+    fun `resets when a single route came back unrecognized`() {
+        val backStack = backStackOf(OnboardingRoute.DisplayName, UnrecognizedRoute)
+
+        backStack.resetIfRestoredThroughFallback()
+
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
+    }
+
+    @Test
+    fun `resets when the unrecognized route sits under a known one`() {
+        val backStack = backStackOf(UnrecognizedRoute, MainRoute.Home)
 
         backStack.resetIfRestoredThroughFallback()
 

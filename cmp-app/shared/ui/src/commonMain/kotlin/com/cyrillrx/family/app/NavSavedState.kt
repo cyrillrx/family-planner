@@ -8,18 +8,24 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.cyrillrx.family.navigation.OnboardingRoute
 import com.cyrillrx.family.navigation.registerOnboardingRoutes
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+
+/** What a route persisted by an older build decodes to once its discriminator stops resolving. */
+@Serializable
+internal data object UnrecognizedRoute : NavKey
 
 internal val navSerializersModule = SerializersModule {
     polymorphic(NavKey::class) {
         subclass(MainRoute.Home::class, MainRoute.Home.serializer())
+        subclass(UnrecognizedRoute::class, UnrecognizedRoute.serializer())
         registerOnboardingRoutes()
 
         // A route takes its fully qualified name as polymorphic discriminator, so moving one to
-        // another package makes back stacks persisted by an older build undecodable. Falling back
-        // resets navigation instead of crashing at launch.
-        defaultDeserializer { OnboardingRoute.DisplayName.serializer() }
+        // another package makes back stacks persisted by an older build undecodable. Naming what
+        // could not be decoded resets navigation instead of crashing at launch.
+        defaultDeserializer { UnrecognizedRoute.serializer() }
     }
 }
 
@@ -38,9 +44,8 @@ internal fun rememberAppBackStack(): NavBackStack<NavKey> {
     return backStack
 }
 
-/** Only the fallback above puts the first step past the first entry, and it fills every slot with it. */
 internal fun MutableList<NavKey>.resetIfRestoredThroughFallback() {
-    if (drop(1).none { it == OnboardingRoute.DisplayName }) return
+    if (none { it == UnrecognizedRoute }) return
 
     clear()
     add(OnboardingRoute.DisplayName)
