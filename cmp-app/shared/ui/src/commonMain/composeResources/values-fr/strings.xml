@@ -1,0 +1,28 @@
+<resources>
+    <string name="onboarding_name_title">Comment doit-on vous appeler ?</string>
+    <string name="onboarding_name_subtitle">Les autres membres de votre groupe verront ce nom.</string>
+    <string name="onboarding_name_label">Votre nom</string>
+    <string name="onboarding_name_continue">Continuer</string>
+
+    <string name="onboarding_choice_title">Votre groupe</string>
+    <string name="onboarding_choice_subtitle">Créez-en un, ou rejoignez celui pour lequel vous avez reçu une invitation.</string>
+    <string name="onboarding_choice_create">Créer un groupe</string>
+    <string name="onboarding_choice_join">J'ai un code d'invitation</string>
+
+    <string name="onboarding_join_title">Votre code d'invitation</string>
+    <string name="onboarding_join_subtitle">Collez le code qu'un membre du groupe vous a envoyé.</string>
+    <string name="onboarding_join_label">Code d'invitation</string>
+    <string name="onboarding_join_submit">Rejoindre le groupe</string>
+    <string name="onboarding_join_back">Retour</string>
+
+    <string name="onboarding_error_blank_display_name">Saisissez un nom pour continuer.</string>
+    <string name="onboarding_error_code_too_short">Ce code est trop court pour être une invitation.</string>
+    <string name="onboarding_error_code_revoked">Cette invitation a été révoquée. Demandez-en une nouvelle.</string>
+    <string name="onboarding_error_code_already_redeemed">Cette invitation a déjà été utilisée.</string>
+    <string name="onboarding_error_code_expired">Cette invitation a expiré. Demandez-en une nouvelle.</string>
+    <string name="onboarding_error_already_in_a_group">Vous appartenez déjà à un groupe.</string>
+    <string name="onboarding_error_unexpected">Une erreur est survenue. Réessayez.</string>
+
+    <string name="home_in_group">Vous êtes dans %1$s.</string>
+    <string name="home_waiting_for_group">C'est bon. En attente de l'arrivée du groupe sur cet appareil…</string>
+</resources>
