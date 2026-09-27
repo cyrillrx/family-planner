@@ -16,7 +16,7 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
         field = MutableStateFlow(GroupChoiceState())
 
     val groupCreated: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        field = MutableSharedFlow<Unit>(replay = 1)
 
     fun createGroup() {
         val beforeSubmit = state.value
@@ -27,7 +27,7 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
         viewModelScope.launch {
             when (val creation = onboarding.createGroup()) {
                 is Result.Success -> {
-                    state.value = beforeSubmit
+                    state.value = beforeSubmit.copy(error = null)
                     groupCreated.emit(Unit)
                 }
 

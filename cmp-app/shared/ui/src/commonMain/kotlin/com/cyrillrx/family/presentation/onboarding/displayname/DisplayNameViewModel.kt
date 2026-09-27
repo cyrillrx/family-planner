@@ -16,7 +16,7 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
         field = MutableStateFlow(DisplayNameState())
 
     val registered: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        field = MutableSharedFlow<Unit>(replay = 1)
 
     fun changeDisplayName(displayName: String) {
         val beforeSubmit = state.value
@@ -34,7 +34,7 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
         viewModelScope.launch {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
                 is Result.Success -> {
-                    state.value = beforeSubmit
+                    state.value = beforeSubmit.copy(error = null)
                     registered.emit(Unit)
                 }
 

@@ -16,7 +16,7 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
         field = MutableStateFlow(JoinGroupState())
 
     val joined: SharedFlow<Unit>
-        field = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        field = MutableSharedFlow<Unit>(replay = 1)
 
     fun changeInvitationCode(code: String) {
         val beforeSubmit = state.value
@@ -34,7 +34,7 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
         viewModelScope.launch {
             when (val redemption = onboarding.joinGroup(beforeSubmit.code)) {
                 is Result.Success -> {
-                    state.value = beforeSubmit
+                    state.value = beforeSubmit.copy(error = null)
                     joined.emit(Unit)
                 }
 
