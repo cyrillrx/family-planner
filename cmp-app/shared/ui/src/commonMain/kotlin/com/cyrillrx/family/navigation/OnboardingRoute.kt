@@ -16,13 +16,13 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
 sealed interface OnboardingRoute {
     @Serializable
-    data object DisplayName : NavKey
+    data object DisplayName : OnboardingRoute, NavKey
 
     @Serializable
-    data object GroupChoice : NavKey
+    data object GroupChoice : OnboardingRoute, NavKey
 
     @Serializable
-    data object JoinGroup : NavKey
+    data object JoinGroup : OnboardingRoute, NavKey
 }
 
 fun PolymorphicModuleBuilder<NavKey>.registerOnboardingRoutes() {
