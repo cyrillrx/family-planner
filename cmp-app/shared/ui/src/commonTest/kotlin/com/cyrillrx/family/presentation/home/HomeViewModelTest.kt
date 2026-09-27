@@ -7,6 +7,7 @@ import com.cyrillrx.family.presentation.CountingGroupRepository
 import com.cyrillrx.family.presentation.NOW
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -17,6 +18,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
 
     @BeforeTest

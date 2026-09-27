@@ -10,6 +10,7 @@ import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.CountingUserRepository
 import com.cyrillrx.family.presentation.FailingUserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -23,6 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class DisplayNameViewModelTest {
 
     @BeforeTest
