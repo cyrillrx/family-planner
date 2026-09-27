@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.ktor) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.kover)
     alias(libs.plugins.sonarqube)
@@ -38,6 +39,8 @@ kover {
                     "*.ComposableSingletons*",
                     "*Screen",
                     "*ScreenKt",
+                    // The entry point: no test starts an engine.
+                    "*.server.ApplicationKt*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",
                 )
@@ -48,6 +51,7 @@ kover {
 
 dependencies {
     kover(projects.core.model)
+    kover(projects.server)
     kover(projects.app.shared.domain)
     kover(projects.app.shared.ui)
 }

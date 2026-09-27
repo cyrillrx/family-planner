@@ -34,6 +34,7 @@ plugins {
 }
 
 include(":core:model")
+include(":server")
 
 include(":app:androidApp")
 include(":app:desktopApp")
