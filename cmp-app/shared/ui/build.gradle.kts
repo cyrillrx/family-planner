@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -58,6 +59,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.androidx.lifecycle.viewmodelNavigation3)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -65,6 +68,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }
@@ -111,6 +115,9 @@ kover {
                     "*.ComposableSingletons*",
                     "*Screen",
                     "*ScreenKt",
+                    // Nested: the lambdas of a screen compile into ScreenKt$Screen$1$1 and the
+                    // exact-match pattern above does not reach them.
+                    "*ScreenKt$*",
                     "*.app.*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",
