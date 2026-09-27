@@ -17,8 +17,9 @@ Monorepo, built as one Gradle project rooted here. Each component owns its own C
 ```
 family-planner/
 ├── settings.gradle.kts  gradle/   # one Gradle build for the whole repository
+├── core/model/         # entities and wire types — shared with the server
 ├── app/                # KMP/CMP client (Android, iOS, Desktop)
-│   ├── shared/core/    # domain and data — no Compose
+│   ├── shared/domain/  # repositories and use cases — no Compose
 │   ├── shared/ui/      # Compose UI
 │   ├── androidApp/  desktopApp/  iosApp/
 ├── server/             # Server-side service            — not yet initialized

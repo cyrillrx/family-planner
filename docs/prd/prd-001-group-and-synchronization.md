@@ -113,7 +113,7 @@ A *user* is a person's identity and their display name; a *membership* is that u
 - **Trust inside, a lock on the door.** The guarantees above are upheld by the client. Members are trusted, so no server-side enforcement defends the data against one of them. The **invitation is the exception**, because it is the boundary rather than the inside: it must be unguessable, revocable and expiring, and its redemption is the one thing that cannot rest on a well-behaved client. This is not about a hostile member, it is about a stranger at the door.
 - **Size independence.** No requirement, screen or data structure assumes a number of members, an upper bound, or a relationship between them.
 - **Shared implementation.** Sync behaviour comes from the shared Kotlin code and is identical on Android and iOS, per [ADR-001](../adr/adr-001-kmp-client-targets.md). Anything a platform cannot honour is a constraint on the design, not a per-platform variation.
-- **Testable without a device pair.** Conflict and offline behaviour must be verifiable in `shared/core` tests, without two phones and without a network — otherwise the guarantees above cannot be part of CI.
+- **Testable without a device pair.** Conflict and offline behaviour must be verifiable in the shared Kotlin tests, without two phones and without a network — otherwise the guarantees above cannot be part of CI.
 
 ## Out of Scope
 
