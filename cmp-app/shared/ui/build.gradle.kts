@@ -87,6 +87,7 @@ sonar {
         // Sonar indexes these files either way and reads their absence from the report as zero
         // coverage. Every entry here has its counterpart in the kover block below: Kover matches
         // class names, Sonar matches file paths. See the coverage policy in AGENTS.md.
+        // TODO(#28): `**/navigation/**` and `**/app/**` also drop ordinary logic. Narrow them.
         property(
             "sonar.coverage.exclusions",
             listOf(
@@ -107,6 +108,7 @@ kover {
         filters {
             // Coverage only comes from jvmTest and no Compose UI test feeds Kover, so measuring
             // composables would only count tests that are never collected.
+            // TODO(#28): `*.navigation.*` and `*.app.*` also drop ordinary logic. Narrow them.
             excludes {
                 classes(
                     "*.presentation.component.*",
