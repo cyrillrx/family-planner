@@ -3,10 +3,10 @@ name: KMP Client CI
 on:
   pull_request:
     branches: [main]
-    paths: ['app/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
   push:
     branches: [main]
-    paths: ['app/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
   workflow_dispatch:
 
 jobs:
@@ -38,7 +38,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kover-reports
-          path: app/shared/*/build/reports/kover/reportJvm.xml
+          path: |
+            app/shared/*/build/reports/kover/reportJvm.xml
+            core/model/build/reports/kover/reportJvm.xml
 
   sonar:
     name: CMP Client - SonarCloud
@@ -65,8 +67,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: kover-reports
-          # The upload globs app/shared/*/..., so the artifact is rooted at shared/.
-          path: app/shared
+          # The upload spans app/ and core/, so the artifact is rooted at the repository.
+          path: .
 
       - name: SonarCloud analysis
         env:
