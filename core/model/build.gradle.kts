@@ -29,10 +29,12 @@ kotlin {
 
 sonar {
     properties {
-        // Absolute: the report is then found whatever base directory Sonar resolves against.
+        // One aggregated report for the whole build: the tests that exercise a type no longer
+        // live in its module. Absolute, so it is found whatever base directory Sonar resolves
+        // against; each module reads the same file and finds only its own sources in it.
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
-            layout.buildDirectory.file("reports/kover/reportJvm.xml").get().asFile.absolutePath,
+            rootProject.layout.buildDirectory.file("reports/kover/report.xml").get().asFile.absolutePath,
         )
     }
 }

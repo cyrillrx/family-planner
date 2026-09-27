@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.ktlint) apply false
-    alias(libs.plugins.kover) apply false
+    alias(libs.plugins.kover)
     alias(libs.plugins.sonarqube)
 }
 
@@ -23,6 +23,33 @@ listOf(":app:androidApp", ":app:desktopApp").forEach { path ->
             isSkipProject = true
         }
     }
+}
+
+kover {
+    reports {
+        filters {
+            // Coverage only comes from jvmTest and no Compose UI test feeds Kover, so measuring
+            // composables would only count tests that are never collected.
+            excludes {
+                classes(
+                    "*.presentation.component.*",
+                    "*.presentation.theme.*",
+                    "*.navigation.*",
+                    "*.ComposableSingletons*",
+                    "*Screen",
+                    "*ScreenKt",
+                    // Generated: Compose resources accessors.
+                    "*.generated.resources.*",
+                )
+            }
+        }
+    }
+}
+
+dependencies {
+    kover(projects.core.model)
+    kover(projects.app.shared.core)
+    kover(projects.app.shared.ui)
 }
 
 sonar {
