@@ -12,7 +12,7 @@ A single group is supported for now. Multi-group is not planned for V1, but no d
 
 ## Repository structure
 
-Monorepo, built as one Gradle project rooted here. Each component owns its own CI workflow.
+Monorepo, built as one Gradle project rooted here and checked by one CI workflow.
 
 ```
 family-planner/
@@ -22,7 +22,7 @@ family-planner/
 │   ├── shared/domain/  # repositories and use cases — no Compose
 │   ├── shared/ui/      # Compose UI
 │   ├── androidApp/  desktopApp/  iosApp/
-├── server/             # Server-side service            — not yet initialized
+├── server/             # Ktor service — privileged writes, notifications
 ├── docs/
 │   ├── adr/            # Architecture decisions
 │   ├── prd/            # Product requirements
@@ -30,7 +30,7 @@ family-planner/
 │   ├── draft-spec.md   # Working ideas, not decisions
 │   └── roadmap.md      # V0 / V1 / V2 / V3
 ├── AGENTS.md           # Contributor guide (human and AI)
-└── .github/workflows/  # One workflow per component, filtered by path
+└── .github/workflows/  # One workflow, filtered by path
 ```
 
 ## Tech stack
