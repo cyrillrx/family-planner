@@ -48,7 +48,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.shared.core)
+            api(projects.app.shared.core)
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -90,7 +90,6 @@ sonar {
                 "**/presentation/theme/**",
                 "**/navigation/**",
                 "**/*Screen.kt",
-                "**/app/**",
                 "**/androidMain/**",
                 "**/iosMain/**",
             ).joinToString(","),
@@ -111,7 +110,6 @@ kover {
                     "*.ComposableSingletons*",
                     "*Screen",
                     "*ScreenKt",
-                    "*.app.*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",
                 )

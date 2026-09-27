@@ -17,7 +17,7 @@ plugins {
 // Application wrappers hold no analyzable code, and scanning them trips a
 // scanner/AGP 9 incompatibility (sonarResolver queries res providers before
 // their producing task runs).
-listOf(":androidApp", ":desktopApp").forEach { path ->
+listOf(":app:androidApp", ":app:desktopApp").forEach { path ->
     project(path) {
         extensions.configure<SonarExtension>("sonar") {
             isSkipProject = true
