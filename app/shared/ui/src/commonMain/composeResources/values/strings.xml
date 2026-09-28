@@ -1,0 +1,4 @@
+<resources>
+    <string name="home_in_group">You are in %1$s.</string>
+    <string name="home_waiting_for_group">You are in. Waiting for the group to reach this device…</string>
+</resources>
