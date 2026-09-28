@@ -23,7 +23,7 @@ Run from the repository root — the Gradle build lives there.
 ```bash
 ./gradlew build                          # Build every target
 ./gradlew jvmTest                        # Run the JVM tests
-./gradlew koverXmlReportJvm              # Coverage reports read by SonarCloud
+./gradlew koverXmlReport                 # Generate the aggregated report SonarCloud reads
 ./gradlew ktlintCheck                    # Check formatting
 ./gradlew ktlintFormat                   # Auto-fix formatting
 ./gradlew :app:desktopApp:run            # Run on Desktop

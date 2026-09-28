@@ -22,7 +22,7 @@ Use short, consistent scopes matching this repository's structure:
 
 ### CI pipeline
 
-CI is split per component under [`.github/workflows/`](../../.github/workflows/), each workflow filtered by path. Today that is [`ci-kmp.yml`](../../.github/workflows/ci-kmp.yml) for the `app/` client. Adding a component means adding its workflow. The relevant checks must pass for a PR to be mergeable.
+One workflow covers the repository, [`ci.yml`](../../.github/workflows/ci.yml), filtered by path: the Gradle build and the coverage report both span every module, so splitting it would analyse the same project twice. Adding a component means adding its path to the filter. The checks must pass for a PR to be mergeable.
 
 ### ADRs and PRDs
 

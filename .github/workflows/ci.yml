@@ -1,17 +1,17 @@
-name: KMP Client CI
+name: CI
 
 on:
   pull_request:
     branches: [main]
-    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'server/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci.yml']
   push:
     branches: [main]
-    paths: ['app/**', 'core/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci-kmp.yml']
+    paths: ['app/**', 'core/**', 'server/**', 'gradle/**', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties', 'gradlew', '.github/workflows/ci.yml']
   workflow_dispatch:
 
 jobs:
-  kmp-tests:
-    name: CMP Client - JVM Tests
+  tests:
+    name: Tests and coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -31,8 +31,8 @@ jobs:
       - name: Check formatting
         run: ./gradlew ktlintCheck --no-daemon
 
-      - name: Run JVM tests and generate the Kover report
-        run: ./gradlew jvmTest koverXmlReport --no-daemon
+      - name: Run the tests and generate the Kover report
+        run: ./gradlew jvmTest :server:test koverXmlReport --no-daemon
 
       - name: Upload the Kover report
         uses: actions/upload-artifact@v4
@@ -41,9 +41,9 @@ jobs:
           path: build/reports/kover/report.xml
 
   sonar:
-    name: CMP Client - SonarCloud
+    name: SonarCloud
     runs-on: ubuntu-latest
-    needs: kmp-tests
+    needs: tests
 
     steps:
       - name: Checkout repository

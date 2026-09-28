@@ -40,13 +40,13 @@ The conventions live in the shared [`cyrillrx/coding-conventions`](https://githu
 
 ## 3. Repository Structure
 
-This is a monorepo. It builds as **one Gradle project rooted at the repository** ([ADR-005](docs/adr/adr-005-kotlin-server.md)); each top-level component owns its own CI workflow.
+This is a monorepo. It builds as **one Gradle project rooted at the repository**, checked by **one CI workflow** ([ADR-005](docs/adr/adr-005-kotlin-server.md)). The coverage report is aggregated across modules, so splitting the workflow would analyse the same project twice.
 
 | Path       | Component                                                                                      | Status              |
 |------------|------------------------------------------------------------------------------------------------|---------------------|
 | `core/`    | Shared with the server — the entities and the wire types                                       | Initialized         |
 | `app/`     | KMP/CMP client (Android, iOS, Desktop)                                                         | Initialized         |
-| `server/`  | Server-side service — notifications, invitation redemption, outbound API calls, secret custody | Not yet initialized |
+| `server/`  | Server-side service — notifications, invitation redemption, outbound API calls, secret custody | Initialized         |
 | `docs/`    | Roadmap, drafts, convention pointers                                                           | —                   |
 
 Inside `app/`, the client splits into two shared modules and three platform wrappers — `shared/domain` (repositories and use cases, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md). `core/model` sits outside `app/` because the server depends on it too ([ADR-005](docs/adr/adr-005-kotlin-server.md)); it declares no Android target, since an Android consumer reads its `jvm` variant.
@@ -56,7 +56,7 @@ All three targets are shipped, with **Desktop ranked second** behind iOS and And
 Rules that follow from the layout:
 
 - A change touching a single component stays inside that component's directory, and its commit scope names that component (see [`git-and-collaboration.md`](docs/conventions/git-and-collaboration.md)).
-- CI workflows are filtered by path, one per component. Adding a component means adding its workflow.
+- One CI workflow, filtered by path. Adding a component means adding its path to the filter, not a workflow.
 - The Gradle build lives at the root, and so does what the components share — the version catalogue today, `core/` once it exists ([ADR-005](docs/adr/adr-005-kotlin-server.md)). Nothing else does.
 
 ## 4. Commands
@@ -65,15 +65,16 @@ All commands run from the repository root:
 
 ```bash
 ./gradlew build                # Build every target
-./gradlew jvmTest              # Run the JVM tests
-./gradlew koverXmlReportJvm    # Generate the coverage reports SonarCloud reads
+./gradlew jvmTest :server:test # Run the tests — jvmTest for the KMP modules, test for :server
+./gradlew koverXmlReport       # Generate the aggregated report SonarCloud reads
 ./gradlew ktlintCheck          # Check formatting
 ./gradlew ktlintFormat         # Auto-fix formatting
+./gradlew :server:run                # Run the server — PORT overrides 8080
 ./gradlew :app:desktopApp:run        # Run on Desktop
 ./gradlew :app:androidApp:installDebug   # Install on Android
 ```
 
-ktlint is **strict** in `core/model` and `app/shared/domain` (`ignoreFailures = false`) and permissive in `app/shared/ui` (`ignoreFailures = true`).
+ktlint is **strict** in `core/model`, `app/shared/domain` and `server` (`ignoreFailures = false`) and permissive in `app/shared/ui` (`ignoreFailures = true`).
 
 The iOS application is built from `app/iosApp/iosApp.xcodeproj` in Xcode. Its build phase calls `./gradlew :app:shared:ui:embedAndSignAppleFrameworkForXcode`, so the framework is produced by Gradle and embedded by Xcode.
 
