@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -58,6 +59,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.androidx.lifecycle.viewmodelNavigation3)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -65,6 +68,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }
@@ -85,6 +89,7 @@ sonar {
         // Sonar indexes these files either way and reads their absence from the report as zero
         // coverage. Every entry here has its counterpart in the kover block below: Kover matches
         // class names, Sonar matches file paths. See the coverage policy in AGENTS.md.
+        // TODO(#28): `**/navigation/**` also drops ordinary logic. Narrow it.
         property(
             "sonar.coverage.exclusions",
             listOf(
