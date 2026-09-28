@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew ktlintCheck --no-daemon
 
       - name: Run the tests and generate the Kover report
-        run: ./gradlew jvmTest test koverXmlReport --no-daemon
+        run: ./gradlew jvmTest :server:test koverXmlReport --no-daemon
 
       - name: Upload the Kover report
         uses: actions/upload-artifact@v4

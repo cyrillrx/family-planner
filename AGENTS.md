@@ -65,7 +65,7 @@ All commands run from the repository root:
 
 ```bash
 ./gradlew build                # Build every target
-./gradlew jvmTest test         # Run the tests — jvmTest for the KMP modules, test for :server
+./gradlew jvmTest :server:test # Run the tests — jvmTest for the KMP modules, test for :server
 ./gradlew koverXmlReport       # Generate the aggregated report SonarCloud reads
 ./gradlew ktlintCheck          # Check formatting
 ./gradlew ktlintFormat         # Auto-fix formatting
