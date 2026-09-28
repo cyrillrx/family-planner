@@ -11,8 +11,8 @@ fun Application.module() {
     }
 }
 
-/** Falls back to the default when the variable is unset or not a number. */
+/** Falls back to the default when the variable is unset, not a number, or out of range. */
 internal fun serverPort(fromEnvironment: String?): Int =
-    fromEnvironment?.toIntOrNull() ?: DEFAULT_PORT
+    fromEnvironment?.toIntOrNull()?.takeIf { it in 1..65535 } ?: DEFAULT_PORT
 
 internal const val DEFAULT_PORT = 8080

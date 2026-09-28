@@ -33,7 +33,7 @@ class ServerModuleTest {
 
     @Test
     fun `falls back to the default port when the environment says nothing usable`() {
-        val unusable = listOf(null, "", "   ", "http", "-1x")
+        val unusable = listOf(null, "", "   ", "http", "-1x", "0", "-1", "70000")
 
         unusable.forEach { value ->
             assertEquals(DEFAULT_PORT, serverPort(value), "'$value' names no port")
