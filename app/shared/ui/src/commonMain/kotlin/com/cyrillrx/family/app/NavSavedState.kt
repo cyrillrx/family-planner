@@ -1,10 +1,6 @@
 package com.cyrillrx.family.app
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -28,17 +24,6 @@ internal val navSerializersModule = SerializersModule {
 
 internal val navSavedStateConfig = SavedStateConfiguration {
     serializersModule = navSerializersModule
-}
-
-@Composable
-internal fun rememberAppBackStack(): NavBackStack<NavKey> {
-    val backStack = rememberNavBackStack(navSavedStateConfig, MainRoute.Home)
-
-    // During composition rather than in an effect: NavDisplay composes the entries in this same
-    // pass, and a repeated key crashes it before any effect would get the chance to run.
-    remember(backStack) { backStack.resetIfRestoredThroughFallback() }
-
-    return backStack
 }
 
 internal fun MutableList<NavKey>.resetIfRestoredThroughFallback() {

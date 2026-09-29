@@ -97,6 +97,7 @@ sonar {
                 "**/presentation/theme/**",
                 "**/navigation/**",
                 "**/*Screen.kt",
+                "**/app/App.kt",
                 "**/androidMain/**",
                 "**/iosMain/**",
             ).joinToString(","),

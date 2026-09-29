@@ -4,11 +4,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.cyrillrx.family.navigation.navigateUp
@@ -40,4 +44,15 @@ fun App(graph: AppGraph = AppGraph.shared) {
             )
         }
     }
+}
+
+@Composable
+internal fun rememberAppBackStack(): NavBackStack<NavKey> {
+    val backStack = rememberNavBackStack(navSavedStateConfig, MainRoute.Home)
+
+    // During composition rather than in an effect: NavDisplay composes the entries in this same
+    // pass, and a repeated key crashes it before any effect would get the chance to run.
+    remember(backStack) { backStack.resetIfRestoredThroughFallback() }
+
+    return backStack
 }
