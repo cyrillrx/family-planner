@@ -52,6 +52,7 @@ fun App(graph: AppGraph = AppGraph.shared) {
 
 @Composable
 internal fun rememberAppBackStack(): NavBackStack<NavKey> {
+    // TODO(#36): start past onboarding when a member is already registered.
     val backStack = rememberNavBackStack(navSavedStateConfig, OnboardingRoute.DisplayName)
 
     // During composition rather than in an effect: NavDisplay composes the entries in this same
