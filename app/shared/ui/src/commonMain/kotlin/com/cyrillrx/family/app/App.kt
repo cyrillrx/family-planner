@@ -15,6 +15,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.cyrillrx.family.navigation.OnboardingRoute
+import com.cyrillrx.family.navigation.handleOnboardingRoutes
 import com.cyrillrx.family.navigation.navigateUp
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
@@ -37,6 +39,8 @@ fun App(graph: AppGraph = AppGraph.shared) {
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
                 entryProvider = entryProvider {
+                    handleOnboardingRoutes(backStack, graph)
+
                     entry<MainRoute.Home> {
                         HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
                     }
@@ -48,7 +52,7 @@ fun App(graph: AppGraph = AppGraph.shared) {
 
 @Composable
 internal fun rememberAppBackStack(): NavBackStack<NavKey> {
-    val backStack = rememberNavBackStack(navSavedStateConfig, MainRoute.Home)
+    val backStack = rememberNavBackStack(navSavedStateConfig, OnboardingRoute.DisplayName)
 
     // During composition rather than in an effect: NavDisplay composes the entries in this same
     // pass, and a repeated key crashes it before any effect would get the chance to run.
