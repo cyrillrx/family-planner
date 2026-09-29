@@ -1,41 +1,58 @@
 package com.cyrillrx.family.app
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.cyrillrx.family.getPlatform
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import com.cyrillrx.family.navigation.navigateUp
+import com.cyrillrx.family.presentation.home.HomeScreen
+import com.cyrillrx.family.presentation.home.HomeViewModel
 
 @Composable
 @Preview
-fun App() {
+fun App(graph: AppGraph = AppGraph.shared) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val platform = remember { getPlatform() }
-            Column(
-                modifier = Modifier
-                    .safeContentPadding()
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "Family Planner",
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(
-                    text = platform.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+            val backStack = rememberAppBackStack()
+
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.navigateUp() },
+                // By default a view model is scoped to the window, outlives its entry and hands a
+                // popped step back the state it was left in. The view model store needs the
+                // saveable state holder alongside it to reach a SavedStateHandle.
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+                entryProvider = entryProvider {
+                    entry<MainRoute.Home> {
+                        HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
+                    }
+                },
+            )
         }
     }
+}
+
+@Composable
+internal fun rememberAppBackStack(): NavBackStack<NavKey> {
+    val backStack = rememberNavBackStack(navSavedStateConfig, MainRoute.Home)
+
+    // During composition rather than in an effect: NavDisplay composes the entries in this same
+    // pass, and a repeated key crashes it before any effect would get the chance to run.
+    remember(backStack) { backStack.resetIfRestoredThroughFallback() }
+
+    return backStack
 }

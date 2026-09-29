@@ -31,6 +31,7 @@ kover {
         filters {
             // Coverage only comes from jvmTest and no Compose UI test feeds Kover, so measuring
             // composables would only count tests that are never collected.
+            // TODO(#28): `*.navigation.*` also drops ordinary logic. Narrow it.
             excludes {
                 classes(
                     "*.presentation.component.*",
@@ -39,6 +40,12 @@ kover {
                     "*.ComposableSingletons*",
                     "*Screen",
                     "*ScreenKt",
+                    // Nested: the lambdas of a screen compile into ScreenKt$Screen$1$1 and
+                    // the exact-match pattern above does not reach them.
+                    "*ScreenKt$*",
+                    // The application's root composable, and the back stack it remembers.
+                    "*.app.AppKt",
+                    "*.app.AppKt$*",
                     // The entry point: no test starts an engine.
                     "*.server.ApplicationKt*",
                     // Generated: Compose resources accessors.
