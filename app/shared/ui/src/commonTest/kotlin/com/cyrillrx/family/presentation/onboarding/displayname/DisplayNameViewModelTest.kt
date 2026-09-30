@@ -126,14 +126,17 @@ class DisplayNameViewModelTest {
     }
 
     @Test
-    fun `stops working once registered`() = runTest {
+    fun `keeps working once registered`() = runTest {
         val viewModel = viewModel()
         viewModel.changeDisplayName("Alice")
 
         viewModel.register()
         advanceUntilIdle()
 
-        assertEquals(DisplayNameState(displayName = "Alice"), viewModel.state.value)
+        assertEquals(
+            DisplayNameState(displayName = "Alice", submitting = true),
+            viewModel.state.value,
+        )
     }
 
     @Test
@@ -173,6 +176,20 @@ class DisplayNameViewModelTest {
         viewModel.changeDisplayName("Alice")
 
         viewModel.register()
+        viewModel.register()
+        advanceUntilIdle()
+
+        assertEquals(1, users.registrations)
+    }
+
+    @Test
+    fun `registers once when the button is pressed again after the registration`() = runTest {
+        val users = CountingUserRepository()
+        val viewModel = viewModel(userRepository = users)
+        viewModel.changeDisplayName("Alice")
+        viewModel.register()
+        advanceUntilIdle()
+
         viewModel.register()
         advanceUntilIdle()
 

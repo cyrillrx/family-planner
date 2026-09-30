@@ -36,10 +36,7 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
 
         viewModelScope.launch {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
-                is Result.Success -> {
-                    state.value = beforeSubmit.copy(error = null)
-                    registrations.send(Unit)
-                }
+                is Result.Success -> registrations.send(Unit)
 
                 is Result.Failure -> state.value = beforeSubmit.copy(error = registration.error)
             }
