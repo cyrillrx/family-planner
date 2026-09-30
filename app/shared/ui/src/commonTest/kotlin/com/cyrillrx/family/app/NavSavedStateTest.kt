@@ -1,6 +1,7 @@
 package com.cyrillrx.family.app
 
 import androidx.navigation3.runtime.NavKey
+import com.cyrillrx.family.navigation.OnboardingRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -8,6 +9,15 @@ class NavSavedStateTest {
 
     @Test
     fun `leaves a back stack the fallback never touched`() {
+        val backStack = backStackOf(OnboardingRoute.DisplayName)
+
+        backStack.resetIfRestoredThroughFallback()
+
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
+    }
+
+    @Test
+    fun `leaves a back stack that already went past onboarding`() {
         val backStack = backStackOf(MainRoute.Home)
 
         backStack.resetIfRestoredThroughFallback()
@@ -21,16 +31,16 @@ class NavSavedStateTest {
 
         backStack.resetIfRestoredThroughFallback()
 
-        assertEquals(listOf<NavKey>(MainRoute.Home), backStack)
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
     }
 
     @Test
     fun `resets when a single route came back unrecognized`() {
-        val backStack = backStackOf(MainRoute.Home, UnrecognizedRoute)
+        val backStack = backStackOf(OnboardingRoute.DisplayName, UnrecognizedRoute)
 
         backStack.resetIfRestoredThroughFallback()
 
-        assertEquals(listOf<NavKey>(MainRoute.Home), backStack)
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
     }
 
     @Test
@@ -39,7 +49,7 @@ class NavSavedStateTest {
 
         backStack.resetIfRestoredThroughFallback()
 
-        assertEquals(listOf<NavKey>(MainRoute.Home), backStack)
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
     }
 
     private fun backStackOf(vararg keys: NavKey) = keys.toMutableList()

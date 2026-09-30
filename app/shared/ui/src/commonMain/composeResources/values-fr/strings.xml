@@ -1,4 +1,12 @@
 <resources>
+    <string name="onboarding_name_title">Comment doit-on vous appeler ?</string>
+    <string name="onboarding_name_subtitle">Les autres membres de votre groupe verront ce nom.</string>
+    <string name="onboarding_name_label">Votre nom</string>
+    <string name="onboarding_name_continue">Continuer</string>
+
+    <string name="onboarding_error_blank_display_name">Saisissez un nom pour continuer.</string>
+    <string name="onboarding_error_unexpected">Une erreur est survenue. Réessayez.</string>
+
     <string name="home_in_group">Vous êtes dans %1$s.</string>
     <string name="home_waiting_for_group">C'est bon. En attente de l'arrivée du groupe sur cet appareil…</string>
 </resources>
