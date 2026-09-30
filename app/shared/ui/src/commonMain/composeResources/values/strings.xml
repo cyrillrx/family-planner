@@ -1,4 +1,12 @@
 <resources>
+    <string name="onboarding_back">Back</string>
+
+    <string name="onboarding_choice_title">Your group</string>
+    <string name="onboarding_choice_subtitle">Create the group the other members will join.</string>
+    <string name="onboarding_choice_create">Create a group</string>
+
+    <string name="onboarding_error_already_in_a_group">You already belong to a group.</string>
+
     <string name="onboarding_name_title">What should we call you?</string>
     <string name="onboarding_name_subtitle">The other members of your group will see this name.</string>
     <string name="onboarding_name_label">Your name</string>

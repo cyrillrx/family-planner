@@ -27,7 +27,7 @@ fun DisplayNameScreen(
     router: OnboardingRouter,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(viewModel) { viewModel.registered.collect { router.openHome() } }
+    LaunchedEffect(viewModel) { viewModel.registered.collect { router.openGroupChoice() } }
 
     DisplayNameScreen(
         state = viewModel.state.collectAsStateWithLifecycle().value,

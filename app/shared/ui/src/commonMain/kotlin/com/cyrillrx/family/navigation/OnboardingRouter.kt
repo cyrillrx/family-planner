@@ -6,10 +6,20 @@ import androidx.navigation3.runtime.NavKey
 import com.cyrillrx.family.app.MainRoute
 
 interface OnboardingRouter {
+    fun openGroupChoice()
+
     fun openHome()
+
+    fun navigateUp()
 }
 
 class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : OnboardingRouter {
+
+    // The name step stays behind: it is the only screen that can register a member, and the
+    // name it takes is the one every other member reads.
+    override fun openGroupChoice() {
+        backStack.add(OnboardingRoute.GroupChoice)
+    }
 
     // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
     // leave it empty in between.
@@ -18,5 +28,9 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
             backStack.clear()
             backStack.add(MainRoute.Home)
         }
+    }
+
+    override fun navigateUp() {
+        backStack.navigateUp()
     }
 }
