@@ -36,7 +36,11 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
 
         viewModelScope.launch {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
-                is Result.Success -> registrations.send(Unit)
+                // Ready again: the step stays on the back stack, and the member can come back to it.
+                is Result.Success -> {
+                    state.value = beforeSubmit
+                    registrations.send(Unit)
+                }
 
                 is Result.Failure -> state.value = beforeSubmit.copy(error = registration.error)
             }
