@@ -9,6 +9,7 @@
   },
   "enabledPlugins": {
     "git-workflow@cyrillrx-conventions": true,
-    "kmp-conventions@cyrillrx-conventions": true
+    "kmp-conventions@cyrillrx-conventions": true,
+    "coding-conventions@cyrillrx-conventions": true
   }
 }

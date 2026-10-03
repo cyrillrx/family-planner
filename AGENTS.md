@@ -90,9 +90,10 @@ The practical rule when writing code: **testable logic belongs in `core/model` o
 
 The Claude Code plugins declared in [`.claude/settings.json`](.claude/settings.json) come from the `cyrillrx-conventions` marketplace and install on folder trust:
 
-| Plugin            | Provides                                         |
-|-------------------|--------------------------------------------------|
-| `git-workflow`    | `/commit`, `/triage-findings`, `/address-review` |
-| `kmp-conventions` | `kmp-style` (auto-invoked)                       |
+| Plugin               | Provides                                                        |
+|----------------------|-----------------------------------------------------------------|
+| `git-workflow`       | `/commit`, `/triage-findings`, `/address-review`                |
+| `kmp-conventions`    | `kmp-style` (auto-invoked)                                      |
+| `coding-conventions` | Coding and documentation conventions, injected at session start |
 
 The plugin skills are derived from the convention documents. When a rule and a skill disagree, the document in `cyrillrx/coding-conventions` wins — report the drift there rather than working around it here.
