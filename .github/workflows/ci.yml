@@ -23,16 +23,18 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Check formatting
-        run: ./gradlew ktlintCheck --no-daemon
+        run: ./gradlew ktlintCheck
 
       - name: Run the tests and generate the Kover report
-        run: ./gradlew jvmTest :server:test koverXmlReport --no-daemon
+        run: ./gradlew jvmTest :server:test koverXmlReport
 
       - name: Upload the Kover report
         uses: actions/upload-artifact@v4
@@ -56,7 +58,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -72,4 +76,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonar --no-daemon --no-configuration-cache
+        run: ./gradlew sonar --no-configuration-cache
