@@ -18,6 +18,16 @@ internal suspend fun groupRepositoryWithAGroup() = RamGroupRepository().apply {
     setGroup(Group(id = GroupId("group-1"), name = "Home", createdAt = NOW))
 }
 
+internal suspend fun registeredUserRepository() = RamUserRepository().apply {
+    register(User(id = UserId("alice"), displayName = "Alice"))
+}
+
+internal class AmnesicUserRepository : UserRepository {
+    override suspend fun registeredUserId(): UserId? = null
+
+    override suspend fun register(user: User) = Result.Success(user)
+}
+
 internal object FailingUserRepository : UserRepository {
     override suspend fun registeredUserId(): UserId? = null
 

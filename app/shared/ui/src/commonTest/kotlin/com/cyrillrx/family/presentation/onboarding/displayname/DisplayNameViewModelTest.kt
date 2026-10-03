@@ -126,17 +126,14 @@ class DisplayNameViewModelTest {
     }
 
     @Test
-    fun `keeps working once registered`() = runTest {
+    fun `is ready again once registered`() = runTest {
         val viewModel = viewModel()
         viewModel.changeDisplayName("Alice")
 
         viewModel.register()
         advanceUntilIdle()
 
-        assertEquals(
-            DisplayNameState(displayName = "Alice", submitting = true),
-            viewModel.state.value,
-        )
+        assertEquals(DisplayNameState(displayName = "Alice"), viewModel.state.value)
     }
 
     @Test
@@ -183,17 +180,18 @@ class DisplayNameViewModelTest {
     }
 
     @Test
-    fun `registers once when the button is pressed again after the registration`() = runTest {
+    fun `registers again when the member comes back to the step`() = runTest {
         val users = CountingUserRepository()
         val viewModel = viewModel(userRepository = users)
         viewModel.changeDisplayName("Alice")
         viewModel.register()
         advanceUntilIdle()
 
+        viewModel.changeDisplayName("Alicia")
         viewModel.register()
         advanceUntilIdle()
 
-        assertEquals(1, users.registrations)
+        assertEquals(2, users.registrations)
     }
 
     private fun TestScope.collectRegistrations(viewModel: DisplayNameViewModel): List<Unit> {
