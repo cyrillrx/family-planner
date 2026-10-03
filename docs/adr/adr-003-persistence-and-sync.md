@@ -2,6 +2,9 @@
 
 > **Status**: Accepted | **Date**: 2026-09-02 | **Amended by**: [ADR-004](adr-004-user-identity-and-membership.md), [ADR-005](adr-005-kotlin-server.md) | **Context**: [PRD-001](../prd/prd-001-group-and-synchronization.md) is agreed; no V1 feature can start until the stack that upholds it is chosen.
 
+> [!IMPORTANT]
+> [ADR-005](adr-005-kotlin-server.md) renamed the modules this ADR names, after it was accepted. Read `shared/core` below as `app/shared/domain`, with the entities it refers to now in `core:model`. The constraints are unchanged and still bind: the synchronization sits behind an interface in `app/shared/domain` with a fake implementation, and no Firestore type appears in one of its signatures. The `telegram-bot/` mentions are deliberate — they record a slot that never existed and that this ADR renamed to `server/`.
+
 ## Decision
 
 The architecture is **hybrid**, in two parts that do not overlap:
