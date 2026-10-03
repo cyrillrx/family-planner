@@ -1,6 +1,5 @@
 package com.cyrillrx.family.navigation
 
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.cyrillrx.family.app.MainRoute
@@ -17,9 +16,8 @@ interface OnboardingRouter {
 
 class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : OnboardingRouter {
 
-    // The name step stays behind: it is the only screen that can register a member, and the
-    // name it takes is the one every other member reads. A second tap during the transition must
-    // not push it twice: a repeated key crashes `NavDisplay`.
+    // A second tap during the transition must not push the step twice: a repeated key
+    // crashes `NavDisplay`.
     override fun openGroupChoice() {
         if (backStack.lastOrNull() == OnboardingRoute.GroupChoice) return
 
@@ -32,13 +30,8 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
         backStack.add(OnboardingRoute.JoinGroup)
     }
 
-    // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
-    // leave it empty in between.
     override fun openHome() {
-        Snapshot.withMutableSnapshot {
-            backStack.clear()
-            backStack.add(MainRoute.Home)
-        }
+        backStack.replaceAllWith(MainRoute.Home)
     }
 
     override fun navigateUp() {

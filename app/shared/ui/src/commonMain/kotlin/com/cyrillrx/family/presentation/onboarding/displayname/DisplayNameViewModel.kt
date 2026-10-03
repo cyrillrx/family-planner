@@ -34,7 +34,6 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
 
         viewModelScope.launch {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
-                // Ready again: the step stays on the back stack, and the member can come back to it.
                 is Result.Success -> {
                     state.value = beforeSubmit
                     registrations.send(Unit)

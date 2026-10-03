@@ -19,8 +19,7 @@ internal val navSerializersModule = SerializersModule {
         registerOnboardingRoutes()
 
         // A route takes its fully qualified name as polymorphic discriminator, so moving one to
-        // another package makes back stacks persisted by an older build undecodable. Naming what
-        // could not be decoded resets navigation instead of crashing at launch.
+        // another package makes back stacks persisted by an older build undecodable.
         defaultDeserializer { UnrecognizedRoute.serializer() }
     }
 }

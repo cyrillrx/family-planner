@@ -2,6 +2,7 @@ package com.cyrillrx.family.navigation
 
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.cyrillrx.family.app.MainRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -59,5 +60,18 @@ class OnboardingRouterTest {
             ),
             backStack.toList(),
         )
+    }
+
+    @Test
+    fun `opens home on a back stack holding nothing else`() {
+        val backStack = NavBackStack<NavKey>(
+            OnboardingRoute.DisplayName,
+            OnboardingRoute.GroupChoice,
+            OnboardingRoute.JoinGroup,
+        )
+
+        OnboardingRouterImpl(backStack).openHome()
+
+        assertEquals(listOf<NavKey>(MainRoute.Home), backStack.toList())
     }
 }
