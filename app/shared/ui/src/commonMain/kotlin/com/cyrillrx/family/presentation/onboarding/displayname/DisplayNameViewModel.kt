@@ -16,8 +16,6 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<DisplayNameState>
         field = MutableStateFlow(DisplayNameState())
 
-    // Buffered so an emission with no collector is not lost, consumed once so coming back to
-    // the step does not navigate away from it again.
     private val registrations = Channel<Unit>(Channel.BUFFERED)
     val registered: Flow<Unit> = registrations.receiveAsFlow()
 
@@ -36,7 +34,6 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
 
         viewModelScope.launch {
             when (val registration = onboarding.register(beforeSubmit.displayName)) {
-                // Ready again: the step stays on the back stack, and the member can come back to it.
                 is Result.Success -> {
                     state.value = beforeSubmit
                     registrations.send(Unit)

@@ -2,9 +2,11 @@ package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.GroupRepository
+import com.cyrillrx.family.group.domain.InvitationRepository
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.RegisterUserError
+import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
@@ -52,4 +54,14 @@ internal class CountingGroupRepository(
         private set
 
     override suspend fun group() = delegate.group().also { reads++ }
+}
+
+internal class CountingInvitationRepository : InvitationRepository {
+    var redemptions = 0
+        private set
+
+    private val delegate = SampleInvitationRepository()
+
+    override suspend fun redeem(code: String, user: UserId) =
+        delegate.redeem(code, user).also { redemptions++ }
 }

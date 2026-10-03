@@ -16,8 +16,6 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<GroupChoiceState>
         field = MutableStateFlow(GroupChoiceState())
 
-    // Buffered so an emission with no collector is not lost, consumed once so coming back to
-    // the step does not navigate away from it again.
     private val groupCreations = Channel<Unit>(Channel.BUFFERED)
     val groupCreated: Flow<Unit> = groupCreations.receiveAsFlow()
 

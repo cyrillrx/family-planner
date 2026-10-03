@@ -26,8 +26,7 @@ fun OnboardingStepLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // The safe area shrinks by the height of the keyboard, which on a short screen leaves less
-    // room than the step needs. Scrolling keeps the submit button reachable; the minimum height
-    // keeps the step centred whenever it does fit.
+    // room than the step needs, and Compose sends no pointer event to a child laid outside it.
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()

@@ -1,8 +1,8 @@
-package com.cyrillrx.family.presentation.onboarding.groupchoice
+package com.cyrillrx.family.presentation.onboarding.joingroup
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -13,75 +13,77 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import com.cyrillrx.family.group.domain.CreateGroupError
+import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.navigation.OnboardingRouter
 import com.cyrillrx.family.presentation.component.ErrorText
 import com.cyrillrx.family.presentation.component.OnboardingStepLayout
 import com.cyrillrx.family.presentation.component.message
 import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.onboarding_back
-import familyplanner.app.shared.ui.generated.resources.onboarding_choice_create
-import familyplanner.app.shared.ui.generated.resources.onboarding_choice_join
-import familyplanner.app.shared.ui.generated.resources.onboarding_choice_subtitle
-import familyplanner.app.shared.ui.generated.resources.onboarding_choice_title
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_label
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_submit
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_subtitle
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun GroupChoiceScreen(
-    viewModel: GroupChoiceViewModel,
+fun JoinGroupScreen(
+    viewModel: JoinGroupViewModel,
     router: OnboardingRouter,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(viewModel) { viewModel.groupCreated.collect { router.openHome() } }
+    LaunchedEffect(viewModel) { viewModel.joined.collect { router.openHome() } }
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
 
-    // Leaving the step clears its view model, which would cancel the creation halfway through.
+    // Leaving the step clears its view model, which would cancel the redemption halfway through —
+    // and a redemption that lands after the screen is gone cannot be retried (#26).
     NavigationBackHandler(
         state = rememberNavigationEventState(NavigationEventInfo.None),
         isBackEnabled = state.submitting,
         onBackCompleted = {},
     )
 
-    GroupChoiceScreen(
+    JoinGroupScreen(
         state = state,
-        onCreateGroupClicked = viewModel::createGroup,
-        onJoinGroupClicked = router::openJoinGroup,
+        onCodeChanged = viewModel::changeInvitationCode,
+        onJoinClicked = viewModel::joinGroup,
         onBackClicked = router::navigateUp,
         modifier = modifier,
     )
 }
 
 @Composable
-fun GroupChoiceScreen(
-    state: GroupChoiceState,
-    onCreateGroupClicked: () -> Unit,
-    onJoinGroupClicked: () -> Unit,
+fun JoinGroupScreen(
+    state: JoinGroupState,
+    onCodeChanged: (String) -> Unit,
+    onJoinClicked: () -> Unit,
     onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OnboardingStepLayout(
-        title = stringResource(Res.string.onboarding_choice_title),
-        subtitle = stringResource(Res.string.onboarding_choice_subtitle),
+        title = stringResource(Res.string.onboarding_join_title),
+        subtitle = stringResource(Res.string.onboarding_join_subtitle),
         modifier = modifier,
     ) {
-        // TODO(#16): a group stranded without its founder leaves GroupAlreadyExists with no way to Home.
+        OutlinedTextField(
+            value = state.code,
+            onValueChange = onCodeChanged,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.submitting,
+            label = { Text(stringResource(Res.string.onboarding_join_label)) },
+            singleLine = true,
+            isError = state.error != null,
+        )
+
         state.error?.let { ErrorText(it.message()) }
 
         Button(
-            onClick = onCreateGroupClicked,
+            onClick = onJoinClicked,
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.submitting,
         ) {
-            Text(stringResource(Res.string.onboarding_choice_create))
-        }
-
-        OutlinedButton(
-            onClick = onJoinGroupClicked,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !state.submitting,
-        ) {
-            Text(stringResource(Res.string.onboarding_choice_join))
+            Text(stringResource(Res.string.onboarding_join_submit))
         }
 
         TextButton(
@@ -96,22 +98,22 @@ fun GroupChoiceScreen(
 
 @Preview
 @Composable
-private fun GroupChoiceScreenPreview() {
-    GroupChoiceScreen(
-        state = GroupChoiceState(),
-        onCreateGroupClicked = {},
-        onJoinGroupClicked = {},
+private fun JoinGroupScreenPreview() {
+    JoinGroupScreen(
+        state = JoinGroupState(code = "accepted-invitation-01"),
+        onCodeChanged = {},
+        onJoinClicked = {},
         onBackClicked = {},
     )
 }
 
 @Preview
 @Composable
-private fun GroupChoiceScreenRefusedPreview() {
-    GroupChoiceScreen(
-        state = GroupChoiceState(error = CreateGroupError.GroupAlreadyExists),
-        onCreateGroupClicked = {},
-        onJoinGroupClicked = {},
+private fun JoinGroupScreenRefusedPreview() {
+    JoinGroupScreen(
+        state = JoinGroupState(code = "short", error = JoinGroupError.CodeTooShort),
+        onCodeChanged = {},
+        onJoinClicked = {},
         onBackClicked = {},
     )
 }
