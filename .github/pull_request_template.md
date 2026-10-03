@@ -2,7 +2,10 @@
 
 <!-- PR title follows Conventional Commits: <type>(<scope>): <subject>. See docs/conventions/git-and-collaboration.md. -->
 <!-- What does this PR do, and why? The diff already shows the what — explain the why. -->
-<!-- Link the issues it closes: Closes #123. -->
+
+## 🔍 Review notes
+
+<!-- Where to start, what is mechanical, what deserves attention. Delete this section if there is nothing to say. -->
 
 ## 🖼️ Media
 
@@ -29,3 +32,5 @@
 - [ ] No sensitive data (secrets, credentials, tokens) committed
 - [ ] Documentation updated if public APIs or architecture decisions changed
 - [ ] CI is green
+
+<!-- Closing references go last, after the checklist, one per line: Closes #123 -->
