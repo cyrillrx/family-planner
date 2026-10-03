@@ -9,6 +9,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.cyrillrx.family.group.domain.CreateGroupError
 import com.cyrillrx.family.navigation.OnboardingRouter
 import com.cyrillrx.family.presentation.component.ErrorText
@@ -29,8 +32,17 @@ fun GroupChoiceScreen(
 ) {
     LaunchedEffect(viewModel) { viewModel.groupCreated.collect { router.openHome() } }
 
+    val state = viewModel.state.collectAsStateWithLifecycle().value
+
+    // Leaving the step clears its view model, which would cancel the creation halfway through.
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = state.submitting,
+        onBackCompleted = {},
+    )
+
     GroupChoiceScreen(
-        state = viewModel.state.collectAsStateWithLifecycle().value,
+        state = state,
         onCreateGroupClicked = viewModel::createGroup,
         onBackClicked = router::navigateUp,
         modifier = modifier,
