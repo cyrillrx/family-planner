@@ -16,8 +16,6 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<DisplayNameState>
         field = MutableStateFlow(DisplayNameState())
 
-    // Buffered so an emission with no collector is not lost, consumed once so coming back to
-    // the step does not navigate away from it again.
     private val registrations = Channel<Unit>(Channel.BUFFERED)
     val registered: Flow<Unit> = registrations.receiveAsFlow()
 

@@ -26,15 +26,14 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
         backStack.add(OnboardingRoute.GroupChoice)
     }
 
-    // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
-    // leave it empty in between.
-    // Guarded like the group choice: a repeated key crashes `NavDisplay`.
     override fun openJoinGroup() {
         if (backStack.lastOrNull() == OnboardingRoute.JoinGroup) return
 
         backStack.add(OnboardingRoute.JoinGroup)
     }
 
+    // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
+    // leave it empty in between.
     override fun openHome() {
         Snapshot.withMutableSnapshot {
             backStack.clear()

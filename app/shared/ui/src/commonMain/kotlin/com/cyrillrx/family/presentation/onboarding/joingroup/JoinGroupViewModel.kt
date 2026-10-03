@@ -16,8 +16,6 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<JoinGroupState>
         field = MutableStateFlow(JoinGroupState())
 
-    // Buffered so an emission with no collector is not lost, consumed once so coming back to
-    // the step does not navigate away from it again.
     private val joins = Channel<Unit>(Channel.BUFFERED)
     val joined: Flow<Unit> = joins.receiveAsFlow()
 
