@@ -9,6 +9,8 @@ import com.cyrillrx.family.presentation.onboarding.displayname.DisplayNameScreen
 import com.cyrillrx.family.presentation.onboarding.displayname.DisplayNameViewModel
 import com.cyrillrx.family.presentation.onboarding.groupchoice.GroupChoiceScreen
 import com.cyrillrx.family.presentation.onboarding.groupchoice.GroupChoiceViewModel
+import com.cyrillrx.family.presentation.onboarding.joingroup.JoinGroupScreen
+import com.cyrillrx.family.presentation.onboarding.joingroup.JoinGroupViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -18,11 +20,15 @@ sealed interface OnboardingRoute {
 
     @Serializable
     data object GroupChoice : OnboardingRoute, NavKey
+
+    @Serializable
+    data object JoinGroup : OnboardingRoute, NavKey
 }
 
 fun PolymorphicModuleBuilder<NavKey>.registerOnboardingRoutes() {
     subclass(OnboardingRoute.DisplayName::class, OnboardingRoute.DisplayName.serializer())
     subclass(OnboardingRoute.GroupChoice::class, OnboardingRoute.GroupChoice.serializer())
+    subclass(OnboardingRoute.JoinGroup::class, OnboardingRoute.JoinGroup.serializer())
 }
 
 fun EntryProviderScope<NavKey>.handleOnboardingRoutes(
@@ -37,5 +43,9 @@ fun EntryProviderScope<NavKey>.handleOnboardingRoutes(
 
     entry<OnboardingRoute.GroupChoice> {
         GroupChoiceScreen(viewModel { GroupChoiceViewModel(graph.onboarding) }, router)
+    }
+
+    entry<OnboardingRoute.JoinGroup> {
+        JoinGroupScreen(viewModel { JoinGroupViewModel(graph.onboarding) }, router)
     }
 }

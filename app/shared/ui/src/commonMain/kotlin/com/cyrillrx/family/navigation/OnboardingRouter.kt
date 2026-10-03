@@ -8,6 +8,8 @@ import com.cyrillrx.family.app.MainRoute
 interface OnboardingRouter {
     fun openGroupChoice()
 
+    fun openJoinGroup()
+
     fun openHome()
 
     fun navigateUp()
@@ -26,6 +28,13 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
 
     // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes
     // leave it empty in between.
+    // Guarded like the group choice: a repeated key crashes `NavDisplay`.
+    override fun openJoinGroup() {
+        if (backStack.lastOrNull() == OnboardingRoute.JoinGroup) return
+
+        backStack.add(OnboardingRoute.JoinGroup)
+    }
+
     override fun openHome() {
         Snapshot.withMutableSnapshot {
             backStack.clear()
