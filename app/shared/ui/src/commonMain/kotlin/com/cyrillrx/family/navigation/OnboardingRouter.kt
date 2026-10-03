@@ -16,8 +16,11 @@ interface OnboardingRouter {
 class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : OnboardingRouter {
 
     // The name step stays behind: it is the only screen that can register a member, and the
-    // name it takes is the one every other member reads.
+    // name it takes is the one every other member reads. A second tap during the transition must
+    // not push it twice: a repeated key crashes `NavDisplay`.
     override fun openGroupChoice() {
+        if (backStack.lastOrNull() == OnboardingRoute.GroupChoice) return
+
         backStack.add(OnboardingRoute.GroupChoice)
     }
 
