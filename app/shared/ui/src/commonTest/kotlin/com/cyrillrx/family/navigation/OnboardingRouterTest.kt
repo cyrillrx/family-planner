@@ -13,7 +13,7 @@ class OnboardingRouterTest {
 
         OnboardingRouterImpl(backStack).openGroupChoice()
 
-        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), backStack)
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), backStack.toList())
     }
 
     @Test
@@ -24,6 +24,6 @@ class OnboardingRouterTest {
         router.openGroupChoice()
         router.openGroupChoice()
 
-        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), backStack)
+        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), backStack.toList())
     }
 }
