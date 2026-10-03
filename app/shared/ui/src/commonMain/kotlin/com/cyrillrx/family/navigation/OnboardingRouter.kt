@@ -8,6 +8,8 @@ import com.cyrillrx.family.app.MainRoute
 interface OnboardingRouter {
     fun openGroupChoice()
 
+    fun openJoinGroup()
+
     fun openHome()
 
     fun navigateUp()
@@ -22,6 +24,12 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
         if (backStack.lastOrNull() == OnboardingRoute.GroupChoice) return
 
         backStack.add(OnboardingRoute.GroupChoice)
+    }
+
+    override fun openJoinGroup() {
+        if (backStack.lastOrNull() == OnboardingRoute.JoinGroup) return
+
+        backStack.add(OnboardingRoute.JoinGroup)
     }
 
     // One mutation: `NavDisplay` requires a back stack that is never empty, and the two writes

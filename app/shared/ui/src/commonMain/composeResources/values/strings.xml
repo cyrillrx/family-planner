@@ -1,8 +1,21 @@
 <resources>
+    <string name="onboarding_choice_join">I have an invitation code</string>
+
+    <string name="onboarding_join_title">Your invitation code</string>
+    <string name="onboarding_join_subtitle">Paste the code a member of the group sent you.</string>
+    <string name="onboarding_join_label">Invitation code</string>
+    <string name="onboarding_join_submit">Join the group</string>
+
+    <string name="onboarding_error_code_too_short">This code is too short to be an invitation.</string>
+    <string name="onboarding_error_code_revoked">This invitation was revoked. Ask for a new one.</string>
+    <string name="onboarding_error_code_already_redeemed">This invitation has already been used.</string>
+    <string name="onboarding_error_code_expired">This invitation has expired. Ask for a new one.</string>
+    <string name="onboarding_error_code_unknown">No invitation matches this code. Check it and try again.</string>
+
     <string name="onboarding_back">Back</string>
 
     <string name="onboarding_choice_title">Your group</string>
-    <string name="onboarding_choice_subtitle">Create the group the other members will join.</string>
+    <string name="onboarding_choice_subtitle">Create one, or join the one you were invited to.</string>
     <string name="onboarding_choice_create">Create a group</string>
 
     <string name="onboarding_error_already_in_a_group">You already belong to a group.</string>

@@ -26,4 +26,38 @@ class OnboardingRouterTest {
 
         assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), backStack.toList())
     }
+
+    @Test
+    fun `opens the join step above the group choice`() {
+        val backStack = NavBackStack<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
+
+        OnboardingRouterImpl(backStack).openJoinGroup()
+
+        assertEquals(
+            listOf<NavKey>(
+                OnboardingRoute.DisplayName,
+                OnboardingRoute.GroupChoice,
+                OnboardingRoute.JoinGroup,
+            ),
+            backStack.toList(),
+        )
+    }
+
+    @Test
+    fun `opens the join step once when asked twice`() {
+        val backStack = NavBackStack<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
+        val router = OnboardingRouterImpl(backStack)
+
+        router.openJoinGroup()
+        router.openJoinGroup()
+
+        assertEquals(
+            listOf<NavKey>(
+                OnboardingRoute.DisplayName,
+                OnboardingRoute.GroupChoice,
+                OnboardingRoute.JoinGroup,
+            ),
+            backStack.toList(),
+        )
+    }
 }
