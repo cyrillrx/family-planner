@@ -63,7 +63,7 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
 
     override fun log(msg: String) = Unit
 
-    override fun getDatabasePath(name: String): File = directory.resolve(name).apply { mkdirs() }
+    override fun getDatabasePath(name: String): File = directory.resolve(name)
 
     private fun flush() = file.outputStream().use { stored.store(it, null) }
 }
