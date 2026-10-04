@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.ktlint)
@@ -13,11 +14,10 @@ plugins {
 val firebaseProperties = providers.fileContents(
     rootProject.layout.projectDirectory.file("local.properties"),
 ).asText.map { text ->
-    text.lineSequence()
-        .map { it.trim() }
+    val properties = Properties().apply { load(text.reader()) }
+    properties.stringPropertyNames()
         .filter { it.startsWith("firebase.") }
-        .mapNotNull { line -> line.split("=", limit = 2).takeIf { it.size == 2 } }
-        .associate { (key, value) -> key.trim() to value.trim() }
+        .associateWith { properties.getProperty(it).trim() }
 }.orElse(emptyMap())
 
 val generateFirebaseConfig = tasks.register("generateFirebaseConfig") {
@@ -28,6 +28,9 @@ val generateFirebaseConfig = tasks.register("generateFirebaseConfig") {
 
     doLast {
         fun value(key: String) = properties.get()["firebase.$key"].orEmpty()
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("$", "\\$")
 
         val file = outputDir.get().asFile.resolve("com/cyrillrx/family/firebase/FirebaseConfig.kt")
         file.parentFile.mkdirs()
