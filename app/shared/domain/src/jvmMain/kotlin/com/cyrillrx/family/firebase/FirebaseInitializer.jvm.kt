@@ -7,6 +7,7 @@ import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.apps
 import dev.gitlive.firebase.initialize
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
@@ -51,9 +52,7 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
 
     private val file = directory.resolve("firebase.properties")
 
-    private val stored = Properties().apply {
-        if (file.exists()) file.inputStream().use { load(it) }
-    }
+    private val stored = readStore()
 
     override fun store(key: String, value: String) {
         stored.setProperty(key, value)
@@ -70,6 +69,14 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
     override fun log(msg: String) = Unit
 
     override fun getDatabasePath(name: String): File = directory.resolve(name)
+
+    private fun readStore(): Properties = try {
+        Properties().apply { if (file.exists()) file.inputStream().use { load(it) } }
+    } catch (unreadable: IllegalArgumentException) {
+        Properties()
+    } catch (unreadable: IOException) {
+        Properties()
+    }
 
     @Synchronized
     private fun flush() {
