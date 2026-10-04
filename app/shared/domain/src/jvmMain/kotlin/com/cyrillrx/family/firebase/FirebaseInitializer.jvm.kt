@@ -1,5 +1,6 @@
 package com.cyrillrx.family.firebase
 
+import android.app.Application
 import com.google.firebase.FirebasePlatform
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
@@ -18,7 +19,8 @@ actual fun initializeFirebase(context: Any?) {
         platformPrepared = true
     }
 
-    if (Firebase.apps(context).isEmpty()) Firebase.initialize(context, options)
+    val application = Application()
+    if (Firebase.apps(application).isEmpty()) Firebase.initialize(application, options)
 }
 
 private fun jvmOptions(): FirebaseOptions? {
