@@ -16,9 +16,10 @@ private var platformPrepared = false
 
 actual fun initializeFirebase(context: Any?) {
     val options = jvmOptions() ?: return
+    val directory = applicationDataDirectory() ?: return
 
     if (!platformPrepared) {
-        FirebasePlatform.initializeFirebasePlatform(DesktopFirebasePlatform(applicationDataDirectory()))
+        FirebasePlatform.initializeFirebasePlatform(DesktopFirebasePlatform(directory))
         platformPrepared = true
     }
 
@@ -78,7 +79,7 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
     }
 }
 
-private fun applicationDataDirectory(): File {
+private fun applicationDataDirectory(): File? {
     val home = File(System.getProperty("user.home"))
     val os = System.getProperty("os.name").lowercase()
 
@@ -88,7 +89,7 @@ private fun applicationDataDirectory(): File {
         else -> environmentDirectory("XDG_DATA_HOME") ?: home.resolve(".local/share")
     }
 
-    return base.resolve("FamilyPlanner").apply { mkdirs() }
+    return base.resolve("FamilyPlanner").apply { mkdirs() }.takeIf { it.isDirectory }
 }
 
 private fun environmentDirectory(name: String): File? = System.getenv(name)?.takeIf { it.isNotBlank() }?.let(::File)
