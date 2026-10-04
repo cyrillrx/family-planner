@@ -41,3 +41,10 @@ The first three are [PRD-001](prd/prd-001-group-and-synchronization.md) Phase 2.
 - [ ] Local generation with Gemma (high-end Android + iPhone)
 - [ ] Expiration date tracking
 - [ ] iOS / Android home screen widget for grocery list
+
+## Cross-cutting
+
+Outside the phases, because they are not features and they do not wait for one. The ordering above does not apply to them; they are listed so they are not rediscovered as emergencies.
+
+- [ ] Somewhere for a failure to go — a caught exception is discarded today, and nothing records which one happened
+- [ ] Crash reporting from the surfaces that ship, with the consent that any telemetry beyond it requires
