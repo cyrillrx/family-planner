@@ -12,6 +12,7 @@ import com.cyrillrx.family.firebase.initializeFirebase
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+        // TODO(#55): move to an Application subclass before an entry point other than this activity lands.
         initializeFirebase(applicationContext)
         super.onCreate(savedInstanceState)
 
