@@ -7,6 +7,9 @@ import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.apps
 import dev.gitlive.firebase.initialize
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.util.Properties
 
 private var platformPrepared = false
@@ -67,7 +70,12 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
 
     override fun getDatabasePath(name: String): File = directory.resolve(name)
 
-    private fun flush() = file.outputStream().use { stored.store(it, null) }
+    @Synchronized
+    private fun flush() {
+        val pending = directory.resolve("firebase.properties.tmp")
+        pending.outputStream().use { stored.store(it, null) }
+        Files.move(pending.toPath(), file.toPath(), REPLACE_EXISTING, ATOMIC_MOVE)
+    }
 }
 
 private fun applicationDataDirectory(): File {
