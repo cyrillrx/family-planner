@@ -81,9 +81,21 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
 
     @Synchronized
     private fun flush() {
+        try {
+            replaceStoreFile()
+        } catch (unwritable: IOException) {
+            Unit
+        }
+    }
+
+    private fun replaceStoreFile() {
         val pending = Files.createTempFile(directory.toPath(), "firebase", ".properties")
-        Files.newOutputStream(pending).use { stored.store(it, null) }
-        Files.move(pending, file.toPath(), REPLACE_EXISTING, ATOMIC_MOVE)
+        try {
+            Files.newOutputStream(pending).use { stored.store(it, null) }
+            Files.move(pending, file.toPath(), REPLACE_EXISTING, ATOMIC_MOVE)
+        } finally {
+            Files.deleteIfExists(pending)
+        }
     }
 }
 
