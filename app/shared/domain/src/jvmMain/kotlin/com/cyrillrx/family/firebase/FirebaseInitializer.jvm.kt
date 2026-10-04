@@ -84,9 +84,11 @@ private fun applicationDataDirectory(): File {
 
     val base = when {
         os.contains("mac") -> home.resolve("Library/Application Support")
-        os.contains("win") -> System.getenv("APPDATA")?.let(::File) ?: home
-        else -> System.getenv("XDG_DATA_HOME")?.let(::File) ?: home.resolve(".local/share")
+        os.contains("win") -> environmentDirectory("APPDATA") ?: home
+        else -> environmentDirectory("XDG_DATA_HOME") ?: home.resolve(".local/share")
     }
 
     return base.resolve("FamilyPlanner").apply { mkdirs() }
 }
+
+private fun environmentDirectory(name: String): File? = System.getenv(name)?.takeIf { it.isNotBlank() }?.let(::File)
