@@ -47,6 +47,7 @@ private fun jvmOptions(): FirebaseOptions? {
  * system temporary directory, which would cost the offline cache on every restart.
  *
  * TODO(#50): cover the persistence and the data directory choice.
+ * TODO(#51): keep a second instance from overwriting this store.
  */
 private class DesktopFirebasePlatform(private val directory: File) : FirebasePlatform() {
 
@@ -80,9 +81,9 @@ private class DesktopFirebasePlatform(private val directory: File) : FirebasePla
 
     @Synchronized
     private fun flush() {
-        val pending = directory.resolve("firebase.properties.tmp")
-        pending.outputStream().use { stored.store(it, null) }
-        Files.move(pending.toPath(), file.toPath(), REPLACE_EXISTING, ATOMIC_MOVE)
+        val pending = Files.createTempFile(directory.toPath(), "firebase", ".properties")
+        Files.newOutputStream(pending).use { stored.store(it, null) }
+        Files.move(pending, file.toPath(), REPLACE_EXISTING, ATOMIC_MOVE)
     }
 }
 
