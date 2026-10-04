@@ -48,3 +48,4 @@ Outside the phases, because they are not features and they do not wait for one. 
 
 - [ ] Somewhere for a failure to go — a caught exception is discarded today, and nothing records which one happened
 - [ ] Crash reporting from the surfaces that ship, with the consent that any telemetry beyond it requires
+- [ ] A product name that fits a group of any size — "Family Planner" assumes a family. Candidates lean towards Majordome, Butler or something close, and none is settled. The Android package is fixed once the app is on the Play Store, so it is decided before the first release
