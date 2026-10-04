@@ -7,6 +7,51 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
 }
 
+// Firebase options are not in the repository: it is public, and `.gitignore` already keeps
+// `google-services.json` and `GoogleService-Info.plist` out. They come from `local.properties`,
+// read through a provider so the configuration cache stays valid.
+val firebaseProperties = providers.fileContents(
+    rootProject.layout.projectDirectory.file("local.properties"),
+).asText.map { text ->
+    text.lineSequence()
+        .map { it.trim() }
+        .filter { it.startsWith("firebase.") }
+        .mapNotNull { line -> line.split("=", limit = 2).takeIf { it.size == 2 } }
+        .associate { (key, value) -> key.trim() to value.trim() }
+}.orElse(emptyMap())
+
+val generateFirebaseConfig = tasks.register("generateFirebaseConfig") {
+    val properties = firebaseProperties
+    val outputDir = layout.buildDirectory.dir("generated/firebase/kotlin")
+    inputs.property("firebaseProperties", properties)
+    outputs.dir(outputDir)
+
+    doLast {
+        fun value(key: String) = properties.get()["firebase.$key"].orEmpty()
+
+        val file = outputDir.get().asFile.resolve("com/cyrillrx/family/firebase/FirebaseConfig.kt")
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            package com.cyrillrx.family.firebase
+
+            internal object FirebaseConfig {
+                val projectId: String = "${value("projectId")}"
+                val gcmSenderId: String = "${value("gcmSenderId")}"
+                val storageBucket: String = "${value("storageBucket")}"
+                val androidApplicationId: String = "${value("androidApplicationId")}"
+                val androidApiKey: String = "${value("androidApiKey")}"
+                val iosApplicationId: String = "${value("iosApplicationId")}"
+                val iosApiKey: String = "${value("iosApiKey")}"
+                val jvmApplicationId: String = "${value("jvmApplicationId")}"
+                val jvmApiKey: String = "${value("jvmApiKey")}"
+            }
+
+            """.trimIndent(),
+        )
+    }
+}
+
 kotlin {
     listOf(
         iosArm64(),
@@ -39,9 +84,20 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            kotlin.srcDir(generateFirebaseConfig)
+        }
         commonMain.dependencies {
             api(projects.core.model)
             api(libs.kotlinx.coroutinesCore)
+        }
+        // Not in commonMain: on iOS the SDK does not link the Firebase frameworks transitively,
+        // so that target needs CocoaPods in the build before it can carry the dependency.
+        androidMain.dependencies {
+            implementation(libs.gitlive.firebase.app)
+        }
+        jvmMain.dependencies {
+            implementation(libs.gitlive.firebase.app)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
