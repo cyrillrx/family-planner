@@ -23,6 +23,12 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.cyrillrx.family"
             packageVersion = "1.0.0"
+            // The Firebase SDK needs these, and the packaged runtime only bundles what is listed.
+            modules("java.compiler", "java.instrument", "java.naming", "java.sql", "jdk.unsupported")
+        }
+
+        buildTypes.release.proguard {
+            isEnabled.set(false)
         }
     }
 }

@@ -87,6 +87,24 @@ Coverage comes from `jvmTest` alone and reaches SonarCloud through Kover, as **o
 
 The practical rule when writing code: **testable logic belongs in `core/model` or `app/shared/domain`**. Kover counts per class and every top-level declaration in a file compiles into a single facade, so a pure function sharing a file with a composable is excluded along with it. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md).
 
+### Firebase configuration
+
+The Firebase options are not in the repository: it is public, and `.gitignore` already keeps `google-services.json` and `GoogleService-Info.plist` out. They are read from `local.properties`, which is untracked, and generated into a Kotlin object at build time.
+
+```properties
+firebase.projectId=
+firebase.gcmSenderId=
+firebase.storageBucket=
+firebase.androidApplicationId=
+firebase.androidApiKey=
+firebase.jvmApplicationId=
+firebase.jvmApiKey=
+```
+
+Each value comes from the matching app registration in the Firebase console. Leave them out and the build still works: `initializeFirebase()` becomes a no-op and the client stays on its in-memory repositories, which is what CI does.
+
+iOS has no entry yet. The SDK does not link the Firebase frameworks transitively on that target, so it needs CocoaPods in the build first.
+
 ## 5. Shared Tooling
 
 The Claude Code plugins declared in [`.claude/settings.json`](.claude/settings.json) come from the `cyrillrx-conventions` marketplace and install on folder trust:
