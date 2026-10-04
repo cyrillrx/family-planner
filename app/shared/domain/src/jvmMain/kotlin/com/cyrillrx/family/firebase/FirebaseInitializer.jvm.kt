@@ -40,6 +40,8 @@ private fun jvmOptions(): FirebaseOptions? {
 /**
  * The sample in the SDK's documentation keeps its store in a map and leaves the database in the
  * system temporary directory, which would cost the offline cache on every restart.
+ *
+ * TODO(#50): cover the persistence and the data directory choice.
  */
 private class DesktopFirebasePlatform(private val directory: File) : FirebasePlatform() {
 
