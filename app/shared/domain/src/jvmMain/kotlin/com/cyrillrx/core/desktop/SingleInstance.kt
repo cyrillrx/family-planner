@@ -8,7 +8,6 @@ import java.io.File
 import java.io.IOException
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
-import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
 import java.nio.channels.FileLock
 import java.nio.channels.OverlappingFileLockException
@@ -20,13 +19,6 @@ import java.nio.file.StandardOpenOption.CREATE
 import java.nio.file.StandardOpenOption.WRITE
 import kotlin.concurrent.thread
 
-/**
- * Ownership of an application data directory by a single running process.
- *
- * The lock is held by the operating system, which releases it when the process dies, so a crash
- * never leaves the directory claimed. A later process asks the owner to come forward through
- * [requestActivation] instead of opening the directory a second time.
- */
 class SingleInstance private constructor(
     private val lock: FileLock,
     private val socket: Path,
@@ -37,7 +29,6 @@ class SingleInstance private constructor(
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    /** Emits each time another process asks this one to come forward. */
     val activationRequests: Flow<Unit> = requests.asSharedFlow()
 
     private val server: ServerSocketChannel? = listen()
@@ -48,8 +39,7 @@ class SingleInstance private constructor(
         lock.channel().close()
     }
 
-    // The lock alone keeps the directory safe: without the socket, a second instance still
-    // exits, it just cannot bring this one forward.
+    // Without the socket, the lock still keeps a second instance out.
     private fun listen(): ServerSocketChannel? = try {
         Files.deleteIfExists(socket)
         ServerSocketChannel.open(StandardProtocolFamily.UNIX)
@@ -67,23 +57,19 @@ class SingleInstance private constructor(
                 server.accept().close()
                 requests.tryEmit(Unit)
             }
-        } catch (closed: ClosedChannelException) {
-            Unit
-        } catch (failed: IOException) {
+        } catch (stopped: IOException) {
             Unit
         }
     }
 
     companion object {
 
-        /** Claims [directory] for this process, or gives nothing back when another one holds it. */
         fun claim(directory: File): SingleInstance? {
             val lock = tryLock(directory.resolve(LOCK_FILE)) ?: return null
 
             return SingleInstance(lock, directory.resolve(SOCKET_FILE).toPath())
         }
 
-        /** Asks the process holding [directory] to come forward. Does nothing when none answers. */
         fun requestActivation(directory: File) {
             try {
                 SocketChannel.open(UnixDomainSocketAddress.of(directory.resolve(SOCKET_FILE).toPath())).close()
