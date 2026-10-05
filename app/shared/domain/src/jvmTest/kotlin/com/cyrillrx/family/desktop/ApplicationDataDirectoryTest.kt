@@ -1,4 +1,4 @@
-package com.cyrillrx.family.firebase
+package com.cyrillrx.family.desktop
 
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class ApplicationDataDirectoryTest {
 
-    private val home: File = createTempDirectory("firebase-home").toFile()
+    private val home: File = createTempDirectory("application-home").toFile()
 
     @AfterTest
     fun tearDown() {

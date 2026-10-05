@@ -1,6 +1,7 @@
 package com.cyrillrx.family.firebase
 
 import android.app.Application
+import com.cyrillrx.family.desktop.applicationDataDirectory
 import com.google.firebase.FirebasePlatform
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
@@ -45,8 +46,6 @@ private fun jvmOptions(): FirebaseOptions? {
 /**
  * The sample in the SDK's documentation keeps its store in a map and leaves the database in the
  * system temporary directory, which would cost the offline cache on every restart.
- *
- * TODO(#51): keep a second instance from overwriting this store.
  */
 internal class DesktopFirebasePlatform(private val directory: File) : FirebasePlatform() {
 
@@ -97,24 +96,3 @@ internal class DesktopFirebasePlatform(private val directory: File) : FirebasePl
         }
     }
 }
-
-// The lookups are parameters so the choice can be exercised for an operating system other
-// than the one running the test.
-internal fun applicationDataDirectory(
-    home: File = File(System.getProperty("user.home")),
-    operatingSystem: String = System.getProperty("os.name"),
-    environment: (String) -> String? = System::getenv,
-): File? {
-    val os = operatingSystem.lowercase()
-
-    val base = when {
-        os.contains("mac") -> home.resolve("Library/Application Support")
-        os.contains("win") -> environmentDirectory(environment, "APPDATA") ?: home
-        else -> environmentDirectory(environment, "XDG_DATA_HOME") ?: home.resolve(".local/share")
-    }
-
-    return base.resolve("FamilyPlanner").apply { mkdirs() }.takeIf { it.isDirectory }
-}
-
-private fun environmentDirectory(environment: (String) -> String?, name: String): File? =
-    environment(name)?.takeIf { it.isNotBlank() }?.let(::File)
