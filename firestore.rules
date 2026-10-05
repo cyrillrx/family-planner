@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Closed by default, which is what the database was created as. Every collection opens
+    // explicitly, in the change that introduces it, so one added later is never reachable by
+    // accident. See ADR-003: authorization is expressed as rules, not as logic.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

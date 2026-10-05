@@ -60,5 +60,9 @@ __pycache__/
 # Secrets — never commit
 .env
 google-services.json
+# Names the Firebase project; supplied with `firebase use`, not committed.
+.firebaserc
+# Written where the Firebase CLI is run, including by the emulator.
+*-debug.log
 GoogleService-Info.plist
 *serviceAccount*.json
