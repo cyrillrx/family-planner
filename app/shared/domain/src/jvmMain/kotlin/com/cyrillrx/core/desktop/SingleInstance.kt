@@ -20,7 +20,7 @@ import java.nio.file.StandardOpenOption.WRITE
 import kotlin.concurrent.thread
 
 class SingleInstance private constructor(
-    private val lock: FileLock,
+    private val lock: FileLock?,
     private val socket: Path,
 ) : AutoCloseable {
 
@@ -35,16 +35,30 @@ class SingleInstance private constructor(
 
     override fun close() {
         server?.close()
-        Files.deleteIfExists(socket)
-        lock.channel().close()
+        try {
+            Files.deleteIfExists(socket)
+        } finally {
+            lock?.channel()?.close()
+        }
     }
 
     // Without the socket, the lock still keeps a second instance out.
-    private fun listen(): ServerSocketChannel? = try {
+    private fun listen(): ServerSocketChannel? {
+        val server = openSocket() ?: return null
+
+        return try {
+            server.bind(UnixDomainSocketAddress.of(socket))
+            thread(isDaemon = true, name = "single-instance") { accept(server) }
+            server
+        } catch (unavailable: IOException) {
+            server.close()
+            null
+        }
+    }
+
+    private fun openSocket(): ServerSocketChannel? = try {
         Files.deleteIfExists(socket)
         ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-            .bind(UnixDomainSocketAddress.of(socket))
-            .also { server -> thread(isDaemon = true, name = "single-instance") { accept(server) } }
     } catch (unavailable: IOException) {
         null
     } catch (unsupported: UnsupportedOperationException) {
@@ -64,10 +78,23 @@ class SingleInstance private constructor(
 
     companion object {
 
+        // A directory the system cannot lock is claimed without one: refusing it would leave the
+        // application unable to start at all.
         fun claim(directory: File): SingleInstance? {
-            val lock = tryLock(directory.resolve(LOCK_FILE)) ?: return null
+            val socket = directory.resolve(SOCKET_FILE).toPath()
+            val channel = openLockFile(directory.resolve(LOCK_FILE)) ?: return SingleInstance(null, socket)
 
-            return SingleInstance(lock, directory.resolve(SOCKET_FILE).toPath())
+            val lock = try {
+                channel.tryLock()
+            } catch (heldInThisProcess: OverlappingFileLockException) {
+                null
+            } catch (unlockable: IOException) {
+                channel.close()
+                return SingleInstance(null, socket)
+            }
+            if (lock == null) channel.close()
+
+            return lock?.let { held -> SingleInstance(held, socket) }
         }
 
         fun requestActivation(directory: File) {
@@ -75,19 +102,15 @@ class SingleInstance private constructor(
                 SocketChannel.open(UnixDomainSocketAddress.of(directory.resolve(SOCKET_FILE).toPath())).close()
             } catch (unanswered: IOException) {
                 Unit
+            } catch (unsupported: UnsupportedOperationException) {
+                Unit
             }
         }
 
-        private fun tryLock(file: File): FileLock? {
-            val channel = FileChannel.open(file.toPath(), CREATE, WRITE)
-            val lock = try {
-                channel.tryLock()
-            } catch (heldInThisProcess: OverlappingFileLockException) {
-                null
-            }
-            if (lock == null) channel.close()
-
-            return lock
+        private fun openLockFile(file: File): FileChannel? = try {
+            FileChannel.open(file.toPath(), CREATE, WRITE)
+        } catch (unwritable: IOException) {
+            null
         }
 
         private const val LOCK_FILE = "instance.lock"

@@ -64,6 +64,14 @@ class SingleInstanceTest {
         assertComesForwardWhenAsked(holder)
     }
 
+    @Test
+    fun `claims a directory the system cannot lock`() {
+        val unwritable = directory.resolve("unwritable").apply { mkdirs() }
+        if (!unwritable.setWritable(false) || unwritable.canWrite()) return
+
+        assertNotNull(claim(unwritable))
+    }
+
     private fun assertComesForwardWhenAsked(holder: SingleInstance) = runBlocking {
         withTimeout(5.seconds) {
             val request = async(start = CoroutineStart.UNDISPATCHED) { holder.activationRequests.first() }
@@ -72,5 +80,5 @@ class SingleInstanceTest {
         }
     }
 
-    private fun claim(): SingleInstance? = SingleInstance.claim(directory)?.also(claimed::add)
+    private fun claim(target: File = directory): SingleInstance? = SingleInstance.claim(target)?.also(claimed::add)
 }
