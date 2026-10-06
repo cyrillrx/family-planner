@@ -57,6 +57,13 @@ class ApplicationDataDirectoryTest {
     }
 
     @Test
+    fun `ignores a relative xdg data home`() {
+        val directory = applicationDataDirectory(home, "Linux") { "relative/share" }
+
+        assertEquals(home.resolve(".local/share/FamilyPlanner"), directory)
+    }
+
+    @Test
     fun `creates the directory it names`() {
         val directory = applicationDataDirectory(home, "Linux") { null }
 
