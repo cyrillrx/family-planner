@@ -22,7 +22,7 @@ import kotlin.concurrent.thread
 
 class SingleInstance private constructor(
     private val lock: FileLock?,
-    private val socket: Path,
+    private val socket: Path?,
 ) : AutoCloseable {
 
     private val requests = MutableSharedFlow<Unit>(
@@ -32,17 +32,17 @@ class SingleInstance private constructor(
 
     val activationRequests: Flow<Unit> = requests.asSharedFlow()
 
-    private val server: ServerSocketChannel? = listen()
+    private val server: ServerSocketChannel? = socket?.let { listen(it) }
 
     override fun close() {
         release { server?.close() }
-        release { Files.deleteIfExists(socket) }
+        release { socket?.let(Files::deleteIfExists) }
         release { lock?.channel()?.close() }
     }
 
     // Without the socket, the lock still keeps a second instance out.
-    private fun listen(): ServerSocketChannel? {
-        val server = openSocket() ?: return null
+    private fun listen(socket: Path): ServerSocketChannel? {
+        val server = openSocket(socket) ?: return null
 
         return try {
             server.bind(UnixDomainSocketAddress.of(socket))
@@ -54,7 +54,7 @@ class SingleInstance private constructor(
         }
     }
 
-    private fun openSocket(): ServerSocketChannel? = try {
+    private fun openSocket(socket: Path): ServerSocketChannel? = try {
         Files.deleteIfExists(socket)
         ServerSocketChannel.open(StandardProtocolFamily.UNIX)
     } catch (unavailable: IOException) {
@@ -72,9 +72,16 @@ class SingleInstance private constructor(
             } catch (refused: IOException) {
                 // A connection the peer drops between accept() and its return fails without
                 // blocking, so a lasting failure would spin the thread rather than wait.
-                Thread.sleep(RETRY_DELAY_MS)
+                if (!waitBeforeRetry()) return
             }
         }
+    }
+
+    private fun waitBeforeRetry(): Boolean = try {
+        Thread.sleep(RETRY_DELAY_MS)
+        true
+    } catch (interrupted: InterruptedException) {
+        false
     }
 
     private inline fun release(step: () -> Unit) = try {
@@ -86,10 +93,10 @@ class SingleInstance private constructor(
     companion object {
 
         // A directory the system cannot lock is claimed without one: refusing it would leave the
-        // application unable to start at all.
+        // application unable to start at all. That instance holds no socket either, as deleting
+        // and rebinding it would cut off the instance that does hold the lock.
         fun claim(directory: File): SingleInstance? {
-            val socket = directory.resolve(SOCKET_FILE).toPath()
-            val channel = openLockFile(directory.resolve(LOCK_FILE)) ?: return SingleInstance(null, socket)
+            val channel = openLockFile(directory.resolve(LOCK_FILE)) ?: return SingleInstance(null, null)
 
             val lock = try {
                 channel.tryLock()
@@ -99,11 +106,11 @@ class SingleInstance private constructor(
                 return null
             } catch (unlockable: IOException) {
                 channel.close()
-                return SingleInstance(null, socket)
+                return SingleInstance(null, null)
             }
             if (lock == null) channel.close()
 
-            return lock?.let { held -> SingleInstance(held, socket) }
+            return lock?.let { held -> SingleInstance(held, directory.resolve(SOCKET_FILE).toPath()) }
         }
 
         fun requestActivation(directory: File) {
