@@ -14,17 +14,19 @@ fun main() {
     val instance = directory?.let(SingleInstance::claim)
     if (directory != null && instance == null) return SingleInstance.requestActivation(directory)
 
-    initializeFirebase()
+    instance.use {
+        initializeFirebase()
 
-    application {
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = "FamilyPlanner",
-        ) {
-            LaunchedEffect(instance) {
-                instance?.activationRequests?.collect { window.bringToFront() }
+        application {
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "FamilyPlanner",
+            ) {
+                LaunchedEffect(instance) {
+                    instance?.activationRequests?.collect { window.bringToFront() }
+                }
+                App()
             }
-            App()
         }
     }
 }

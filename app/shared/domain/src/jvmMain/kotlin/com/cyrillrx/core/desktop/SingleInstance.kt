@@ -8,6 +8,7 @@ import java.io.File
 import java.io.IOException
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
+import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
 import java.nio.channels.FileLock
 import java.nio.channels.OverlappingFileLockException
@@ -34,12 +35,9 @@ class SingleInstance private constructor(
     private val server: ServerSocketChannel? = listen()
 
     override fun close() {
-        server?.close()
-        try {
-            Files.deleteIfExists(socket)
-        } finally {
-            lock?.channel()?.close()
-        }
+        release { server?.close() }
+        release { Files.deleteIfExists(socket) }
+        release { lock?.channel()?.close() }
     }
 
     // Without the socket, the lock still keeps a second instance out.
@@ -66,14 +64,23 @@ class SingleInstance private constructor(
     }
 
     private fun accept(server: ServerSocketChannel) {
-        try {
-            while (true) {
-                server.accept().close()
-                requests.tryEmit(Unit)
+        while (server.isOpen) {
+            try {
+                server.accept().use { requests.tryEmit(Unit) }
+            } catch (stopped: ClosedChannelException) {
+                return
+            } catch (refused: IOException) {
+                // A connection the peer drops between accept() and its return fails without
+                // blocking, so a lasting failure would spin the thread rather than wait.
+                Thread.sleep(RETRY_DELAY_MS)
             }
-        } catch (stopped: IOException) {
-            Unit
         }
+    }
+
+    private inline fun release(step: () -> Unit) = try {
+        step()
+    } catch (unreleasable: IOException) {
+        Unit
     }
 
     companion object {
@@ -87,7 +94,9 @@ class SingleInstance private constructor(
             val lock = try {
                 channel.tryLock()
             } catch (heldInThisProcess: OverlappingFileLockException) {
-                null
+                // The channel stays open: a POSIX lock belongs to the process, not to the
+                // descriptor it was taken through, so closing this one would release the other.
+                return null
             } catch (unlockable: IOException) {
                 channel.close()
                 return SingleInstance(null, socket)
@@ -115,5 +124,6 @@ class SingleInstance private constructor(
 
         private const val LOCK_FILE = "instance.lock"
         private const val SOCKET_FILE = "instance.sock"
+        private const val RETRY_DELAY_MS = 100L
     }
 }
