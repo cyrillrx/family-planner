@@ -20,7 +20,8 @@ fun applicationDataDirectory(
     return base.resolve("FamilyPlanner").apply { mkdirs() }.takeIf { it.isDirectory }
 }
 
-// A relative value is invalid per the XDG base directory specification, and would move the
-// directory with the working directory: two directories, two locks, two instances.
+// A relative value would move the directory with the working directory: two directories, two
+// locks, two instances at once. The XDG specification calls such a value invalid, and APPDATA
+// gets the same treatment for the same reason.
 private fun environmentDirectory(environment: (String) -> String?, name: String): File? =
     environment(name)?.let(::File)?.takeIf { it.isAbsolute }

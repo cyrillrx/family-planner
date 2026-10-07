@@ -34,6 +34,13 @@ class ApplicationDataDirectoryTest {
     }
 
     @Test
+    fun `ignores a relative roaming profile on windows`() {
+        val directory = applicationDataDirectory(home, "Windows 11") { "relative/roaming" }
+
+        assertEquals(home.resolve("FamilyPlanner"), directory)
+    }
+
+    @Test
     fun `falls back to the home directory when windows names no roaming profile`() {
         val directory = applicationDataDirectory(home, "Windows 11") { null }
 
