@@ -9,6 +9,7 @@ import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.seconds
@@ -77,10 +78,13 @@ class SingleInstanceTest {
 
     @Test
     fun `claims a directory the system cannot lock`() {
-        val unwritable = directory.resolve("unwritable").apply { mkdirs() }
-        if (!unwritable.setWritable(false) || unwritable.canWrite()) return
+        // A directory where the lock file belongs: opening it for writing fails on every system,
+        // where a permission bit is ignored by some and by root on all of them.
+        directory.resolve("instance.lock").mkdirs()
 
-        assertNotNull(claim(unwritable))
+        assertNotNull(claim())
+
+        assertFalse(directory.resolve("instance.sock").exists())
     }
 
     private fun assertComesForwardWhenAsked(holder: SingleInstance) = runBlocking {
@@ -91,5 +95,5 @@ class SingleInstanceTest {
         }
     }
 
-    private fun claim(target: File = directory): SingleInstance? = SingleInstance.claim(target)?.also(claimed::add)
+    private fun claim(): SingleInstance? = SingleInstance.claim(directory)?.also(claimed::add)
 }
