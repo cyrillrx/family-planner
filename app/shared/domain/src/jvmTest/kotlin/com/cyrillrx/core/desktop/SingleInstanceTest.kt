@@ -45,6 +45,17 @@ class SingleInstanceTest {
     }
 
     @Test
+    fun `leaves a later claim alone when closed twice`() {
+        val stale = checkNotNull(claim())
+        stale.close()
+        val holder = checkNotNull(claim())
+
+        stale.close()
+
+        assertComesForwardWhenAsked(holder)
+    }
+
+    @Test
     fun `brings the holder forward when asked`() {
         val holder = checkNotNull(claim())
 

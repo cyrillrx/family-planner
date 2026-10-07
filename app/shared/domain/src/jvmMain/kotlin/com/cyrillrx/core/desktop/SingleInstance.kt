@@ -34,7 +34,14 @@ class SingleInstance private constructor(
 
     private val server: ServerSocketChannel? = socket?.let { listen(it) }
 
+    private var released = false
+
     override fun close() {
+        // The socket path outlives the lock: a second release would unlink the socket of whichever
+        // instance claimed the directory in between.
+        if (released) return
+        released = true
+
         release { server?.close() }
         release { socket?.let(Files::deleteIfExists) }
         release { lock?.channel()?.close() }
