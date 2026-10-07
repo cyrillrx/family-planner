@@ -36,6 +36,7 @@ class SingleInstance private constructor(
 
     private var released = false
 
+    @Synchronized
     override fun close() {
         // The socket path outlives the lock: a second release would unlink the socket of whichever
         // instance claimed the directory in between.
@@ -117,18 +118,21 @@ class SingleInstance private constructor(
             }
             if (lock == null) channel.close()
 
-            return lock?.let { held -> SingleInstance(held, directory.resolve(SOCKET_FILE).toPath()) }
+            return lock?.let { held -> SingleInstance(held, socketPath(directory)) }
         }
 
         fun requestActivation(directory: File) {
             try {
-                SocketChannel.open(UnixDomainSocketAddress.of(directory.resolve(SOCKET_FILE).toPath())).close()
+                SocketChannel.open(UnixDomainSocketAddress.of(socketPath(directory))).close()
             } catch (unanswered: IOException) {
                 Unit
             } catch (unsupported: UnsupportedOperationException) {
                 Unit
             }
         }
+
+        // Both ends of the hand-off derive the path here: they are useless unless they agree.
+        private fun socketPath(directory: File): Path = directory.resolve(SOCKET_FILE).toPath()
 
         private fun openLockFile(file: File): FileChannel? = try {
             FileChannel.open(file.toPath(), CREATE, WRITE)
