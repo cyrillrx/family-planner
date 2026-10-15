@@ -87,6 +87,14 @@ class SingleInstanceTest {
         assertFalse(directory.resolve("instance.sock").exists())
     }
 
+    @Test
+    fun `refuses a second claim from this process even without a lock`() {
+        directory.resolve("instance.lock").mkdirs()
+        claim()
+
+        assertNull(claim())
+    }
+
     private fun assertComesForwardWhenAsked(holder: SingleInstance) = runBlocking {
         withTimeout(5.seconds) {
             val request = async(start = CoroutineStart.UNDISPATCHED) { holder.activationRequests.first() }

@@ -18,9 +18,11 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.CREATE
 import java.nio.file.StandardOpenOption.WRITE
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
 class SingleInstance private constructor(
+    private val directory: Path,
     private val lock: FileLock?,
     private val socket: Path?,
 ) : AutoCloseable {
@@ -46,6 +48,7 @@ class SingleInstance private constructor(
         release { server?.close() }
         release { socket?.let(Files::deleteIfExists) }
         release { lock?.channel()?.close() }
+        claimedDirectories.remove(directory)
     }
 
     // Without the socket, the lock still keeps a second instance out.
@@ -100,11 +103,23 @@ class SingleInstance private constructor(
 
     companion object {
 
+        private val claimedDirectories: MutableSet<Path> = ConcurrentHashMap.newKeySet()
+
+        // A second claim from this process never opens the lock file: the channel it would leave
+        // behind gets closed once collected, and closing any descriptor of the file releases the
+        // POSIX lock the holder took through another one.
+        fun claim(directory: File): SingleInstance? {
+            val key = directory.absoluteFile.normalize().toPath()
+            if (!claimedDirectories.add(key)) return null
+
+            return lockDirectory(directory, key).also { if (it == null) claimedDirectories.remove(key) }
+        }
+
         // A directory the system cannot lock is claimed without one: refusing it would leave the
         // application unable to start at all. That instance holds no socket either, as deleting
         // and rebinding it would cut off the instance that does hold the lock.
-        fun claim(directory: File): SingleInstance? {
-            val channel = openLockFile(directory.resolve(LOCK_FILE)) ?: return SingleInstance(null, null)
+        private fun lockDirectory(directory: File, key: Path): SingleInstance? {
+            val channel = openLockFile(directory.resolve(LOCK_FILE)) ?: return SingleInstance(key, null, null)
 
             val lock = try {
                 channel.tryLock()
@@ -114,11 +129,14 @@ class SingleInstance private constructor(
                 return null
             } catch (unlockable: IOException) {
                 channel.close()
-                return SingleInstance(null, null)
+                return SingleInstance(key, null, null)
             }
-            if (lock == null) channel.close()
+            if (lock == null) {
+                channel.close()
+                return null
+            }
 
-            return lock?.let { held -> SingleInstance(held, socketPath(directory)) }
+            return SingleInstance(key, lock, socketPath(directory))
         }
 
         fun requestActivation(directory: File) {
