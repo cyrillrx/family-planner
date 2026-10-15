@@ -37,12 +37,20 @@ fun main() {
 private fun ComposeWindow.bringToFront() {
     requestApplicationForeground()
     isMinimized = false
-    toFront()
+    raiseAboveOtherWindows()
     requestFocus()
 }
 
-// The window manager refuses toFront() to an application that is not the active one, which is the
-// only case this feature exists for.
+// Windows and most Linux window managers turn toFront() from a background application into a
+// taskbar flash; a window set on top is raised without asking for the focus.
+private fun ComposeWindow.raiseAboveOtherWindows() {
+    isAlwaysOnTop = true
+    toFront()
+    isAlwaysOnTop = false
+}
+
+// macOS refuses toFront() to an application that is not the active one, which is the only case
+// this feature exists for.
 private fun requestApplicationForeground() {
     if (!Desktop.isDesktopSupported()) return
 
