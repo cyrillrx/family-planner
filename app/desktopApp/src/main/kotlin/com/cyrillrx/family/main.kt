@@ -16,9 +16,6 @@ fun main() {
     val instance = directory?.let(SingleInstance::claim)
     if (directory != null && instance == null) return SingleInstance.requestActivation(directory)
 
-    // application() ends in exitProcess(), so releasing the instance around it would never run.
-    instance?.let { held -> Runtime.getRuntime().addShutdownHook(Thread(held::close)) }
-
     initializeFirebase()
 
     application {
