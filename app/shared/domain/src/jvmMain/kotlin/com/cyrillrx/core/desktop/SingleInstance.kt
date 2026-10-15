@@ -47,7 +47,10 @@ class SingleInstance private constructor(
 
         release { server?.close() }
         release { socket?.let(Files::deleteIfExists) }
-        release { lock?.channel()?.close() }
+        lock?.channel()?.let { channel ->
+            release { channel.close() }
+            lockChannels.remove(channel)
+        }
         claimedDirectories.remove(directory)
     }
 
@@ -105,14 +108,30 @@ class SingleInstance private constructor(
 
         private val claimedDirectories: MutableSet<Path> = ConcurrentHashMap.newKeySet()
 
-        // A second claim from this process never opens the lock file: the channel it would leave
-        // behind gets closed once collected, and closing any descriptor of the file releases the
-        // POSIX lock the holder took through another one.
+        // A lock channel is never left to the collector: once collected it gets closed, and closing
+        // any descriptor of the file releases every POSIX lock the process holds on it.
+        private val lockChannels: MutableSet<FileChannel> = ConcurrentHashMap.newKeySet()
+
+        // A second claim from this process never opens the lock file, whose every descriptor shares
+        // the lock the holder took.
         fun claim(directory: File): SingleInstance? {
-            val key = directory.absoluteFile.normalize().toPath()
+            val key = claimKey(directory)
             if (!claimedDirectories.add(key)) return null
 
-            return lockDirectory(directory, key).also { if (it == null) claimedDirectories.remove(key) }
+            var instance: SingleInstance? = null
+            try {
+                instance = lockDirectory(directory, key)
+            } finally {
+                if (instance == null) claimedDirectories.remove(key)
+            }
+            return instance
+        }
+
+        // Two spellings of one directory, through a symlink or a different case, must give one key.
+        private fun claimKey(directory: File): Path = try {
+            directory.toPath().toRealPath()
+        } catch (unresolvable: IOException) {
+            directory.absoluteFile.normalize().toPath()
         }
 
         // A directory the system cannot lock is claimed without one: refusing it would leave the
@@ -124,8 +143,8 @@ class SingleInstance private constructor(
             val lock = try {
                 channel.tryLock()
             } catch (heldInThisProcess: OverlappingFileLockException) {
-                // The channel stays open: a POSIX lock belongs to the process, not to the
-                // descriptor it was taken through, so closing this one would release the other.
+                // Closing this channel would release the lock held through the other one.
+                lockChannels.add(channel)
                 return null
             } catch (unlockable: IOException) {
                 channel.close()
@@ -136,6 +155,7 @@ class SingleInstance private constructor(
                 return null
             }
 
+            lockChannels.add(channel)
             return SingleInstance(key, lock, socketPath(directory))
         }
 

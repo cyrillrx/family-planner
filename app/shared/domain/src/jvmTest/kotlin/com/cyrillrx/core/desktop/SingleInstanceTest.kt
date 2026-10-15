@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import java.io.File
+import java.nio.file.Files
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -36,6 +37,19 @@ class SingleInstanceTest {
         claim()
 
         assertNull(claim())
+    }
+
+    @Test
+    fun `refuses a directory already held through another path`() {
+        claim()
+        val alias = createTempDirectory("alias").toFile().apply { delete() }
+        Files.createSymbolicLink(alias.toPath(), directory.toPath())
+
+        try {
+            assertNull(SingleInstance.claim(alias)?.also(claimed::add))
+        } finally {
+            alias.delete()
+        }
     }
 
     @Test
