@@ -63,7 +63,7 @@ class SingleInstance private constructor(
             thread(isDaemon = true, name = "single-instance") { accept(server) }
             server
         } catch (unavailable: IOException) {
-            server.close()
+            release { server.close() }
             null
         }
     }
@@ -96,12 +96,6 @@ class SingleInstance private constructor(
         true
     } catch (interrupted: InterruptedException) {
         false
-    }
-
-    private inline fun release(step: () -> Unit) = try {
-        step()
-    } catch (unreleasable: IOException) {
-        Unit
     }
 
     companion object {
@@ -147,11 +141,11 @@ class SingleInstance private constructor(
                 lockChannels.add(channel)
                 return null
             } catch (unlockable: IOException) {
-                channel.close()
+                release { channel.close() }
                 return SingleInstance(key, null, null)
             }
             if (lock == null) {
-                channel.close()
+                release { channel.close() }
                 return null
             }
 
@@ -182,4 +176,10 @@ class SingleInstance private constructor(
         private const val SOCKET_FILE = "instance.sock"
         private const val RETRY_DELAY_MS = 100L
     }
+}
+
+private inline fun release(step: () -> Unit) = try {
+    step()
+} catch (unreleasable: IOException) {
+    Unit
 }
