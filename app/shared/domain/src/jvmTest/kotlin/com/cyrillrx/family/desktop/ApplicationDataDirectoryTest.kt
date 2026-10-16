@@ -1,4 +1,4 @@
-package com.cyrillrx.family.firebase
+package com.cyrillrx.family.desktop
 
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class ApplicationDataDirectoryTest {
 
-    private val home: File = createTempDirectory("firebase-home").toFile()
+    private val home: File = createTempDirectory("application-home").toFile()
 
     @AfterTest
     fun tearDown() {
@@ -34,6 +34,13 @@ class ApplicationDataDirectoryTest {
     }
 
     @Test
+    fun `ignores a relative roaming profile on windows`() {
+        val directory = applicationDataDirectory(home, "Windows 11") { "relative/roaming" }
+
+        assertEquals(home.resolve("FamilyPlanner"), directory)
+    }
+
+    @Test
     fun `falls back to the home directory when windows names no roaming profile`() {
         val directory = applicationDataDirectory(home, "Windows 11") { null }
 
@@ -52,6 +59,13 @@ class ApplicationDataDirectoryTest {
     @Test
     fun `falls back to the xdg default when the variable is blank`() {
         val directory = applicationDataDirectory(home, "Linux") { "   " }
+
+        assertEquals(home.resolve(".local/share/FamilyPlanner"), directory)
+    }
+
+    @Test
+    fun `ignores a relative xdg data home`() {
+        val directory = applicationDataDirectory(home, "Linux") { "relative/share" }
 
         assertEquals(home.resolve(".local/share/FamilyPlanner"), directory)
     }
