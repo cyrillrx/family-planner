@@ -80,6 +80,9 @@ class SingleInstanceTest {
     @Test
     fun `asks nothing of a directory nobody holds`() {
         SingleInstance.requestActivation(directory)
+
+        assertFalse(directory.resolve("instance.sock").exists())
+        assertFalse(directory.resolve("instance.lock").exists())
     }
 
     @Test
