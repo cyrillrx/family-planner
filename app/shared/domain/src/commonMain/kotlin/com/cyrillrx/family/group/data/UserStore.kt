@@ -13,8 +13,8 @@ interface UserStore {
     /** The credential this device holds, or null if it never signed in. Never signs in. */
     suspend fun credential(): String?
 
-    /** The credential this device holds, signing in anonymously first if it holds none. */
-    suspend fun signIn(): String
+    /** A new anonymous credential, replacing whichever one this device held. */
+    suspend fun signInAnonymously(): String
 
     suspend fun find(credential: String): UserDocument?
 

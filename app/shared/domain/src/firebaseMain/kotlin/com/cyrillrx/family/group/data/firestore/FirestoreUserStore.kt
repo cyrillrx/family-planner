@@ -12,8 +12,8 @@ internal class FirestoreUserStore(
 
     override suspend fun credential(): String? = auth.currentUser?.uid
 
-    override suspend fun signIn(): String = credential()
-        ?: checkNotNull(auth.signInAnonymously().user) { "Anonymous sign-in answered without a user" }.uid
+    override suspend fun signInAnonymously(): String =
+        checkNotNull(auth.signInAnonymously().user) { "Anonymous sign-in answered without a user" }.uid
 
     override suspend fun find(credential: String): UserDocument? {
         val snapshot = users().document(credential).get()

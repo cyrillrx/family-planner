@@ -59,6 +59,15 @@ class StoreUserRepositoryTest {
     }
 
     @Test
+    fun `keeps the credential the device already holds`() = runTest {
+        val store = FakeUserStore(credential = "uid-1")
+
+        StoreUserRepository(store).register(cyril())
+
+        assertEquals(0, store.anonymousSignIns)
+    }
+
+    @Test
     fun `stores the user under the credential that authenticates it`() = runTest {
         val store = FakeUserStore(credential = "uid-1")
 
@@ -119,13 +128,17 @@ private class FakeUserStore(
 ) : UserStore {
 
     val documents = mutableMapOf<String, UserDocument>()
+    var anonymousSignIns = 0
+        private set
 
     override suspend fun credential(): String? = credential
 
-    override suspend fun signIn(): String {
+    override suspend fun signInAnonymously(): String {
         failure?.let { throw it }
 
-        return credential ?: "anonymous-uid".also { credential = it }
+        anonymousSignIns++
+
+        return "anonymous-uid".also { credential = it }
     }
 
     override suspend fun find(credential: String): UserDocument? {
