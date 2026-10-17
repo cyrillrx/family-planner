@@ -9,5 +9,28 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
+    // Addressed by the credential that authenticates it, so a device reaches its own user and no
+    // other. Members reading each other's names open this further with the group.
+    match /users/{credential} {
+      allow read: if isSignedInAs(credential);
+      allow create: if isSignedInAs(credential) && isValidUser(credential);
+      // The identifier is the member's identity in every group: renaming keeps it.
+      allow update: if isSignedInAs(credential)
+        && isValidUser(credential)
+        && request.resource.data.id == resource.data.id;
+    }
+
+    function isSignedInAs(credential) {
+      return request.auth != null && request.auth.uid == credential;
+    }
+
+    function isValidUser(credential) {
+      let user = request.resource.data;
+      return user.keys().hasOnly(['id', 'displayName', 'authenticatedId'])
+        && user.id is string && user.id.size() > 0
+        && user.displayName is string && user.displayName.trim().size() > 0
+        && user.authenticatedId == credential;
+    }
   }
 }
