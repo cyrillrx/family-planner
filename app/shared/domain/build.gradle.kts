@@ -138,7 +138,7 @@ sonar {
                 "**/androidMain/**",
                 "**/iosMain/**",
                 // Store adapters: translation only, and no emulator runs under jvmTest (ADR-006).
-                "**/firebaseMain/**",
+                "**/data/firestore/**",
             ).joinToString(","),
         )
     }
