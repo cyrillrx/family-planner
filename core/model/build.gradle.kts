@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -21,6 +22,9 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            api(libs.kotlinx.serializationCore)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
