@@ -15,7 +15,7 @@ class StoreUserRepository(private val store: UserStore) : UserRepository {
 
     /** Null when the store cannot tell: [register] keeps the identifier either way. */
     override suspend fun registeredUserId(): UserId? = try {
-        store.credential()?.let { store.find(it) }?.id?.let(::UserId)
+        store.credential()?.let { storedId(it) }
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (e: Exception) {
@@ -32,13 +32,14 @@ class StoreUserRepository(private val store: UserStore) : UserRepository {
 
     private suspend fun save(user: User): User {
         val credential = store.credential() ?: store.signInAnonymously()
-        val existingId = store.find(credential)?.id?.let(::UserId)
-        val registered = user.copy(id = existingId ?: user.id, authenticatedId = credential)
+        val registered = user.copy(id = storedId(credential) ?: user.id, authenticatedId = credential)
 
         store.save(credential, registered.toDocument())
 
         return registered
     }
+
+    private suspend fun storedId(credential: String): UserId? = store.find(credential)?.id?.let(::UserId)
 }
 
 private fun User.toDocument() = UserDocument(
