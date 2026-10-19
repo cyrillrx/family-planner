@@ -31,8 +31,9 @@ class StoreUserRepository(private val store: UserStore) : UserRepository {
     }
 
     private suspend fun save(user: User): User {
-        val credential = store.credential() ?: store.signInAnonymously()
-        val registered = user.copy(id = storedId(credential) ?: user.id, authenticatedId = credential)
+        val held = store.credential()
+        val credential = held ?: store.signInAnonymously()
+        val registered = user.copy(id = held?.let { storedId(it) } ?: user.id, authenticatedId = credential)
 
         store.save(credential, registered.toDocument())
 

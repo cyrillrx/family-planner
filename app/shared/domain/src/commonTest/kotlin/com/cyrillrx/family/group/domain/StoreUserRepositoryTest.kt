@@ -68,6 +68,15 @@ class StoreUserRepositoryTest {
     }
 
     @Test
+    fun `does not read the store after a fresh sign-in`() = runTest {
+        val store = FakeUserStore()
+
+        StoreUserRepository(store).register(cyril())
+
+        assertEquals(0, store.reads)
+    }
+
+    @Test
     fun `stores the user under the credential that authenticates it`() = runTest {
         val store = FakeUserStore(credential = "uid-1")
 
@@ -130,6 +139,8 @@ private class FakeUserStore(
     val documents = mutableMapOf<String, UserDocument>()
     var anonymousSignIns = 0
         private set
+    var reads = 0
+        private set
 
     override suspend fun credential(): String? = credential
 
@@ -143,6 +154,8 @@ private class FakeUserStore(
 
     override suspend fun find(credential: String): UserDocument? {
         failure?.let { throw it }
+
+        reads++
 
         return documents[credential]
     }
