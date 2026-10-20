@@ -10,6 +10,7 @@ Family Planner reduces the mental load of running daily life: meal planning, sha
 - **The core value is synchronization** — between a member's devices, and between the members of the group. Anything that breaks silently when two devices edit at once is a bug, not an edge case.
 - **One group is supported today.** Multi-group is not a V1 feature, but no data-model decision may close the door on it. When modeling, keep group scoping in mind even where it is not yet used.
 - **Low cognitive load is a product requirement, not a nice-to-have.** Decisions are made in advance, instructions are explicit, screens stay simple. The app has to be usable when attention is scarce.
+- **Accessibility means font size and touch targets, not screen readers yet.** Screens must stay usable with a large system font and keep touch targets of at least 48dp. Screen-reader support (TalkBack, VoiceOver) is best effort and not a goal for now: a missing or redundant description is not worth a fix of its own.
 
 Feature scope and phases live in [`docs/roadmap.md`](docs/roadmap.md). Agreed product behaviour lives in [`docs/prd/`](docs/prd/) — [PRD-001](docs/prd/prd-001-group-and-synchronization.md) defines the group, what is shared inside it, and what the app guarantees when several devices change the same thing. Everything else builds on it.
 
