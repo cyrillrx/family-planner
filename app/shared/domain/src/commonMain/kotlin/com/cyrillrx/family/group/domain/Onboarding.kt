@@ -20,6 +20,7 @@ class Onboarding(
         val name = displayName.trim()
         if (name.isEmpty()) return Result.Failure(RegisterError.BlankDisplayName)
 
+        // TODO(#71): a store-backed repository discards this identifier; let the repository own it.
         val id = userRepository.registeredUserId() ?: idGenerator.newUserId()
 
         return when (val registered = userRepository.register(User(id = id, displayName = name))) {

@@ -22,6 +22,7 @@ internal class FirestoreUserStore(
     }
 
     override suspend fun save(credential: String, document: UserDocument) {
+        // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
         users().document(credential).set(document)
     }
 

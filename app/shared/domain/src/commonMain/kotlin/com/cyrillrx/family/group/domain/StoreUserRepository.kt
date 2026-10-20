@@ -19,6 +19,7 @@ class StoreUserRepository(private val store: UserStore) : UserRepository {
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (e: Exception) {
+        // TODO(#69): callers other than register read this null as "not registered".
         null
     }
 

@@ -28,7 +28,9 @@ service cloud.firestore {
     function isValidUser(credential) {
       let user = request.resource.data;
       return user.keys().hasOnly(['id', 'displayName', 'authenticatedId'])
+        // TODO(#68): nothing keeps a device from claiming another member's identifier.
         && user.id is string && user.id.size() > 0
+        // TODO(#70): no upper bound, here or in the client.
         && user.displayName is string && user.displayName.trim().size() > 0
         && user.authenticatedId == credential;
     }
