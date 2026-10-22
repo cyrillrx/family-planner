@@ -49,7 +49,7 @@ kover {
                     "*.app.AppKt$*",
                     // The entry point: no test starts an engine.
                     "*.server.ApplicationKt*",
-                    // Store adapters: translation only, and no emulator runs under jvmTest (ADR-006).
+                    // Store adapters (ADR-006).
                     "*.data.firestore.*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",
