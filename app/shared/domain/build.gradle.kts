@@ -57,8 +57,7 @@ val generateFirebaseConfig = tasks.register("generateFirebaseConfig") {
 }
 
 kotlin {
-    // Firebase is declared where the SDK links: firebaseMain is shared by Android and JVM until #47
-    // brings it to iOS, and then folds into commonMain (ADR-006).
+    // TODO(#47): fold firebaseMain into commonMain once iOS links the SDK.
     applyDefaultHierarchyTemplate {
         common {
             group("firebase") {
@@ -137,7 +136,7 @@ sonar {
             listOf(
                 "**/androidMain/**",
                 "**/iosMain/**",
-                // Store adapters: translation only, and no emulator runs under jvmTest (ADR-006).
+                // Store adapters (ADR-006).
                 "**/data/firestore/**",
             ).joinToString(","),
         )
