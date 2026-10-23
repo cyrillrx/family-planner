@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.kover)
@@ -48,6 +49,8 @@ kover {
                     "*.app.AppKt$*",
                     // The entry point: no test starts an engine.
                     "*.server.ApplicationKt*",
+                    // Store adapters (ADR-006).
+                    "*.data.firestore.*",
                     // Generated: Compose resources accessors.
                     "*.generated.resources.*",
                 )

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.util.Properties
 
 plugins {
@@ -56,6 +57,17 @@ val generateFirebaseConfig = tasks.register("generateFirebaseConfig") {
 }
 
 kotlin {
+    // TODO(#47): fold firebaseMain into commonMain once iOS links the SDK.
+    applyDefaultHierarchyTemplate {
+        common {
+            group("firebase") {
+                withJvm()
+                // withAndroidTarget() only matches the target of the older Android plugin.
+                withCompilations { it.target.platformType == KotlinPlatformType.androidJvm }
+            }
+        }
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
@@ -96,11 +108,10 @@ kotlin {
         }
         // Not in commonMain: on iOS the SDK does not link the Firebase frameworks transitively,
         // so that target needs CocoaPods in the build before it can carry the dependency.
-        androidMain.dependencies {
+        getByName("firebaseMain").dependencies {
             implementation(libs.gitlive.firebase.app)
-        }
-        jvmMain.dependencies {
-            implementation(libs.gitlive.firebase.app)
+            implementation(libs.gitlive.firebase.auth)
+            implementation(libs.gitlive.firebase.firestore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -125,6 +136,8 @@ sonar {
             listOf(
                 "**/androidMain/**",
                 "**/iosMain/**",
+                // Store adapters (ADR-006).
+                "**/data/firestore/**",
             ).joinToString(","),
         )
     }
