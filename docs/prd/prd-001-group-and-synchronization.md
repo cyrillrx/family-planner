@@ -1,6 +1,6 @@
 # PRD-001 — Group and synchronization
 
-> **Status**: Approved | **Version**: 0.4 | **Last updated**: 2026-09-09
+> **Status**: Approved | **Version**: 0.5 | **Last updated**: 2026-10-23
 
 ## Overview
 
@@ -8,7 +8,7 @@ Every piece of data in Family Planner belongs to a **group**. A group may be one
 
 It is a foundation document rather than a feature: the meal planner, the shared events and the shared task list all sit on top of it, and each of them will get its own PRD. Sync is also the part of the product that cannot be retrofitted — a feature written against a single-device assumption has to be rewritten, not extended.
 
-**Phase 1 delivers synchronization between members, not between one member's devices.** The two halves of the product's core value are separable, and only the second one needs an account: identifying the same person on two devices requires authentication, which Phase 1 does not have. A member is therefore one device, and a second device is a second member — a limitation that is accepted, not overlooked. Phase 2 lifts it, and every requirement that depends on it is filed there.
+**Phase 1 delivers synchronization between members, and between one member's devices once they sign in.** A member can start without an account, on one device, and is offered to sign in from the first screen. Signing in is what makes an identity survive a lost phone and reach a second device. Version 0.5 brought it forward from Phase 2: the anonymous identity a member starts with is now deleted 30 days after the first launch, so an account is no longer a convenience that can wait.
 
 This PRD describes behaviour only. It does not pick a database, a sync engine or an authentication provider: those are a technical decision, and the requirements below are what the ADR that follows has to satisfy. The client platform is already settled in [ADR-001](../adr/adr-001-kmp-client-targets.md).
 
@@ -33,6 +33,8 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 | Member         | see a change another member just made     | we do not both buy the milk                             |
 | Member         | add a task while I have no network        | I do not have to hold it in my head until I get signal  |
 | Member         | know when what I am looking at may be old | I can trust the screen when it tells me it is current   |
+| Member         | sign in on a new device                   | I find my group and my data there                       |
+| Member         | find my own edits on my other device      | I never have to remember which device I used            |
 
 ### Phase 2
 
@@ -40,7 +42,6 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 |--------------|--------------------------------------|----------------------------------------------|
 | Member       | leave the group                      | I am not tied to it forever                  |
 | Group member | remove someone who no longer belongs | our data stops being visible to them         |
-| Member       | find my own edits on my other device | I never have to remember which device I used |
 | Member       | see who changed something, and when  | I can ask the right person about it          |
 
 ## Functional Requirements
@@ -49,7 +50,7 @@ This PRD describes behaviour only. It does not pick a database, a sync engine or
 
 **Group lifecycle**
 
-- [ ] The first launch asks for a display name and one explicit choice: **create a new group**, or **join an existing one** with an invitation.
+- [ ] The first launch offers to sign in. Without signing in, it asks for a display name and one explicit choice: **create a new group**, or **join an existing one** with an invitation.
 - [ ] The app never creates a group silently. An invited member who lands in a group of their own has to be extracted from it, and there is no simple way to do that — so the choice is asked for rather than guessed.
 - [ ] Joining requires a valid invitation. Without one, creating a group is the only way forward.
 - [ ] The group has a stable identifier, and every shared record carries it.
@@ -64,10 +65,11 @@ A *user* is a person's identity and their display name; a *membership* is that u
 - [ ] An invitation can be revoked before it is used, and stops working after it expires.
 - [ ] All members hold the same rights over shared data. There are no roles and no owner privileges in V1.
 - [ ] Any member can create an invitation, and redeeming one grants that same right in turn. With no roles there is no owner to reserve it for. This is reopened the day roles arrive.
-- [ ] A user is identified by an identifier generated locally on their device. There is no account, no sign-in screen and no authentication in Phase 1.
+- [ ] A user starts with an identifier generated locally on their device, without an account. Signing in is offered and never required to use the app.
 - [ ] A user supplies a display name. It is the only thing about them the other members see.
-- [ ] One device per user. A second device is a second user, and therefore a second member, with its own identifier and its own place in the group.
-- [ ] A user's identity does not survive uninstalling the app or losing the device. It cannot be recovered, and reinstalling produces a new user who has to be invited again.
+- [ ] Signing in attaches the user to an account. A user new to the product keeps their identifier and their place. A user whose account already exists, from another device, opens it instead — without being asked, since they just chose it — and what the device held without an account is abandoned.
+- [ ] A signed-in user is one identity across all of their devices. Adding a device does not create a second member.
+- [ ] A user who has not signed in is one device. Their identity does not survive uninstalling the app, losing the device, or 30 days after their first launch; it cannot be recovered, and they have to be invited again. Until they sign in, the app reminds them.
 
 **Shared and personal data**
 
@@ -99,14 +101,13 @@ A *user* is a person's identity and their display name; a *membership* is that u
 - [ ] Leaving as the only member is therefore the same act as deleting the group. The app says so before it happens, because it cannot be undone.
 - [ ] A member can be removed from the group by another member, and their device loses access to its data. This is also how a group gets rid of a member whose device is gone for good: the remaining members remove the ghost, and the group can reach empty and be deleted like any other.
 - [ ] The group survives the departure of the person who created it. There is no owner privilege to inherit.
-- [ ] A member is one identity across all of their own devices — adding a second device does not create a second member. This requires authentication, and is the requirement that lifts the one-device limit of Phase 1.
 - [ ] A shared record shows its author and its last change in the UI.
 
 ## Non-Functional Requirements
 
 - **Offline-first.** Every read is served from local storage. The app opens, displays data and accepts changes with the network off, on a cold start, with no error state and no blocking spinner.
 - **Durability before confirmation.** A change is written locally before the UI reports it as done. Nothing that the interface confirmed may disappear on a crash or a force-quit.
-- **The bound on durability.** That guarantee covers a live installation. It does not extend to uninstalling the app or losing the device: with no account behind it, a member's identity lives only on their device. In a group of several, the loss costs that member their place, and the others remove the ghost and carry on with the shared data intact. In a **group of one**, it costs everything — nobody is left to remove anyone, nobody is left to leave, and the group's data becomes permanently unreachable. That is an accepted V1 limitation of shipping without authentication, and the strongest argument for not leaving it out for long.
+- **The bound on durability.** That guarantee covers a live installation. For a member who has not signed in, it does not extend to uninstalling the app, losing the device, or the 30 days after which their anonymous identity is deleted: with no account behind it, their identity lives only on their device. In a group of several, the loss costs that member their place, and the others remove the ghost and carry on with the shared data intact. In a **group of one**, it costs everything — nobody is left to remove anyone, nobody is left to leave, and the group's data becomes permanently unreachable. That is why signing in is offered from the first screen and recalled until it happens.
 - **Perceived immediacy.** A change made by one member appears on another connected member's device within a few seconds — the grocery list is used by two people in the same shop at the same time.
 - **Group isolation.** Group scoping is enforced when data is read, not only when it is written. A device never receives records belonging to another group.
 - **Offline window: seven days.** A device that has been offline for up to seven days reconciles: everything it did while away is sent, and everything it missed is received, the last-write-wins rule above deciding any collision. Deletions stay knowable for at least that long. Past the window, the device recovers by reloading the group's whole state rather than a delta, with its own unsent changes replayed on top — slower, but never a failure the member has to act on.
@@ -120,7 +121,7 @@ A *user* is a person's identity and their display name; a *membership* is that u
 - **Multi-group membership.** The model must keep it possible, but nothing here implements it. It gets its own PRD if and when it is needed.
 - **Roles and permissions.** All members are equal in V1. A read-only or child account is a later product question.
 - **The technology.** Local storage, sync transport, conflict mechanics and authentication provider are decided in a following ADR, not here.
-- **Authentication.** Not in Phase 1 at all — not the mechanism, and not the feature. It is what a member being one identity across devices depends on, and what would make an identity survive a lost phone, so both of those sit in Phase 2 behind it. Bringing it forward is a scope decision, not a technical one.
+- **The choice of providers.** Which ones are offered, and how signing in works on each platform, is [ADR-007](../adr/adr-007-account-linking.md)'s. This document requires that signing in exists, stays optional, and keeps the identity of a member new to the product.
 - **Notification delivery.** Telegram messages and their scheduling are a separate concern, covered when `server/` gets its PRD.
 - **What the shared data means.** The semantics of a week plan, an event or a task belong to the meal, events and tasks PRDs. This document only says they are shared.
 - **Hostile members.** The group is made of people who trust each other. Defending the data against one of its own members is not a V1 requirement — which is what makes client-side enforcement acceptable. It says nothing about who is kept out, and the invitation still has to hold.
@@ -130,7 +131,7 @@ A *user* is a person's identity and their display name; a *membership* is that u
 The seven questions this document opened at version 0.1 are settled in the requirements above. What remains are the holes those answers created.
 
 - Should a group with no active device for a long time be cleaned up? It is the only possible recourse against the group of one whose only member uninstalls — nobody can leave it and nobody can be removed from it, so it can never delete itself.
-- When authentication arrives, how does it attach an **existing anonymous user** to an account without losing their local data? This is the bill for going anonymous first, and it is cheaper to answer now than after the first group exists. [ADR-004](../adr/adr-004-user-identity-and-membership.md) narrows it: the identifier and the credential both sit on the user, so linking touches one type. The mechanism is still open.
+- ~~When authentication arrives, how does it attach an **existing anonymous user** to an account without losing their local data?~~ Settled by [ADR-007](../adr/adr-007-account-linking.md): signing in links the account to the anonymous user, which keeps its identifier.
 - ~~What does a resurrected record look like, per feature?~~ Moot since [ADR-003](../adr/adr-003-persistence-and-sync.md): with the last write winning, a deletion is never undone by a concurrent edit, and a device returning after the window adopts the group's state wholesale. Nothing resurrects. Kept here because the question was real under v0.2's rule.
 - Is the seven-day offline window fixed, or does it need to be configurable?
 - Is the recipe library shared across the group, or personal to a member? The shared list above names the week plan, the grocery list, the events and the tasks — recipes are absent, which reads more like an oversight than a decision. It also settles whether any local store beyond the sync cache is needed. Belongs to the meal PRD.
