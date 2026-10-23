@@ -36,10 +36,17 @@ compose.desktop {
 // SPIKE — not for commit
 dependencies {
     implementation(libs.gitlive.firebase.auth)
+    implementation(libs.gitlive.firebase.app)
+    implementation(libs.gitlive.firebase.firestore)
 }
 tasks.register<JavaExec>("runLinkSpike") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.cyrillrx.family.spike.LinkSpikeKt")
     workingDir = rootProject.projectDir
     standardInput = System.`in`
+}
+tasks.register<JavaExec>("runSignInSpike") {
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.cyrillrx.family.spike.SignInSpikeKt")
+    workingDir = rootProject.projectDir
 }

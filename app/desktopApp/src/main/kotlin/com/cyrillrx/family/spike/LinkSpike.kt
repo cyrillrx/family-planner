@@ -59,7 +59,7 @@ fun main() {
     exitProcess(0)
 }
 
-private fun googleSignIn(clientId: String, clientSecret: String): String {
+internal fun googleSignIn(clientId: String, clientSecret: String): String {
     val server = ServerSocket(0, 1, InetAddress.getLoopbackAddress())
     val redirect = "http://127.0.0.1:${server.localPort}"
     val verifier = randomUrlSafe(48)
@@ -95,7 +95,7 @@ private fun googleSignIn(clientId: String, clientSecret: String): String {
 
 private val http = HttpClient.newHttpClient()
 
-private fun post(url: String, json: String) = send(url, json, "application/json")
+internal fun post(url: String, json: String) = send(url, json, "application/json")
 private fun postForm(url: String, form: String) = send(url, form, "application/x-www-form-urlencoded")
 private fun send(url: String, body: String, type: String): Pair<Int, String> {
     val response = http.send(
@@ -105,7 +105,7 @@ private fun send(url: String, body: String, type: String): Pair<Int, String> {
     return response.statusCode() to response.body()
 }
 
-private fun field(json: String, name: String) = Regex("\"$name\":\\s*\"([^\"]*)\"").find(json)?.groupValues?.get(1)
+internal fun field(json: String, name: String) = Regex("\"$name\":\\s*\"([^\"]*)\"").find(json)?.groupValues?.get(1)
 private fun enc(value: String) = URLEncoder.encode(value, "UTF-8")
 private fun randomUrlSafe(bytes: Int) =
     Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(bytes).also(SecureRandom()::nextBytes))
