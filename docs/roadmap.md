@@ -13,6 +13,7 @@ The group and its synchronization — [PRD-001](prd/prd-001-group-and-synchroniz
 - [ ] Local persistence, and reads served from it
 - [ ] Synchronization between the members of a group
 - [ ] Conflict and deletion behaviour, verifiable without a network
+- [ ] Authentication, linked to the anonymous identity — brought forward from V2, because Firebase deletes an anonymous account 30 days after its creation and a tester would lose their place in the group ([#73](https://github.com/cyrillrx/family-planner/issues/73))
 
 ## V1 — Must have
 
@@ -27,9 +28,8 @@ The group and its synchronization — [PRD-001](prd/prd-001-group-and-synchroniz
 
 ## V2 — Should have
 
-The first three are [PRD-001](prd/prd-001-group-and-synchronization.md) Phase 2. Only device-to-device sync depends on authentication; group teardown does not, and could land earlier.
+The first two are [PRD-001](prd/prd-001-group-and-synchronization.md) Phase 2, whose authentication moved to V0. Device-to-device sync depends on it; group teardown does not, and could land earlier.
 
-- [ ] Authentication, which is what makes an identity survive a lost phone
 - [ ] Synchronization between one member's own devices
 - [ ] Leaving a group, removing a member, deleting an empty group
 - [ ] Basic fridge stock management
