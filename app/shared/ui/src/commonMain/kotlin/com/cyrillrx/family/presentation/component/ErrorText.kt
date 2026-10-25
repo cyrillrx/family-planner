@@ -38,7 +38,9 @@ fun RegisterError.message(): String = when (this) {
 @Composable
 fun CreateGroupError.message(): String = when (this) {
     CreateGroupError.GroupAlreadyExists -> stringResource(Res.string.onboarding_error_already_in_a_group)
-    CreateGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
+    CreateGroupError.NotRegistered,
+    is CreateGroupError.Creation,
+    -> stringResource(Res.string.onboarding_error_unexpected)
 }
 
 @Composable

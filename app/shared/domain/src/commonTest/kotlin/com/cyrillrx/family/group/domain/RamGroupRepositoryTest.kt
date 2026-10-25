@@ -19,6 +19,16 @@ class RamGroupRepositoryTest {
     }
 
     @Test
+    fun `creates the group with its founder as its only member`() = runTest {
+        val repository = RamGroupRepository()
+
+        repository.create(group(), founder = UserId("alice"))
+
+        assertEquals(group(), repository.group())
+        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
+    }
+
+    @Test
     fun `emits the group once set`() = runTest {
         val repository = RamGroupRepository()
 
