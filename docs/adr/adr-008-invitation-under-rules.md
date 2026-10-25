@@ -1,0 +1,92 @@
+# ADR-008: Invitations are redeemed under Firestore rules, not by the server
+
+> **Status**: Accepted | **Date**: 2026-10-25 | **Amends**: [ADR-003](adr-003-persistence-and-sync.md) | **Context**: The group, its memberships and its invitations are still in memory ([#77](https://github.com/cyrillrx/family-planner/issues/77)), and ADR-003 routes redemption through a `server/` that nothing hosts yet.
+
+## Decision
+
+**A client redeems an invitation itself, and the security rules decide whether it may.** `server/` no longer takes part in joining a group. It keeps the notifications, the outbound calls that carry a secret, and the custody of those secrets.
+
+Redemption is one batch of two writes, and the rules accept each only alongside the other:
+
+1. The redeemer's membership, carrying the code it was redeemed with.
+2. The invitation, marked redeemed by the redeemer's credential, at the server's time.
+
+The rules accept the membership only if the invitation it names belongs to the same group, was neither redeemed nor revoked before the batch, has not expired, and is redeemed by the same credential once the batch applies. They accept the invitation's update only if the redeemer's membership exists once the batch applies and names that code. Two people cannot consume the same code: the second batch reads an invitation already redeemed.
+
+**Creating a group is the same shape.** The group and its founder's membership are one batch. The rules accept a membership without an invitation only alongside the creation of its group, which must not exist before the batch. This settles [ADR-004](adr-004-user-identity-and-membership.md)'s open question: the founder writes their own membership, and the anchor the client cannot forge is that the group did not exist.
+
+**The layout**, every path scoped by group so a second group changes nothing in it:
+
+| Path                                    | Holds                                                     | Addressed by                     |
+|-----------------------------------------|-----------------------------------------------------------|----------------------------------|
+| `groups/{groupId}`                      | The group: its name and creation time                     | Our identifier                   |
+| `groups/{groupId}/members/{credential}` | A membership: our `UserId`, the credential, the join time | The credential of the member     |
+| `invitations/{code}`                    | Its group, creation time, redemption and revocation       | The code, 128 bits of randomness |
+
+**Authorization reads the credential, never the `UserId`.** A membership is addressed by the Firebase UID that wrote it, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution, checked against the member's own user document at write time. [#68](https://github.com/cyrillrx/family-planner/issues/68) — a device claiming another member's `UserId` — stays open, but as a problem of attribution rather than of access.
+
+**A device finds its group by a collection-group query** on the memberships carrying its credential. The rule reading it is scoped to the caller's own memberships, and the query needs a collection-group index on that field, versioned beside the rules.
+
+**Every time the rules compare is the server's.** Creation, join, redemption and revocation are written as server timestamps, and the rules require them to equal the request time. An invitation expires **seven days** after its creation; the rules compute it from the stored creation time, so no client clock enters the decision.
+
+**Knowing the code is the authorization to read its invitation.** Any signed-in caller may `get` an invitation; nobody may `list` them. A member may create an invitation for their group, and revoke one that is still pending.
+
+## Context
+
+[ADR-003](adr-003-persistence-and-sync.md) made redemption the one privileged operation and gave it to an owned service, because "security rules deny every client write to the group's member list. Without that denial the service is a formality." Where that service runs was left open, and [ADR-005](adr-005-kotlin-server.md) narrowed it to a long-running host without choosing one.
+
+The MVP needs two people in one group before it needs anything else. On the path ADR-003 drew, that waits for a host, a deployment, Firebase Admin credentials in it, and token verification on every call — operations work that is not the product, for a single endpoint. Meanwhile [#16](https://github.com/cyrillrx/family-planner/issues/16) is blocked on the founder's membership, which ADR-004 could not place either: the rules denying the member list deny the founder too.
+
+## Rationale
+
+### Rules can hold the guarantees ADR-003 asked of the service
+
+ADR-003 lists what the invitation must be: unguessable, single-use, expiring, revocable, validated together with the membership it grants, and enforced by something other than the client. Each holds under rules:
+
+| Guarantee             | Held by                                                                               |
+|-----------------------|---------------------------------------------------------------------------------------|
+| Unguessable           | The code is the document's address; `list` is denied, so nothing enumerates codes     |
+| Single-use            | The update requires a pending invitation; the second batch finds it redeemed          |
+| Expiring              | Computed in the rule from the stored server timestamp                                 |
+| Revocable             | A revoked invitation fails the same check as a redeemed one                           |
+| Atomic with the grant | `getAfter` ties the membership to the invitation within one batch, in both directions |
+| Not up to the client  | Rules run on Firestore's side and bypass nothing                                      |
+
+The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can write one only as half of a batch whose other half is checked.
+
+### It fails better than the service would
+
+ADR-003 promised that "if the owned service is down, synchronization keeps working and the app is unaffected" — and redemption was the exception, since joining needed our service. Under rules, joining needs Firestore and nothing else, so the product's core path depends on no availability of ours at all.
+
+It also shrinks the one unguarded place ADR-003 warned about: a service holding administrative credentials bypasses every rule, and a bug in it is unguarded. Redemption was the reason that service needed write access to the member list. It no longer does.
+
+### Addressing memberships by credential
+
+[ADR-003](adr-003-persistence-and-sync.md) keeps our `UserId` apart from the Firebase UID so that identity survives leaving Firebase, and that is unchanged — the `UserId` is still on the membership. The address is a different matter: ADR-003 says "Firestore document paths are addressing, not identity", and the users collection is already addressed by credential. Addressing memberships the same way is what lets a rule check membership with one `exists()`, without trusting a `UserId` the user document lets anyone claim.
+
+[ADR-007](adr-007-account-linking.md)'s linking keeps the UID, so a member who signs in keeps their membership's address. One who signs in to an existing account takes that account's UID, and finds that account's memberships.
+
+## Consequences
+
+- **`server/` has no endpoint on the MVP's path.** Its hosting stops blocking the group, and becomes a question for the notifications.
+- **The rules carry logic, against ADR-003's "authorization expressed as rules, not as logic".** Redemption is a decision, and it now lives in a language `jvmTest` does not reach. The domain stays the place for everything else, and the rules are the one exception, small and named here.
+- **The rules need tests of their own.** The Firestore emulator runs them; nothing in CI does yet. Until it does, they are verified by hand against a project, and a regression there opens the group to whoever holds an old code.
+- **The expiry is written twice.** The rules enforce seven days and the client shows when a pending invitation expires. The rule is the authority; the client's value is a display, and a drift between them shows a wrong date, not a wrong decision.
+- **The code is a document address.** It appears in the Firebase console and in Firestore's own request logs, which ADR-003's "never written to any log" did not contemplate. Those are ours to read and no one else's; it still never reaches an application log, an analytics event or a crash report.
+- **A collection-group index is deployed beside the rules**, and goes out with them ([#62](https://github.com/cyrillrx/family-planner/issues/62)).
+- **Redeeming needs the network**, as it did under ADR-003. A batch queued offline would be refused later with nobody watching, so the redemption waits for the server's answer.
+- **A member who joins can read the group's invitations by code only**, like anyone. Listing the group's pending invitations, for revocation, is a query scoped by group that the rules allow to members — added with the screen that needs it.
+
+## Alternatives considered
+
+**Hosting `server/` now, as ADR-003 planned** — Rejected for the MVP: a host, a deployment and administrative credentials for one endpoint the rules can replace, and the core path tied to our availability. It stays the route if redemption ever needs something rules cannot express — rate limiting, or a side effect outside Firestore.
+
+**A Cloud Function triggered on redemption** — Rejected: it needs the Blaze plan, and it reintroduces a privileged writer that bypasses the rules, which is the surface this decision removes.
+
+**Memberships addressed by `UserId`** — Rejected: every rule would have to read the user document to map the caller's UID to a `UserId`, and would then trust a value [#68](https://github.com/cyrillrx/family-planner/issues/68) shows anyone can claim.
+
+**The code's hash as the document address** — Rejected for now: it keeps the code out of the console, at the cost of hashing on the client and in the rules. Worth revisiting if the console ever becomes shared.
+
+## Open Questions
+
+- **How are the rules tested in CI?** The emulator needs Node or the Firebase CLI on the runner; whether that runs in the existing workflow or beside it is decided with the first rules test.

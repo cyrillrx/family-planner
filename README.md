@@ -22,7 +22,7 @@ family-planner/
 │   ├── shared/domain/  # repositories and use cases — no Compose
 │   ├── shared/ui/      # Compose UI
 │   ├── androidApp/  desktopApp/  iosApp/
-├── server/             # Ktor service — privileged writes, notifications
+├── server/             # Ktor service — notifications, outbound calls
 ├── docs/
 │   ├── adr/            # Architecture decisions
 │   ├── prd/            # Product requirements
@@ -41,7 +41,7 @@ family-planner/
 | Real-time sync          | Cloud Firestore                                                       | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
 | Local persistence       | Firestore's offline cache, no second store                            | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
 | Auth                    | Firebase Auth, anonymous first                                        | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
-| Server-side service     | `server/` — privileged writes, secrets, notifications, outbound calls | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
+| Server-side service     | `server/` — secrets, notifications, outbound calls                    | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
 | Notifications           | Telegram Bot                                                          | Candidate                                                      |
 | Notification scheduling | Cron (Claude Code Routines, or a self-hosted equivalent)              | Candidate                                                      |
 | AI — meal suggestions   | Claude API (Anthropic)                                                | Candidate                                                      |
