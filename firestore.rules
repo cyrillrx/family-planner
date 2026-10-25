@@ -20,6 +20,59 @@ service cloud.firestore {
         && request.resource.data.id == resource.data.id;
     }
 
+    // A group is reached through a membership addressed by the credential reading it (ADR-008).
+    match /groups/{groupId} {
+      allow read: if isMemberOf(groupId);
+      // Only alongside its founder's membership, written in the same batch.
+      allow create: if request.auth != null
+        && isValidGroup(groupId)
+        && existsAfter(membership(groupId, request.auth.uid));
+
+      match /members/{credential} {
+        allow read: if isMemberOf(groupId);
+        // The founder's, alongside a group that did not exist before the batch.
+        allow create: if isSignedInAs(credential)
+          && isValidMembership(groupId, credential)
+          && !exists(group(groupId))
+          && existsAfter(group(groupId));
+      }
+    }
+
+    // Lets a device find its own memberships, whatever their group.
+    match /{path=**}/members/{credential} {
+      allow read: if request.auth != null && resource.data.credential == request.auth.uid;
+    }
+
+    function group(groupId) {
+      return /databases/$(database)/documents/groups/$(groupId);
+    }
+
+    function membership(groupId, credential) {
+      return /databases/$(database)/documents/groups/$(groupId)/members/$(credential);
+    }
+
+    function isMemberOf(groupId) {
+      return request.auth != null && exists(membership(groupId, request.auth.uid));
+    }
+
+    function isValidGroup(groupId) {
+      let group = request.resource.data;
+      return group.keys().hasOnly(['id', 'name', 'createdAt'])
+        && group.id == groupId
+        && group.name is string && group.name.trim().size() > 0
+        && group.createdAt == request.time;
+    }
+
+    // The UserId is attribution, read from the member's own user document; access never reads it.
+    function isValidMembership(groupId, credential) {
+      let member = request.resource.data;
+      return member.keys().hasOnly(['userId', 'groupId', 'credential', 'joinedAt'])
+        && member.groupId == groupId
+        && member.credential == credential
+        && member.joinedAt == request.time
+        && member.userId == get(/databases/$(database)/documents/users/$(credential)).data.id;
+    }
+
     function isSignedInAs(credential) {
       return request.auth != null && request.auth.uid == credential;
     }
