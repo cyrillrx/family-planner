@@ -5,6 +5,7 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.api.ApiRegisterUserRequest
 import com.cyrillrx.family.group.api.ApiUser
 import com.cyrillrx.family.group.data.UserApi
+import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Invitation
 import com.cyrillrx.family.group.model.InvitationId
@@ -12,6 +13,8 @@ import com.cyrillrx.family.group.model.Member
 import com.cyrillrx.family.group.model.RedeemedInvitation
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -158,6 +161,17 @@ class OnboardingTest {
     }
 
     @Test
+    fun `reports a group the repository could not write`() = runTest {
+        val onboarding = onboarding(groupRepository = RefusingGroupRepository)
+        onboarding.register("Cyril")
+
+        assertEquals(
+            Result.Failure(CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
+            onboarding.createGroup(),
+        )
+    }
+
+    @Test
     fun `joins the group behind a valid invitation`() = runTest {
         val onboarding = onboarding()
         onboarding.register("Cyril")
@@ -291,6 +305,14 @@ class OnboardingTest {
         private val reason: RedeemInvitationError,
     ) : InvitationRepository {
         override suspend fun redeem(code: String, user: UserId) = Result.Failure(reason)
+    }
+
+    private object RefusingGroupRepository : GroupRepository {
+        override suspend fun group(): Group? = null
+
+        override fun observeMembers(groupId: GroupId): Flow<List<Member>> = emptyFlow()
+
+        override suspend fun create(group: Group, founder: UserId) = Result.Failure(CreateGroupWriteError.Unknown)
     }
 
     private object FixedClock : Clock {
