@@ -1,6 +1,9 @@
 # ADR-004: User identity is separated from group membership
 
-> **Status**: Accepted | **Date**: 2026-09-12 | **Context**: V0 onboarding, before implementation — writing the first caller of the group domain exposed a hole in it.
+> **Status**: Accepted | **Date**: 2026-09-12 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: V0 onboarding, before implementation — writing the first caller of the group domain exposed a hole in it.
+
+> [!IMPORTANT]
+> [ADR-008](adr-008-invitation-under-rules.md) moved redemption out of `server/` and into Firestore security rules. Read what follows about `InvitationApi.redeem`, the service writing `Member` and the `ApiError` id behind a `RedeemInvitationError` as superseded: the client writes the membership in a transaction the rules check, and reads the refusal's reason from the invitation. The split between `User` and `Member` is unchanged.
 
 ## Decision
 
@@ -112,6 +115,6 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 
 ## Open Questions
 
-- ~~**What authorizes a founder to write their own membership, and what shape does the write take?**~~ The founder writes it, in one batch with the group, and the rules accept it only alongside a group that did not exist. **Settled by [ADR-008](adr-008-invitation-under-rules.md).** ADR-003 denies every client write to the member list, which the founder's own first membership contradicts. Half the answer is persistence: a rule anchored on a value the client cannot forge, or a signed write through `server/`. The other half is the domain signature, which this entry first set aside and should not have. `GroupRepository.addMember(member: Member)` asks the client for all three fields of a membership, and it owns none of them on the path that matters — the `groupId` comes from the invitation the service validated, and `joinedAt` is the service's own clock, which PRD-001 makes authoritative by resolving conflicts on server time. Narrowing the parameter to a `UserId` does not repair it: whoever reads a clock on the client is still reading the wrong one. The question is who calls, not what they pass, and today nobody does — `setGroup`, `addMember` and `removeMember` have no caller. The likely shape is that membership writes leave the domain interface altogether: the production repository never writes the member list, the sync listener fills the local cache, `RamGroupRepository` keeps a way to be seeded as a double, and `setGroup` stays because creating a group is local. It is decided with the real rules and the first onboarding use case in hand; nothing is deployed, so deferring it costs no migration.
+- ~~**What authorizes a founder to write their own membership, and what shape does the write take?**~~ The founder writes it, in one batch with the group, and the rules accept it only alongside a group that did not exist. **Settled by [ADR-008](adr-008-invitation-under-rules.md).**
 - **Does a user document exist before any group?** Registration creates one, and a person who registers then abandons onboarding leaves it behind. Harmless while it is one document per device, and worth revisiting if it ever needs cleaning up.
 - **Where does the display name get edited?** `UserRepository.register` is idempotent and updates the name, which makes it the accidental answer. A deliberate one belongs to a settings PRD.
