@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > [ADR-005](adr-005-kotlin-server.md) renamed the modules this ADR names, after it was accepted. Read `shared/core` below as `app/shared/domain`, with the entities it refers to now in `core:model`. The constraints are unchanged and still bind: the synchronization sits behind an interface in `app/shared/domain` with a fake implementation, and no Firestore type appears in one of its signatures. The `telegram-bot/` mentions are deliberate — they record a slot that never existed and that this ADR renamed to `server/`.
 >
-> [ADR-008](adr-008-invitation-under-rules.md) moved invitation redemption out of `server/` and into Firestore security rules. The guarantees the invitation must uphold, listed below, still hold, with two changes: a client now creates a membership, though only as half of a write the rules check, and the code appears in the Firebase console and in Firestore's request logs, never in an application log. The rules also carry one decision, redemption, against the principle under *Keeping the exit open* that authorization is expressed as rules, not as logic.
+> [ADR-008](adr-008-invitation-under-rules.md) moved invitation redemption out of `server/` and into Firestore security rules. The guarantees the invitation must uphold, listed below, still hold, with two changes: a client now creates a membership, though only as half of a write the rules check, and the code appears in the Firebase console and in Firestore's request logs, never in an application log. The rules also carry decisions, the membership rules for redemption and founding, against the principle under *Keeping the exit open* that authorization is expressed as rules, not as logic.
 
 ## Decision
 

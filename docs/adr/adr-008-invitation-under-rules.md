@@ -75,7 +75,7 @@ It also shrinks the one unguarded place ADR-003 warned about: a service holding 
 ## Consequences
 
 - **`server/` has no endpoint on the MVP's path.** Its hosting stops blocking the group, and becomes a question for the notifications.
-- **The rules carry logic, against ADR-003's "authorization expressed as rules, not as logic".** Redemption is a decision, and it now lives in a language `jvmTest` does not reach. The domain stays the place for everything else, and the rules are the one exception, small and named here.
+- **The rules carry logic, against ADR-003's "authorization expressed as rules, not as logic".** Redemption and founding are decisions — the two ways into a group — and they now live in a language `jvmTest` does not reach. The domain stays the place for everything else, and the membership rules are the one exception, small and named here.
 - **The rules need tests of their own.** The Firestore emulator runs them; nothing in CI does yet. Until it does, they are verified by hand against a project, and a regression there opens the group to whoever holds an old code.
 - **The expiry is written twice.** The rules enforce seven days and the client shows when a pending invitation expires. The rule is the authority; the client's value is a display, and a drift between them shows a wrong date, not a wrong decision.
 - **The code is a document address.** It appears in the Firebase console and in Firestore's own request logs, which ADR-003's "never written to any log" did not contemplate. Those are ours to read and no one else's; it still never reaches an application log, an analytics event or a crash report.
