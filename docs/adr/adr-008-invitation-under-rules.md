@@ -29,7 +29,7 @@ An invitation changes in no other way than being redeemed or revoked. A revocati
 | `groups/{groupId}/members/{credential}` | A membership: our `UserId`, the credential, its group, the join time, the code redeemed (none for a founder) | The credential of the member                         |
 | `invitations/{code}`                    | Its group, creation time, redemption and revocation                                                          | The code: 128 random bits, base64url without padding |
 
-**Authorization reads the credential, never the `UserId`.** A membership is addressed by the Firebase UID that wrote it, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution, checked against the member's own user document at write time. [#68](https://github.com/cyrillrx/family-planner/issues/68) — a device claiming another member's `UserId` — stays open, but as a problem of attribution rather than of access.
+**Authorization reads the credential, never the `UserId`.** A membership is addressed by the Firebase UID that wrote it, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution, checked against the member's own user document at write time, so a redemption waits until the server has acknowledged that document, as a device registered offline may not have sent it yet. [#68](https://github.com/cyrillrx/family-planner/issues/68) — a device claiming another member's `UserId` — stays open, but as a problem of attribution rather than of access.
 
 **A device finds its group by a collection-group query** on the memberships carrying its credential. The rule reading it is scoped to the caller's own memberships by testing the `credential` field, since a query filter cannot prove a document id, and the query needs a collection-group index on that field, versioned beside the rules.
 
@@ -58,7 +58,7 @@ ADR-003 lists what the invitation must be: unguessable, single-use, expiring, re
 | Atomic with the grant | `getAfter` ties the membership to the invitation within one transaction, in both directions |
 | Not up to the client  | Rules run on Firestore's side and bypass nothing |
 
-The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can create one only as half of a write whose other half is checked, and it never updates one. Deleting one — a member leaving, or removing another, as PRD-001 asks — opens with the feature that brings it, and stays denied until then. Deleting a group stays denied with no such exception: founding is anchored on the group not existing, and its sub-collections would outlive it, so a deleted group could be founded again over its remaining members.
+The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can create one only as half of a write whose other half is checked, and it never updates one. Deleting one — a member leaving, or removing another, as PRD-001 asks — opens with the feature that brings it, and stays denied until then. Deleting a group opens only with the last member's departure, which PRD-001 makes delete all of its data; until then it stays denied, since founding is anchored on the group not existing and its sub-collections would outlive it, letting a deleted group be founded again over its remaining members.
 
 ### It fails better than the service would
 
