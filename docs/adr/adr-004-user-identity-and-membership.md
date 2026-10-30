@@ -115,6 +115,6 @@ Audit trails — `createdAt`, `updatedAt`, the author of a write — remain a pe
 
 ## Open Questions
 
-- ~~**What authorizes a founder to write their own membership, and what shape does the write take?**~~ The founder writes it, in one batch with the group, and the rules accept it only alongside a group that did not exist. **Settled by [ADR-008](adr-008-invitation-under-rules.md).**
+- ~~**What authorizes a founder to write their own membership, and what shape does the write take?**~~ The founder writes it, in one batch with the group, and the rules accept it only alongside a group that did not exist. The domain's half — `addMember`, and a `joinedAt` read on the client — is settled with [#77](https://github.com/cyrillrx/family-planner/issues/77). **Settled by [ADR-008](adr-008-invitation-under-rules.md).**
 - **Does a user document exist before any group?** Registration creates one, and a person who registers then abandons onboarding leaves it behind. Harmless while it is one document per device, and worth revisiting if it ever needs cleaning up.
 - **Where does the display name get edited?** `UserRepository.register` is idempotent and updates the name, which makes it the accidental answer. A deliberate one belongs to a settings PRD.
