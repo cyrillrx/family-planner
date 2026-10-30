@@ -35,16 +35,16 @@ family-planner/
 
 ## Tech stack
 
-| Layer                   | Technology                                                            | Status                                                         |
-|-------------------------|-----------------------------------------------------------------------|----------------------------------------------------------------|
-| Client                  | KMP / Compose Multiplatform                                           | **Decided** — iOS, Android and Desktop from one codebase       |
-| Real-time sync          | Cloud Firestore                                                       | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
-| Local persistence       | Firestore's offline cache, no second store                            | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
-| Auth                    | Firebase Auth, anonymous first                                        | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
-| Server-side service     | `server/` — secrets, notifications, outbound calls                    | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md) |
-| Notifications           | Telegram Bot                                                          | Candidate                                                      |
-| Notification scheduling | Cron (Claude Code Routines, or a self-hosted equivalent)              | Candidate                                                      |
-| AI — meal suggestions   | Claude API (Anthropic)                                                | Candidate                                                      |
+| Layer                   | Technology                                               | Status                                                                                                                |
+|-------------------------|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| Client                  | KMP / Compose Multiplatform                              | **Decided** — iOS, Android and Desktop from one codebase                                                              |
+| Real-time sync          | Cloud Firestore                                          | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md)                                                        |
+| Local persistence       | Firestore's offline cache, no second store               | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md)                                                        |
+| Auth                    | Firebase Auth, anonymous first                           | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md)                                                        |
+| Server-side service     | `server/` — secrets, notifications, outbound calls       | Proposed — [ADR-003](docs/adr/adr-003-persistence-and-sync.md), [ADR-008](docs/adr/adr-008-invitation-under-rules.md) |
+| Notifications           | Telegram Bot                                             | Candidate                                                                                                             |
+| Notification scheduling | Cron (Claude Code Routines, or a self-hosted equivalent) | Candidate                                                                                                             |
+| AI — meal suggestions   | Claude API (Anthropic)                                   | Candidate                                                                                                             |
 
 _Decided_ means an accepted ADR stands behind it. _Proposed_ means the ADR is written but not yet accepted. _Candidate_ is still a working assumption from [`docs/draft-spec.md`](docs/draft-spec.md), to be confirmed or replaced as the project is built.
 

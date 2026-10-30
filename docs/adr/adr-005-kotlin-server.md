@@ -3,7 +3,7 @@
 > **Status**: Accepted | **Date**: 2026-09-25 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: V0 is delivered client-side and has no interlocutor. Five of the seven open issues wait on the service that does not exist yet.
 
 > [!IMPORTANT]
-> [ADR-008](adr-008-invitation-under-rules.md) took invitation redemption away from `server/`. The `invitation_*` error ids, the barrier this ADR expected the service to hold for #17 and #19, and validation as the server's job no longer apply; the choice of Kotlin, Ktor and one Gradle build stands.
+> [ADR-008](adr-008-invitation-under-rules.md) took invitation redemption away from `server/`. The `invitation_*` error ids, the barrier this ADR expected the service to hold for #17 and #19, the service's part in settling #16, which the founder's own batch now settles, and validation as the server's job no longer apply; the choice of Kotlin, Ktor and one Gradle build stands.
 
 ## Decision
 
