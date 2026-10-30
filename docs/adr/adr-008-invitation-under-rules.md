@@ -31,7 +31,7 @@ An invitation changes in no other way than being redeemed or revoked. A revocati
 
 **Authorization reads the credential, never the `UserId`.** A membership is addressed by the Firebase UID that wrote it, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution, checked against the member's own user document at write time. [#68](https://github.com/cyrillrx/family-planner/issues/68) — a device claiming another member's `UserId` — stays open, but as a problem of attribution rather than of access.
 
-**A device finds its group by a collection-group query** on the memberships carrying its credential. The rule reading it is scoped to the caller's own memberships, and the query needs a collection-group index on that field, versioned beside the rules.
+**A device finds its group by a collection-group query** on the memberships carrying its credential. The rule reading it is scoped to the caller's own memberships by testing the `credential` field, since a query filter cannot prove a document id, and the query needs a collection-group index on that field, versioned beside the rules.
 
 **Every time the rules compare is the server's.** Creation, join, redemption and revocation are written as server timestamps, and the rules require them to equal the request time. An invitation expires **seven days** after its creation; the rules compute it from the stored creation time, so no client clock enters the decision.
 
@@ -51,20 +51,20 @@ ADR-003 lists what the invitation must be: unguessable, single-use, expiring, re
 
 | Guarantee             | Held by |
 |-----------------------|---|
-| Unguessable           | The client draws the code from a secure random source, and the rules refuse to create one that is not 22 base64url characters; `list` is denied outside the group, so no stranger enumerates codes. The randomness rests on a member's client, which PRD-001 trusts: the invitation guards against the stranger, who never chooses a code |
+| Unguessable           | The client draws the code from a secure random source, and the rules refuse to create one that is not 22 base64url characters; `list` is denied, so no stranger enumerates codes. The randomness rests on a member's client, which PRD-001 trusts: the invitation guards against the stranger, who never chooses a code |
 | Single-use            | The update requires a pending invitation; the second transaction finds it redeemed |
 | Expiring              | Computed in the rule from the stored server timestamp |
 | Revocable             | A revoked invitation fails the same check as a redeemed one |
 | Atomic with the grant | `getAfter` ties the membership to the invitation within one transaction, in both directions |
 | Not up to the client  | Rules run on Firestore's side and bypass nothing |
 
-The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can create one only as half of a write whose other half is checked, and it never updates one. Deleting one — a member leaving, or removing another, as PRD-001 asks — opens with the feature that brings it, and stays denied until then.
+The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can create one only as half of a write whose other half is checked, and it never updates one. Deleting one — a member leaving, or removing another, as PRD-001 asks — opens with the feature that brings it, and stays denied until then. Deleting a group stays denied with no such exception: founding is anchored on the group not existing, and its sub-collections would outlive it, so a deleted group could be founded again over its remaining members.
 
 ### It fails better than the service would
 
 ADR-003 promised that "if the owned service is down, synchronization keeps working and the app is unaffected" — and redemption was the exception, since joining needed our service. Under rules, joining needs Firestore and nothing else, so the product's core path depends on no availability of ours at all.
 
-It also shrinks the one unguarded place ADR-003 warned about: a service holding administrative credentials bypasses every rule, and a bug in it is unguarded. Redemption was the reason that service needed write access to the member list. It no longer does.
+It also shrinks the one unguarded place ADR-003 warned about: a service holding administrative credentials bypasses every rule, and a bug in it is unguarded. Redemption was the reason that service needed write access to the member list. It no longer does: sending notifications needs only to read, and its credential is granted no more.
 
 ### Addressing memberships by credential
 
@@ -98,6 +98,6 @@ It also shrinks the one unguarded place ADR-003 warned about: a service holding 
 
 ## Open Questions
 
-- **How does a member read another member's name?** [ADR-004](adr-004-user-identity-and-membership.md) scopes `/users` reads by shared membership, but `users/{credential}` names no group, so a rule cannot test it. Copying the name onto the membership, or listing a user's groups on their user document, are the two candidates; decided with [#77](https://github.com/cyrillrx/family-planner/issues/77).
+- **How does a member read another member's name?** [ADR-004](adr-004-user-identity-and-membership.md) scopes `/users` reads by shared membership, but `users/{credential}` names no group, so a rule cannot test it. Listing a user's groups on their user document makes the rule expressible; copying the name onto the membership would too, but reopens what ADR-004 rejected; decided with [#77](https://github.com/cyrillrx/family-planner/issues/77).
 - **Does the Desktop SDK carry this?** `runTransaction`, server timestamps and collection-group queries have to work through `firebase-java-sdk`, which [ADR-007](adr-007-account-linking.md) found missing methods in. Checked with [#77](https://github.com/cyrillrx/family-planner/issues/77), before the store depends on them.
 - **How are the rules tested in CI?** The emulator runs through the Firebase CLI, which needs Node and a JDK on the runner; whether that runs in the existing workflow or beside it is decided with the first rules test.
