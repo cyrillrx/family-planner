@@ -6,17 +6,17 @@
 
 **A client redeems an invitation itself, and the security rules decide whether it may.** `server/` no longer takes part in joining a group. It keeps the notifications, the outbound calls that carry a secret, and the custody of those secrets.
 
-**Redemption is one transaction.** It writes the redeemer's membership and marks the invitation redeemed, and the rules accept each write only alongside the other: the membership against a pending, unexpired invitation of the same group, the invitation only once that membership exists. Two people cannot consume the same code, because the second transaction reads an invitation already redeemed. Beyond being redeemed or revoked, an invitation never changes, so its single use and its expiry cannot be rewritten.
+**Redemption is one transaction.** It writes the redeemer's membership and marks the invitation redeemed, and the rules accept each write only alongside the other: the membership against an invitation of the same group that was pending and unexpired before the write, the invitation only once that membership exists. Single use rests on that check of the stored state, which Firestore commits atomically: whoever writes second, transaction or not, finds the invitation redeemed. The transaction only makes the client fail fast. Beyond being redeemed or revoked, an invitation never changes, so its single use and its expiry cannot be rewritten.
 
 **Founding a group has the same shape.** The group and its founder's membership are one batch, and the rules accept a membership without an invitation only alongside the creation of a group that did not exist. This settles [ADR-004](adr-004-user-identity-and-membership.md)'s open question: the founder writes their own membership, and the anchor the client cannot forge is that the group did not exist.
 
-**Memberships are addressed by credential, and authorization reads the credential, never the `UserId`.** Every membership is written by its own credential, so nobody enrols someone else, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution. [#68](https://github.com/cyrillrx/family-planner/issues/68), a device claiming another member's `UserId`, stays open, but as a problem of attribution rather than of access.
+**Memberships are addressed by credential, and authorization reads the credential, never the `UserId`.** Every membership is written by its own credential, so nobody enrols someone else, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The membership also carries its credential as a field, so a device finds its groups by a collection-group query on that field, which a rule can check against `request.auth.uid`. The `UserId` on the membership is attribution. [#68](https://github.com/cyrillrx/family-planner/issues/68), a device claiming another member's `UserId`, stays open, but as a problem of attribution rather than of access.
 
-| Path                                    | Holds                                                                               | Addressed by                                         |
-|-----------------------------------------|-------------------------------------------------------------------------------------|------------------------------------------------------|
-| `groups/{groupId}`                      | The group                                                                           | Our identifier                                       |
-| `groups/{groupId}/members/{credential}` | A membership: our `UserId`, its group, the join time, the code it was redeemed with | The credential of the member                         |
-| `invitations/{code}`                    | Its group, creation time, redemption and revocation                                 | The code: 128 random bits, base64url without padding |
+| Path                                    | Holds                                                                                   | Addressed by                 |
+|-----------------------------------------|-----------------------------------------------------------------------------------------|------------------------------|
+| `groups/{groupId}`                      | The group                                                                               | Our identifier               |
+| `groups/{groupId}/members/{credential}` | A membership: its credential, our `UserId`, its group, the join time, the code redeemed | The credential of the member |
+| `invitations/{code}`                    | Its group, creation time, redemption and revocation                                     | The code: 128 random bits    |
 
 **The rules compare server time only.** Creation, join, redemption and revocation are written as server timestamps, and an invitation expires seven days after its creation, so no client clock enters the decision.
 
@@ -37,10 +37,10 @@ ADR-003 lists what the invitation must be: unguessable, single-use, expiring, re
 | Guarantee             | Held by                                                                                    |
 |-----------------------|--------------------------------------------------------------------------------------------|
 | Unguessable           | 128 random bits drawn by a member's client, which PRD-001 trusts; listing is denied        |
-| Single-use            | The second transaction finds the invitation redeemed                                       |
+| Single-use            | The rule requires an invitation still pending before the write                             |
 | Expiring              | Computed in the rule from the stored server timestamp                                      |
 | Revocable             | A revoked invitation fails the same check as a redeemed one                                |
-| Atomic with the grant | The rules tie the membership and the invitation within one transaction, in both directions |
+| Atomic with the grant | The rules tie the membership and the invitation within one write, in both directions       |
 | Not up to the client  | Rules run on Firestore's side and bypass nothing                                           |
 
 The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own, only as half of a write whose other half is checked. Leaving a group and deleting one stay denied until the features that bring them.
