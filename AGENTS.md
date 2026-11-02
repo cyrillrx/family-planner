@@ -48,7 +48,7 @@ This is a monorepo. It builds as **one Gradle project rooted at the repository**
 |------------|------------------------------------------------------------------------------------------------|---------------------|
 | `core/`    | Shared with the server — the entities and the wire types                                       | Initialized         |
 | `app/`     | KMP/CMP client (Android, iOS, Desktop)                                                         | Initialized         |
-| `server/`  | Server-side service — notifications, invitation redemption, outbound API calls, secret custody | Initialized         |
+| `server/`  | Server-side service — notifications, outbound API calls, secret custody                        | Initialized         |
 | `docs/`    | Roadmap, drafts, convention pointers                                                           | —                   |
 
 Inside `app/`, the client splits into two shared modules and three platform wrappers — `shared/domain` (repositories and use cases, no Compose), `shared/ui` (Compose UI), `androidApp`, `desktopApp` and `iosApp`. See [ADR-001](docs/adr/adr-001-kmp-client-targets.md). `core/model` sits outside `app/` because the server depends on it too ([ADR-005](docs/adr/adr-005-kotlin-server.md)); it declares no Android target, since an Android consumer reads its `jvm` variant.

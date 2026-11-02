@@ -16,7 +16,7 @@ Use short, consistent scopes matching this repository's structure:
 | `project`                 | Root-level tooling, README, repository-wide changes        |
 | `agents`                  | AI agent configuration and rules (`AGENTS.md`, `.claude/`) |
 | `app`                     | The KMP/CMP client                                         |
-| `server`                  | The server-side service (notifications, privileged writes) |
+| `server`                  | The server-side service (notifications, outbound calls)    |
 | `docs`                    | Documentation that is not tied to a single component       |
 | `meal`, `events`, `tasks` | Feature-scoped changes, once features exist                |
 
