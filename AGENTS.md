@@ -26,6 +26,7 @@ The conventions live in the shared [`cyrillrx/coding-conventions`](https://githu
 - **Collaboration, Git & CI Conventions**: [`git-and-collaboration.md`](docs/conventions/git-and-collaboration.md) _(+ project)_
 - **Documentation Conventions**: [`docs-conventions.md`](docs/conventions/docs-conventions.md) _(pointer)_
 - **Documentation language**: All documentation, comments, commit messages, and PR descriptions must be written in English.
+- **Public repository**: Never describe the real infrastructure — the machine hosting `server/`, its type, addresses, ports or volume paths. Write "a long-running service" or "the host"; when quoting a document that names a machine, shorten the quote.
 - **AI Co-authorship**: Do not add AI co-author tags (e.g. `Co-Authored-By: Claude`) or generated-by footers to commits or pull requests.
 - **AI/Agent rules**: All rules applying to AI agents must be written in this file (`AGENTS.md`). Agent-specific config files (e.g. `.claude/CLAUDE.md`) must only point to this file — never duplicate or extend rules there.
 - **AI/Agent naming convention**: Commits and PRs related to AI agent configuration or rules must use the `docs(agents)` conventional-commit prefix (e.g. `docs(agents): add co-authorship rule`).
@@ -79,6 +80,15 @@ All commands run from the repository root:
 ktlint is **strict** in `core/model`, `app/shared/domain` and `server` (`ignoreFailures = false`) and permissive in `app/shared/ui` (`ignoreFailures = true`).
 
 The iOS application is built from `app/iosApp/iosApp.xcodeproj` in Xcode. Its build phase calls `./gradlew :app:shared:ui:embedAndSignAppleFrameworkForXcode`, so the framework is produced by Gradle and embedded by Xcode.
+
+### Pitfalls a green check does not catch
+
+**Verify with `./gradlew build`, not `jvmTest` alone.** Only `build` compiles and runs the iOS tests, and the first two pitfalls below pass on the JVM:
+
+- **No comma in a backtick test name.** Kotlin/Native rejects it (`Name contains illegal characters`); apostrophes are fine.
+- **`NavBackStack` is not equal to a `List` on Kotlin/Native.** Compare `backStack.toList()` in `commonTest`.
+- **Write an apostrophe as `'` in `composeResources`, never `\'`.** Compose Resources does not apply Android's escaping, so the backslash reaches the screen while the build stays green.
+- **No `// TODO` directly above a KDoc.** ktlint's `no-consecutive-comments` fails the strict modules and cannot fix it: anchor the TODO inside the function body, on the line that carries the defect.
 
 ### Coverage policy
 
