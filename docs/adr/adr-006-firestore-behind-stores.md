@@ -1,6 +1,9 @@
 # ADR-006: Firestore is reached through one store interface per aggregate
 
-> **Status**: Accepted | **Date**: 2026-10-17 | **Context**: [#58](https://github.com/cyrillrx/family-planner/issues/58) is the first repository backed by Firestore, and every repository after it will copy whatever shape it takes.
+> **Status**: Accepted | **Date**: 2026-10-17 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: [#58](https://github.com/cyrillrx/family-planner/issues/58) is the first repository backed by Firestore, and every repository after it will copy whatever shape it takes.
+
+> [!IMPORTANT]
+> [ADR-008](adr-008-invitation-under-rules.md) gave redemption to the client, so the server no longer writes the membership as stated below. It still reads the group's documents to send notifications, which is enough to keep the document types in `core:model`.
 
 ## Decision
 

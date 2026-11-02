@@ -1,6 +1,9 @@
 # ADR-005: `server/` is written in Kotlin with Ktor, in one Gradle build
 
-> **Status**: Accepted | **Date**: 2026-09-25 | **Context**: V0 is delivered client-side and has no interlocutor. Five of the seven open issues wait on the service that does not exist yet.
+> **Status**: Accepted | **Date**: 2026-09-25 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: V0 is delivered client-side and has no interlocutor. Five of the seven open issues wait on the service that does not exist yet.
+
+> [!IMPORTANT]
+> [ADR-008](adr-008-invitation-under-rules.md) took invitation redemption away from `server/`. The `invitation_*` error ids, the barrier this ADR expected the service to hold for #17 and #19, the service's part in settling #16, which the founder's own batch now settles, and validation as the server's job no longer apply; the choice of Kotlin, Ktor and one Gradle build stands.
 
 ## Decision
 
@@ -142,5 +145,5 @@ Fixing them now closes #13 and gives #17 and #19 the refusal they ask for, which
 
 ## Open Questions
 
-- **Where does `server/` run?** Choosing Ktor assumes a long-running service rather than a scheduled script, which narrows the field without settling it. The decision and what it costs to operate — availability for redemption, a schedule for notifications, how secrets reach the host — belong in their own ADR.
+- **Where does `server/` run?** Choosing Ktor assumes a long-running service rather than a scheduled script, which narrows the field without settling it. The decision and what it costs to operate — a schedule for notifications (redemption no longer needs it, per [ADR-008](adr-008-invitation-under-rules.md)), how secrets reach the host — belong in their own ADR.
 - **What does the service expose, and how does it authenticate?** Endpoints, payloads and the verification of the caller's token belong to the PRD that PRD-001 already promises `server/`. [ADR-004](adr-004-user-identity-and-membership.md) fixes one constraint in advance: every call is signed by whoever makes it, so the service derives the identity from the token rather than from a forgeable body.
