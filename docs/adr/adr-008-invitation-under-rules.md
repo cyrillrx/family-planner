@@ -6,36 +6,21 @@
 
 **A client redeems an invitation itself, and the security rules decide whether it may.** `server/` no longer takes part in joining a group. It keeps the notifications, the outbound calls that carry a secret, and the custody of those secrets.
 
-Redemption is one transaction: it reads the invitation, which names the group, then makes two writes that the rules accept only together:
+**Redemption is one transaction.** It writes the redeemer's membership and marks the invitation redeemed, and the rules accept each write only alongside the other: the membership against a pending, unexpired invitation of the same group, the invitation only once that membership exists. Two people cannot consume the same code, because the second transaction reads an invitation already redeemed. Beyond being redeemed or revoked, an invitation never changes, so its single use and its expiry cannot be rewritten.
 
-1. The redeemer's membership, carrying the code it was redeemed with.
-2. The invitation, marked redeemed by the redeemer's credential, at the server's time.
+**Founding a group has the same shape.** The group and its founder's membership are one batch, and the rules accept a membership without an invitation only alongside the creation of a group that did not exist. This settles [ADR-004](adr-004-user-identity-and-membership.md)'s open question: the founder writes their own membership, and the anchor the client cannot forge is that the group did not exist.
 
-The rules accept the membership only if the invitation it names belongs to the same group, was neither redeemed nor revoked before the transaction, has not expired, and is redeemed by the same credential once the transaction applies. They accept the invitation's update only if it was pending before the transaction, changes nothing but its redemption, and the redeemer's membership exists once the transaction applies and names that code. Two people cannot consume the same code: the second transaction reads an invitation already redeemed.
+**Memberships are addressed by credential, and authorization reads the credential, never the `UserId`.** Every membership is written by its own credential, so nobody enrols someone else, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution. [#68](https://github.com/cyrillrx/family-planner/issues/68), a device claiming another member's `UserId`, stays open, but as a problem of attribution rather than of access.
 
-An invitation changes in no other way than being redeemed or revoked. A revocation is accepted from a member of its group, on a pending invitation, and changes nothing but its revocation. Without those limits, single use and expiry would hold only until someone rewrote the invitation.
+| Path                                    | Holds                                                                               | Addressed by                                         |
+|-----------------------------------------|-------------------------------------------------------------------------------------|------------------------------------------------------|
+| `groups/{groupId}`                      | The group                                                                           | Our identifier                                       |
+| `groups/{groupId}/members/{credential}` | A membership: our `UserId`, its group, the join time, the code it was redeemed with | The credential of the member                         |
+| `invitations/{code}`                    | Its group, creation time, redemption and revocation                                 | The code: 128 random bits, base64url without padding |
 
-**Every membership is created by its own credential.** Its document id and its `credential` field both equal `request.auth.uid`, and its group field equals the group in its path, so nobody enrols someone else, nobody points another device's collection-group query at their group, and that query never names a group the membership is not in.
+**The rules compare server time only.** Creation, join, redemption and revocation are written as server timestamps, and an invitation expires seven days after its creation, so no client clock enters the decision.
 
-**The client tells the member why, the rules decide whether.** A refusal reaches the client as a bare `PERMISSION_DENIED`, so the reason comes from the invitation the transaction read: missing, revoked or already redeemed. A refusal of an invitation still pending reads as expired when it was created more than seven days ago, and as a plain refusal otherwise. That reading is a display, like the expiry date the client shows; it never lets a redemption through.
-
-**Creating a group is the same shape.** The group and its founder's membership are one batch. The rules accept a membership without an invitation only alongside the creation of its group, which must not exist before the batch, and accept a group only alongside its founder's membership, so no group is ever left without a member. This settles [ADR-004](adr-004-user-identity-and-membership.md)'s open question: the founder writes their own membership, and the anchor the client cannot forge is that the group did not exist.
-
-**The layout**, every path but the invitation's scoped by group so a second group changes nothing in it; an invitation names its group in its fields:
-
-| Path                                    | Holds                                                                                                        | Addressed by                                         |
-|-----------------------------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------|
-| `groups/{groupId}`                      | The group: its name and creation time                                                                        | Our identifier                                       |
-| `groups/{groupId}/members/{credential}` | A membership: our `UserId`, the credential, its group, the join time, the code redeemed (none for a founder) | The credential of the member                         |
-| `invitations/{code}`                    | Its identifier, its group, creation time, redemption and revocation                                          | The code: 128 random bits, base64url without padding |
-
-**Authorization reads the credential, never the `UserId`.** A membership is addressed by the Firebase UID that wrote it, and every rule asks whether `groups/{groupId}/members/{request.auth.uid}` exists. The `UserId` on the membership is attribution, checked against the member's own user document at write time, so a redemption waits until the server has acknowledged that document, as a device registered offline may not have sent it yet. [#68](https://github.com/cyrillrx/family-planner/issues/68) — a device claiming another member's `UserId` — stays open, but as a problem of attribution rather than of access.
-
-**A device finds its group by a collection-group query** on the memberships carrying its credential. The rule reading it is scoped to the caller's own memberships by testing the `credential` field, since a query filter cannot prove a document id, and the query needs a collection-group index on that field, versioned beside the rules.
-
-**Every time the rules compare is the server's.** Creation, join, redemption and revocation are written as server timestamps, and the rules require them to equal the request time. An invitation expires **seven days** after its creation; the rules compute it from the stored creation time, so no client clock enters the decision.
-
-**Knowing the code is the authorization to read its invitation.** Any signed-in caller may `get` an invitation; nobody may `list` them. Members will list their own group's, with the revocation screen (see Consequences). A member may create an invitation for their group, and revoke one that is still pending.
+**Knowing the code is the authorization to read its invitation.** Any signed-in caller may read one by its code; nobody may list them.
 
 ## Context
 
@@ -49,22 +34,22 @@ The MVP needs two people in one group before it needs anything else. On the path
 
 ADR-003 lists what the invitation must be: unguessable, single-use, expiring, revocable, validated together with the membership it grants, and enforced by something other than the client. Each holds under rules:
 
-| Guarantee             | Held by |
-|-----------------------|---|
-| Unguessable           | The client draws the code from a secure random source, and the rules refuse to create one that is not 22 base64url characters; `list` is denied, so no stranger enumerates codes. The randomness rests on a member's client, which PRD-001 trusts: the invitation guards against the stranger, who never chooses a code |
-| Single-use            | The update requires a pending invitation; the second transaction finds it redeemed |
-| Expiring              | Computed in the rule from the stored server timestamp |
-| Revocable             | A revoked invitation fails the same check as a redeemed one |
-| Atomic with the grant | `getAfter` ties the membership to the invitation within one transaction, in both directions |
-| Not up to the client  | Rules run on Firestore's side and bypass nothing |
+| Guarantee             | Held by                                                                                    |
+|-----------------------|--------------------------------------------------------------------------------------------|
+| Unguessable           | 128 random bits drawn by a member's client, which PRD-001 trusts; listing is denied        |
+| Single-use            | The second transaction finds the invitation redeemed                                       |
+| Expiring              | Computed in the rule from the stored server timestamp                                      |
+| Revocable             | A revoked invitation fails the same check as a redeemed one                                |
+| Atomic with the grant | The rules tie the membership and the invitation within one transaction, in both directions |
+| Not up to the client  | Rules run on Firestore's side and bypass nothing                                           |
 
-The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own. It can create one only as half of a write whose other half is checked, and it never updates one. Deleting one — a member leaving, or removing another, as PRD-001 asks — opens with the feature that brings it, and stays denied until then. Deleting a group opens only with the last member's departure, which PRD-001 makes delete all of its data; until then it stays denied, since founding is anchored on the group not existing and its sub-collections would outlive it, letting a deleted group be founded again over its remaining members. Its pending invitations live outside it and are revoked with it, or one still valid would let someone into a group that no longer exists.
+The denial ADR-003 insisted on is kept, only narrowed: a client still cannot write a membership on its own, only as half of a write whose other half is checked. Leaving a group and deleting one stay denied until the features that bring them.
 
 ### It fails better than the service would
 
 ADR-003 promised that "if the owned service is down, synchronization keeps working and the app is unaffected" — and redemption was the exception, since joining needed our service. Under rules, joining needs Firestore and nothing else, so the product's core path depends on no availability of ours at all.
 
-It also shrinks the one unguarded place ADR-003 warned about: a service holding administrative credentials bypasses every rule, and a bug in it is unguarded. Redemption was the reason that service needed write access to the member list. It no longer does: sending notifications needs only to read, and its credential is granted no more.
+It also shrinks the one unguarded place ADR-003 warned about: a service holding administrative credentials bypasses every rule, and a bug in it is unguarded. Redemption was the reason that service needed write access to the member list. Sending notifications needs only to read.
 
 ### Addressing memberships by credential
 
@@ -75,17 +60,13 @@ It also shrinks the one unguarded place ADR-003 warned about: a service holding 
 ## Consequences
 
 - **`server/` has no endpoint on the MVP's path.** Its hosting stops blocking the group, and becomes a question for the notifications.
-- **The rules carry logic, against ADR-003's "authorization expressed as rules, not as logic".** Redemption and founding are decisions — the two ways into a group — and they now live in a language `jvmTest` does not reach. The domain stays the place for everything else, and the membership rules are the one exception, small and named here.
-- **The rules need tests of their own.** The Firestore emulator runs them; nothing in CI does yet. Until it does, they are verified by hand against a project, and a regression there opens the group to whoever holds an old code.
-- **The expiry is written twice.** The rules enforce seven days and the client shows when a pending invitation expires. The rule is the authority; the client's value is a display, and a drift between them shows a wrong date, not a wrong decision.
-- **The code is a document address.** It appears in the Firebase console and in Firestore's own request logs, which ADR-003's "never written to any log" did not contemplate. Those are ours to read and no one else's; it still never reaches an application log, an analytics event or a crash report.
-- **A collection-group index is deployed beside the rules**, and goes out with them ([#62](https://github.com/cyrillrx/family-planner/issues/62)).
-- **Redeeming needs the network**, as it did under ADR-003. A batch would be queued offline and applied to the local cache, then refused later with nobody watching; a transaction fails at once instead, which is why redemption is one.
-- **An invitation's link is shown once the server has acknowledged it.** A code shared before it exists there would read as missing to the invitee, so creating an invitation needs the network, like redeeming it. It is a transaction too, reading that the code does not exist yet, so it fails at once offline instead of being queued.
-- **A revocation is shown as done once the server has acknowledged it.** Queued offline, it would look done while the code still works, so revoking needs the network too, through a transaction that reads the invitation still pending; if the code is redeemed first, the member sees the revocation refused.
-- **Founding a group works offline.** Its batch is queued like any other write, and nothing it checks is contested by anyone else, so a later refusal is a client bug rather than a race. Asking for the network to create a group would cost the member more than it protects.
-- **The rules do not hold a credential to one group.** Belonging to several groups is where the product is going, and each membership is still earned by its own invitation or founding, so a second one exposes nothing. One group per member is a V1 limit the client keeps, by offering neither joining nor founding to a member; [#17](https://github.com/cyrillrx/family-planner/issues/17) and [#19](https://github.com/cyrillrx/family-planner/issues/19) are the windows where it does not yet, and no longer the barrier ADR-005 looked for in the service.
-- **A member who joins can read the group's invitations by code only**, like anyone. Listing the group's pending invitations, for revocation, is a query scoped by group that the rules allow to members — added with the screen that needs it.
+- **The rules carry logic, against ADR-003's "authorization expressed as rules, not as logic".** Redemption and founding, the two ways into a group, now live in a language `jvmTest` does not reach. They are the one exception, small and named here.
+- **The rules need tests of their own.** The Firestore emulator runs them; nothing in CI does yet. Until it does, a regression there opens the group to whoever holds an old code.
+- **The client tells the member why; the rules decide whether.** A refusal reaches the client as a bare `PERMISSION_DENIED`, so the reason shown comes from the invitation the transaction read.
+- **Joining needs the network**, as it did under ADR-003. A refused write queued offline would fail later with nobody watching, so the writes others can contest — redeeming, creating and revoking an invitation — are transactions, which fail at once offline. Founding a group contests nothing and works offline.
+- **The code is a document address.** It appears in the Firebase console and in Firestore's own request logs, which ADR-003's "never written to any log" did not contemplate. Those are ours to read; it still never reaches an application log, an analytics event or a crash report.
+- **The rules do not hold a credential to one group.** Belonging to several groups is where the product is going, and each membership is still earned by its own invitation or founding. One group per member is a V1 limit the client keeps; [#17](https://github.com/cyrillrx/family-planner/issues/17) and [#19](https://github.com/cyrillrx/family-planner/issues/19) are the windows where it does not yet.
+- **The decision is reversible.** Moving redemption back to a service means denying the client the membership writes the rules now accept. The layout, addressed by credential, serves either way.
 
 ## Alternatives considered
 
@@ -99,6 +80,5 @@ It also shrinks the one unguarded place ADR-003 warned about: a service holding 
 
 ## Open Questions
 
-- **How does a member read another member's name?** [ADR-004](adr-004-user-identity-and-membership.md) scopes `/users` reads by shared membership, but `users/{credential}` names no group, so a rule cannot test it. Listing a user's groups on their user document makes the rule expressible; copying the name onto the membership would too, but reopens what ADR-004 rejected; decided with [#77](https://github.com/cyrillrx/family-planner/issues/77).
-- **Does the Desktop SDK carry this?** `runTransaction`, server timestamps and collection-group queries have to work through `firebase-java-sdk`, which [ADR-007](adr-007-account-linking.md) found missing methods in. Checked with [#77](https://github.com/cyrillrx/family-planner/issues/77), before the store depends on them.
-- **How are the rules tested in CI?** The emulator runs through the Firebase CLI, which needs Node and a JDK on the runner; whether it runs as a step or as a job of `ci.yml` is decided with the first rules test.
+- **How does a member read another member's name?** [ADR-004](adr-004-user-identity-and-membership.md) scopes `/users` reads by shared membership, but `users/{credential}` names no group, so a rule cannot test it. Decided with [#77](https://github.com/cyrillrx/family-planner/issues/77).
+- **Does the Desktop SDK carry this?** Transactions, server timestamps and collection-group queries have to work through `firebase-java-sdk`, which [ADR-007](adr-007-account-linking.md) found missing methods in. Checked with [#77](https://github.com/cyrillrx/family-planner/issues/77), before the store depends on them.
