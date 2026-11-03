@@ -13,6 +13,7 @@ import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
@@ -109,9 +110,7 @@ class StoreGroupRepositoryTest {
     @Test
     fun `observes the members of the group`() = runTest {
         val store = FakeGroupStore()
-        store.members.value = listOf(
-            MemberDocument(userId = "user-1", groupId = "group-1", credential = "uid-1", joinedAt = MILLIS),
-        )
+        store.membersByGroup.value = mapOf("group-1" to listOf(storedMember()))
 
         assertEquals(
             listOf(Member(userId = UserId("user-1"), groupId = GroupId("group-1"), joinedAt = CREATED_AT)),
@@ -122,7 +121,18 @@ class StoreGroupRepositoryTest {
     @Test
     fun `leaves out a membership missing a field`() = runTest {
         val store = FakeGroupStore()
-        store.members.value = listOf(MemberDocument(userId = "user-1", groupId = "group-1", credential = "uid-1"))
+        store.membersByGroup.value = mapOf("group-1" to listOf(storedMember().copy(joinedAt = null)))
+
+        assertEquals(
+            emptyList(),
+            StoreGroupRepository(store, CredentialOnly("uid-1")).observeMembers(GroupId("group-1")).first(),
+        )
+    }
+
+    @Test
+    fun `observes the group it is asked for`() = runTest {
+        val store = FakeGroupStore()
+        store.membersByGroup.value = mapOf("group-2" to listOf(storedMember().copy(groupId = "group-2")))
 
         assertEquals(
             emptyList(),
@@ -134,6 +144,9 @@ class StoreGroupRepositoryTest {
 
     private fun storedGroup() = GroupDocument(id = "group-1", name = "Family", createdAt = MILLIS)
 
+    private fun storedMember() =
+        MemberDocument(userId = "user-1", groupId = "group-1", credential = "uid-1", joinedAt = MILLIS)
+
     private companion object {
         const val MILLIS = 1_760_000_000_000
         val CREATED_AT = Instant.fromEpochMilliseconds(MILLIS)
@@ -144,7 +157,7 @@ private class FakeGroupStore(private val failure: Exception? = null) : GroupStor
 
     val groupsByCredential = mutableMapOf<String, GroupDocument>()
     val creations = mutableListOf<Pair<GroupDocument, MemberDocument>>()
-    val members = MutableStateFlow<List<MemberDocument>>(emptyList())
+    val membersByGroup = MutableStateFlow<Map<String, List<MemberDocument>>>(emptyMap())
 
     override suspend fun findGroupOf(credential: String): GroupDocument? {
         failure?.let { throw it }
@@ -158,7 +171,8 @@ private class FakeGroupStore(private val failure: Exception? = null) : GroupStor
         creations += group to founder
     }
 
-    override fun observeMembers(groupId: String): Flow<List<MemberDocument>> = members
+    override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =
+        membersByGroup.map { it[groupId].orEmpty() }
 }
 
 /** Holds a credential and nothing else: the group repository reads no user. */
