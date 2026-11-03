@@ -52,7 +52,9 @@ class StoreGroupRepository(
 
 private fun GroupDocument.toDomain(): Group? {
     val id = id ?: return null
+
     val name = name ?: return null
+
     val createdAt = createdAt ?: return null
 
     return Group(id = GroupId(id), name = name, createdAt = Instant.fromEpochMilliseconds(createdAt))
@@ -60,7 +62,9 @@ private fun GroupDocument.toDomain(): Group? {
 
 private fun MemberDocument.toDomain(): Member? {
     val userId = userId ?: return null
+
     val groupId = groupId ?: return null
+
     val joinedAt = joinedAt ?: return null
 
     return Member(
