@@ -51,7 +51,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
 
     override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =
         groups().document(groupId).collection(MEMBERS).snapshots.map { snapshot ->
-            snapshot.documents.map { it.toMember() }
+            snapshot.documents.map(DocumentSnapshot::toMember)
         }
 
     private fun groups() = firestore.collection("groups")

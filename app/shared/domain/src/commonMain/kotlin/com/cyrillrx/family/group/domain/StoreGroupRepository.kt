@@ -31,7 +31,7 @@ class StoreGroupRepository(
     }
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
-        store.observeMembers(groupId.value).map { documents -> documents.mapNotNull { it.toDomain() } }
+        store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> = try {
         Result.Success(write(group, founder))
