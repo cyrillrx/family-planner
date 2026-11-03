@@ -22,7 +22,7 @@ class StoreGroupRepository(
 
     /** Null when the store cannot tell. */
     override suspend fun group(): Group? = try {
-        users.credential()?.let { store.findGroupOf(it) }?.toDomain()
+        findGroup()
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (e: Exception) {
@@ -40,6 +40,8 @@ class StoreGroupRepository(
     } catch (e: Exception) {
         Result.Failure(CreateGroupWriteError.Unknown)
     }
+
+    private suspend fun findGroup(): Group? = users.credential()?.let { store.findGroupOf(it) }?.toDomain()
 
     private suspend fun write(group: Group, founder: UserId) {
         val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
