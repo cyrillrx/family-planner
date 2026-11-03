@@ -8,6 +8,7 @@ import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
+import dev.gitlive.firebase.firestore.toDuration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
@@ -95,4 +96,4 @@ private fun DocumentSnapshot.toMember(): MemberDocument {
 }
 
 private fun BaseTimestamp?.toEpochMilliseconds(): Long? =
-    (this as? Timestamp)?.let { it.seconds * 1_000 + it.nanoseconds / 1_000_000 }
+    (this as? Timestamp)?.toDuration()?.inWholeMilliseconds
