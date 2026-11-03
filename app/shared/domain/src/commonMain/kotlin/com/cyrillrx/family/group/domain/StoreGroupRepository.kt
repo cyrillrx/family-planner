@@ -34,15 +34,17 @@ class StoreGroupRepository(
         store.observeMembers(groupId.value).map { documents -> documents.mapNotNull { it.toDomain() } }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> = try {
-        val credential = users.credential() ?: return Result.Failure(CreateGroupWriteError.Unknown)
-
-        store.create(group.toDocument(), founder.toMembership(group.id, credential))
-
-        Result.Success(Unit)
+        Result.Success(write(group, founder))
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (e: Exception) {
         Result.Failure(CreateGroupWriteError.Unknown)
+    }
+
+    private suspend fun write(group: Group, founder: UserId) {
+        val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
+
+        store.create(group.toDocument(), founder.toMembership(group.id, credential))
     }
 }
 
