@@ -28,7 +28,7 @@ class StoreGroupRepositoryTest {
     fun `has no group on a device that never signed in`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
-        assertNull(StoreGroupRepository(store, CredentialOnly(null)).group())
+        assertNull(StoreGroupRepository(store, CredentialOnly(credential = null)).group())
     }
 
     @Test
@@ -82,7 +82,7 @@ class StoreGroupRepositoryTest {
     fun `refuses to create a group without a credential to write it under`() = runTest {
         val store = FakeGroupStore()
 
-        val result = StoreGroupRepository(store, CredentialOnly(null)).create(group(), UserId("user-1"))
+        val result = StoreGroupRepository(store, CredentialOnly(credential = null)).create(group(), UserId("user-1"))
 
         assertEquals(Result.Failure(CreateGroupWriteError.Unknown), result)
         assertEquals(emptyList(), store.creations)
@@ -175,7 +175,6 @@ private class FakeGroupStore(private val failure: Exception? = null) : GroupStor
         membersByGroup.map { it[groupId].orEmpty() }
 }
 
-/** Holds a credential and nothing else: the group repository reads no user. */
 private class CredentialOnly(private val credential: String?) : UserStore {
 
     override suspend fun credential(): String? = credential
