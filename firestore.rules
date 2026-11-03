@@ -23,14 +23,12 @@ service cloud.firestore {
     // A group is reached through a membership addressed by the credential reading it (ADR-008).
     match /groups/{groupId} {
       allow read: if isMemberOf(groupId);
-      // Only alongside its founder's membership, written in the same batch.
       allow create: if request.auth != null
         && isValidGroup(groupId)
         && existsAfter(membership(groupId, request.auth.uid));
 
       match /members/{credential} {
         allow read: if isMemberOf(groupId);
-        // The founder's, alongside a group that did not exist before the batch.
         allow create: if isSignedInAs(credential)
           && isValidMembership(groupId, credential)
           && !exists(group(groupId))
