@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * The groups this device can reach, and their memberships.
  *
- * Every call may throw when the store refuses or cannot be reached, under the read and write
- * contract [UserStore] states.
+ * Every call may throw when the store refuses or cannot be reached.
  */
 interface GroupStore {
 

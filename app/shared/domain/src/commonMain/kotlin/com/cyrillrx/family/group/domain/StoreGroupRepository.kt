@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.map
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 
-/** The group of the credential this device signed in with, which [UserStore] holds. */
+/** The group of the credential this device signed in with. */
 class StoreGroupRepository(
     private val store: GroupStore,
     private val users: UserStore,
 ) : GroupRepository {
 
-    /** Null when the store cannot tell, like [StoreUserRepository.registeredUserId]. */
+    /** Null when the store cannot tell. */
     override suspend fun group(): Group? = try {
         users.credential()?.let { store.findGroupOf(it) }?.toDomain()
     } catch (cancellation: CancellationException) {
