@@ -36,7 +36,6 @@ service cloud.firestore {
       }
     }
 
-    // Lets a device find its own memberships, whatever their group.
     match /{path=**}/members/{credential} {
       allow read: if request.auth != null && resource.data.credential == request.auth.uid;
     }
@@ -61,7 +60,6 @@ service cloud.firestore {
         && group.createdAt == request.time;
     }
 
-    // The UserId is attribution, read from the member's own user document; access never reads it.
     function isValidMembership(groupId, credential) {
       let member = request.resource.data;
       return member.keys().hasOnly(['userId', 'groupId', 'credential', 'joinedAt'])
