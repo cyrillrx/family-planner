@@ -118,52 +118,6 @@ class RamGroupRepositoryTest {
         assertEquals(emptyList(), repository.observeMembers(GROUP).first())
     }
 
-    @Test
-    fun `emits the new list after a member is removed`() = runTest {
-        val repository = RamGroupRepository()
-        repository.addMember(member("alice"))
-        repository.addMember(member("bob"))
-
-        repository.removeMember(GROUP, UserId("bob"))
-
-        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
-    }
-
-    @Test
-    fun `removing an unknown member changes nothing`() = runTest {
-        val repository = RamGroupRepository()
-        repository.addMember(member("alice"))
-
-        repository.removeMember(GROUP, UserId("nobody"))
-
-        assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
-    }
-
-    @Test
-    fun `removing the last member leaves the group empty`() = runTest {
-        val repository = RamGroupRepository()
-        repository.addMember(member("alice"))
-
-        repository.removeMember(GROUP, UserId("alice"))
-
-        assertEquals(emptyList(), repository.observeMembers(GROUP).first())
-    }
-
-    @Test
-    fun `removing a member from one group leaves their other memberships alone`() = runTest {
-        val repository = RamGroupRepository()
-        repository.addMember(member("alice"))
-        repository.addMember(member("alice").copy(groupId = OTHER_GROUP))
-
-        repository.removeMember(GROUP, UserId("alice"))
-
-        assertEquals(emptyList(), repository.observeMembers(GROUP).first())
-        assertEquals(
-            listOf(member("alice").copy(groupId = OTHER_GROUP)),
-            repository.observeMembers(OTHER_GROUP).first(),
-        )
-    }
-
     private fun group() = Group(
         id = GROUP,
         name = "Home",

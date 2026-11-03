@@ -40,10 +40,4 @@ class RamGroupRepository : GroupRepository {
             if (alreadyAMember) current else current + member
         }
     }
-
-    fun removeMember(groupId: GroupId, userId: UserId) {
-        members.update { current ->
-            current.filterNot { it.groupId == groupId && it.userId == userId }
-        }
-    }
 }
