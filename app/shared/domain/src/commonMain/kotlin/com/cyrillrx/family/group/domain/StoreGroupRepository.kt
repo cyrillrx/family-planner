@@ -45,6 +45,7 @@ class StoreGroupRepository(
 
     private suspend fun write(group: Group, founder: UserId) {
         val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
+        check(store.findGroupOf(credential) == null) { "The credential already belongs to a group" }
 
         store.create(group.toDocument(), founder.toMembership(group.id, credential))
     }

@@ -99,6 +99,24 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
+    fun `refuses to found a group when it cannot tell the credential has none`() = runTest {
+        val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
+
+        StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1"))
+
+        assertEquals(emptyList(), store.creations)
+    }
+
+    @Test
+    fun `refuses to found a second group for the same credential`() = runTest {
+        val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
+
+        StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1"))
+
+        assertEquals(emptyList(), store.creations)
+    }
+
+    @Test
     fun `lets a cancellation through rather than reporting it`() = runTest {
         val store = FakeGroupStore(failure = CancellationException("left the screen"))
 
@@ -153,14 +171,17 @@ class StoreGroupRepositoryTest {
     }
 }
 
-private class FakeGroupStore(private val failure: Exception? = null) : GroupStore {
+private class FakeGroupStore(
+    private val failure: Exception? = null,
+    private val lookupFailure: Exception? = failure,
+) : GroupStore {
 
     val groupsByCredential = mutableMapOf<String, GroupDocument>()
     val creations = mutableListOf<Pair<GroupDocument, MemberDocument>>()
     val membersByGroup = MutableStateFlow<Map<String, List<MemberDocument>>>(emptyMap())
 
     override suspend fun findGroupOf(credential: String): GroupDocument? {
-        failure?.let { throw it }
+        lookupFailure?.let { throw it }
 
         return groupsByCredential[credential]
     }
