@@ -117,6 +117,16 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
+    fun `answers that the credential already belongs to a group`() = runTest {
+        val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
+
+        assertEquals(
+            Result.Failure(CreateGroupWriteError.AlreadyInAGroup),
+            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+        )
+    }
+
+    @Test
     fun `lets a cancellation through rather than reporting it`() = runTest {
         val store = FakeGroupStore(failure = CancellationException("left the screen"))
 

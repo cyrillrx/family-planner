@@ -1,5 +1,6 @@
 package com.cyrillrx.family.group.domain
 
+import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Member
@@ -26,6 +27,17 @@ class RamGroupRepositoryTest {
 
         assertEquals(group(), repository.group())
         assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
+    }
+
+    @Test
+    fun `refuses to found a second group`() = runTest {
+        val repository = RamGroupRepository()
+        repository.create(group(), founder = UserId("alice"))
+
+        assertEquals(
+            Result.Failure(CreateGroupWriteError.AlreadyInAGroup),
+            repository.create(group(), founder = UserId("bob")),
+        )
     }
 
     @Test

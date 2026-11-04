@@ -34,7 +34,7 @@ class StoreGroupRepository(
         store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> = try {
-        Result.Success(write(group, founder))
+        write(group, founder)
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (e: Exception) {
@@ -43,11 +43,13 @@ class StoreGroupRepository(
 
     private suspend fun findGroup(): Group? = users.credential()?.let { store.findGroupOf(it) }?.toDomain()
 
-    private suspend fun write(group: Group, founder: UserId) {
+    private suspend fun write(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> {
         val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
-        check(store.findGroupOf(credential) == null) { "The credential already belongs to a group" }
+        if (store.findGroupOf(credential) != null) return Result.Failure(CreateGroupWriteError.AlreadyInAGroup)
 
         store.create(group.toDocument(), founder.toMembership(group.id, credential))
+
+        return Result.Success(Unit)
     }
 }
 

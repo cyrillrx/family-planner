@@ -40,7 +40,7 @@ class Onboarding(
 
         return when (val created = groupRepository.create(group, founder = userId)) {
             is Result.Success -> Result.Success(group)
-            is Result.Failure -> Result.Failure(CreateGroupError.Creation(created.error))
+            is Result.Failure -> Result.Failure(created.error.toCreateGroupError())
         }
     }
 
@@ -68,6 +68,11 @@ class Onboarding(
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
         }
     }
+}
+
+private fun CreateGroupWriteError.toCreateGroupError(): CreateGroupError = when (this) {
+    CreateGroupWriteError.AlreadyInAGroup -> CreateGroupError.GroupAlreadyExists
+    CreateGroupWriteError.Unknown -> CreateGroupError.Creation(this)
 }
 
 sealed interface RegisterError : Error {

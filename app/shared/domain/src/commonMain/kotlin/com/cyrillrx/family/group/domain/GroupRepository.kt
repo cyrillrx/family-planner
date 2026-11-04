@@ -20,5 +20,6 @@ interface GroupRepository {
 }
 
 sealed interface CreateGroupWriteError : Error {
+    data object AlreadyInAGroup : CreateGroupWriteError
     data object Unknown : CreateGroupWriteError
 }

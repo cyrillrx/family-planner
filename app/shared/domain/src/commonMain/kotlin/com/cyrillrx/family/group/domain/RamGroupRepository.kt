@@ -21,6 +21,8 @@ class RamGroupRepository : GroupRepository {
         members.map { current -> current.filter { it.groupId == groupId } }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> {
+        if (this.group.value != null) return Result.Failure(CreateGroupWriteError.AlreadyInAGroup)
+
         setGroup(group)
         addMember(Member(userId = founder, groupId = group.id, joinedAt = group.createdAt))
 

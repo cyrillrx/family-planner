@@ -161,8 +161,16 @@ class OnboardingTest {
     }
 
     @Test
+    fun `reports the group the repository found while writing`() = runTest {
+        val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.AlreadyInAGroup))
+        onboarding.register("Cyril")
+
+        assertEquals(Result.Failure(CreateGroupError.GroupAlreadyExists), onboarding.createGroup())
+    }
+
+    @Test
     fun `reports a group the repository could not write`() = runTest {
-        val onboarding = onboarding(groupRepository = RefusingGroupRepository)
+        val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.Unknown))
         onboarding.register("Cyril")
 
         assertEquals(
@@ -307,12 +315,12 @@ class OnboardingTest {
         override suspend fun redeem(code: String, user: UserId) = Result.Failure(reason)
     }
 
-    private object RefusingGroupRepository : GroupRepository {
+    private class RefusingGroupRepository(private val error: CreateGroupWriteError) : GroupRepository {
         override suspend fun group(): Group? = null
 
         override fun observeMembers(groupId: GroupId): Flow<List<Member>> = emptyFlow()
 
-        override suspend fun create(group: Group, founder: UserId) = Result.Failure(CreateGroupWriteError.Unknown)
+        override suspend fun create(group: Group, founder: UserId) = Result.Failure(error)
     }
 
     private object FixedClock : Clock {
