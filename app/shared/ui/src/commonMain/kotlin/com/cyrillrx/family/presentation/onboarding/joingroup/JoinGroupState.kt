@@ -6,4 +6,7 @@ data class JoinGroupState(
     val code: String = "",
     val submitting: Boolean = false,
     val error: JoinGroupError? = null,
-)
+) {
+    val canOpenHome: Boolean
+        get() = error == JoinGroupError.AlreadyInAGroup
+}

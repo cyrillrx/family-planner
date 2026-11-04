@@ -28,6 +28,8 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JoinGroupViewModelTest {
@@ -164,6 +166,28 @@ class JoinGroupViewModelTest {
             with = JoinGroupError.AlreadyInAGroup,
             groupRepository = groupRepositoryWithAGroup(),
         )
+    }
+
+    @Test
+    fun `offers the way to the group already there`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), groupRepositoryWithAGroup())
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.canOpenHome)
+    }
+
+    @Test
+    fun `offers no way home for any other refusal`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        viewModel.changeInvitationCode(REVOKED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.canOpenHome)
     }
 
     @Test

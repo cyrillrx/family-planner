@@ -17,6 +17,7 @@ import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_rev
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_too_short
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_unknown
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_unexpected
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_error_already_in_a_group
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -46,7 +47,7 @@ fun CreateGroupError.message(): String = when (this) {
 @Composable
 fun JoinGroupError.message(): String = when (this) {
     JoinGroupError.CodeTooShort -> stringResource(Res.string.onboarding_error_code_too_short)
-    JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_error_already_in_a_group)
+    JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_join_error_already_in_a_group)
     JoinGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
     is JoinGroupError.Redemption -> cause.message()
 }

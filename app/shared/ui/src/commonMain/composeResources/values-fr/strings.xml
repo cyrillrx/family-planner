@@ -5,6 +5,8 @@
     <string name="onboarding_join_subtitle">Collez le code qu'un membre du groupe vous a envoyé.</string>
     <string name="onboarding_join_label">Code d'invitation</string>
     <string name="onboarding_join_submit">Rejoindre le groupe</string>
+    <string name="onboarding_join_error_already_in_a_group">Vous appartenez déjà à un groupe, ce code n'a donc pas été utilisé.</string>
+    <string name="onboarding_open_home">Aller à mon groupe</string>
 
     <string name="onboarding_error_code_too_short">Ce code est trop court pour être une invitation.</string>
     <string name="onboarding_error_code_revoked">Cette invitation a été révoquée. Demandez-en une nouvelle.</string>

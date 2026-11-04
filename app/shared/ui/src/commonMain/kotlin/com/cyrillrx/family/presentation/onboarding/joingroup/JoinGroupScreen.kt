@@ -24,6 +24,7 @@ import familyplanner.app.shared.ui.generated.resources.onboarding_join_label
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_submit
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_subtitle
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_title
+import familyplanner.app.shared.ui.generated.resources.onboarding_open_home
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -48,6 +49,7 @@ fun JoinGroupScreen(
         state = state,
         onCodeChanged = viewModel::changeInvitationCode,
         onJoinClicked = viewModel::joinGroup,
+        onHomeClicked = router::openHome,
         onBackClicked = router::navigateUp,
         modifier = modifier,
     )
@@ -58,6 +60,7 @@ fun JoinGroupScreen(
     state: JoinGroupState,
     onCodeChanged: (String) -> Unit,
     onJoinClicked: () -> Unit,
+    onHomeClicked: () -> Unit,
     onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,6 +89,12 @@ fun JoinGroupScreen(
             Text(stringResource(Res.string.onboarding_join_submit))
         }
 
+        if (state.canOpenHome) {
+            TextButton(onClick = onHomeClicked, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.onboarding_open_home))
+            }
+        }
+
         TextButton(
             onClick = onBackClicked,
             modifier = Modifier.fillMaxWidth(),
@@ -103,6 +112,7 @@ private fun JoinGroupScreenPreview() {
         state = JoinGroupState(code = "accepted-invitation-01"),
         onCodeChanged = {},
         onJoinClicked = {},
+        onHomeClicked = {},
         onBackClicked = {},
     )
 }
@@ -114,6 +124,19 @@ private fun JoinGroupScreenRefusedPreview() {
         state = JoinGroupState(code = "short", error = JoinGroupError.CodeTooShort),
         onCodeChanged = {},
         onJoinClicked = {},
+        onHomeClicked = {},
+        onBackClicked = {},
+    )
+}
+
+@Preview
+@Composable
+private fun JoinGroupScreenAlreadyInAGroupPreview() {
+    JoinGroupScreen(
+        state = JoinGroupState(code = "accepted-invitation-01", error = JoinGroupError.AlreadyInAGroup),
+        onCodeChanged = {},
+        onJoinClicked = {},
+        onHomeClicked = {},
         onBackClicked = {},
     )
 }
