@@ -50,12 +50,12 @@ class GroupChoiceViewModelTest {
     @Test
     fun `announces the group once`() = runTest {
         val viewModel = viewModel(registeredUserRepository())
-        val creations = collectCreations(viewModel)
+        val announcements = collectAnnouncements(viewModel)
 
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(1, creations.size)
+        assertEquals(1, announcements.size)
     }
 
     @Test
@@ -64,10 +64,10 @@ class GroupChoiceViewModelTest {
         viewModel.createGroup()
         advanceUntilIdle()
 
-        val creations = collectCreations(viewModel)
+        val announcements = collectAnnouncements(viewModel)
         advanceUntilIdle()
 
-        assertEquals(1, creations.size)
+        assertEquals(1, announcements.size)
     }
 
     @Test
@@ -75,13 +75,13 @@ class GroupChoiceViewModelTest {
         val viewModel = viewModel(registeredUserRepository())
         viewModel.createGroup()
         advanceUntilIdle()
-        collectCreations(viewModel)
+        collectAnnouncements(viewModel)
         advanceUntilIdle()
 
-        val laterCreations = collectCreations(viewModel)
+        val laterAnnouncements = collectAnnouncements(viewModel)
         advanceUntilIdle()
 
-        assertEquals(0, laterCreations.size)
+        assertEquals(0, laterAnnouncements.size)
     }
 
     @Test
@@ -97,12 +97,12 @@ class GroupChoiceViewModelTest {
     @Test
     fun `announces the group the user already belongs to`() = runTest {
         val viewModel = viewModel(registeredUserRepository(), groupRepositoryWithAGroup())
-        val creations = collectCreations(viewModel)
+        val announcements = collectAnnouncements(viewModel)
 
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(1, creations.size)
+        assertEquals(1, announcements.size)
     }
 
     @Test
@@ -121,35 +121,35 @@ class GroupChoiceViewModelTest {
     @Test
     fun `creates one group however many times the button is pressed`() = runTest {
         val viewModel = viewModel(registeredUserRepository())
-        val creations = collectCreations(viewModel)
+        val announcements = collectAnnouncements(viewModel)
 
         viewModel.createGroup()
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(1, creations.size)
+        assertEquals(1, announcements.size)
     }
 
     @Test
     fun `creates one group when the button is pressed again after the creation`() = runTest {
         val viewModel = viewModel(registeredUserRepository())
-        val creations = collectCreations(viewModel)
+        val announcements = collectAnnouncements(viewModel)
         viewModel.createGroup()
         advanceUntilIdle()
 
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(1, creations.size)
+        assertEquals(1, announcements.size)
     }
 
-    private fun TestScope.collectCreations(viewModel: GroupChoiceViewModel): List<Unit> {
-        val creations = mutableListOf<Unit>()
+    private fun TestScope.collectAnnouncements(viewModel: GroupChoiceViewModel): List<Unit> {
+        val announcements = mutableListOf<Unit>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.groupReady.collect { creations += it }
+            viewModel.groupReady.collect { announcements += it }
         }
 
-        return creations
+        return announcements
     }
 
     private fun viewModel(
