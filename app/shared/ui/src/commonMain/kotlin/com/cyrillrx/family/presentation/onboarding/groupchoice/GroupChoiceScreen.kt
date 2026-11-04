@@ -32,7 +32,7 @@ fun GroupChoiceScreen(
     router: OnboardingRouter,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(viewModel) { viewModel.groupCreated.collect { router.openHome() } }
+    LaunchedEffect(viewModel) { viewModel.groupReady.collect { router.openHome() } }
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
 
@@ -65,7 +65,6 @@ fun GroupChoiceScreen(
         subtitle = stringResource(Res.string.onboarding_choice_subtitle),
         modifier = modifier,
     ) {
-        // TODO(#16): a group stranded without its founder leaves GroupAlreadyExists with no way to Home.
         state.error?.let { ErrorText(it.message()) }
 
         Button(

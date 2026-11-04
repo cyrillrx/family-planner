@@ -95,16 +95,14 @@ class GroupChoiceViewModelTest {
     }
 
     @Test
-    fun `carries the refusal to found a second group`() = runTest {
+    fun `announces the group the user already belongs to`() = runTest {
         val viewModel = viewModel(registeredUserRepository(), groupRepositoryWithAGroup())
+        val creations = collectCreations(viewModel)
 
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(
-            GroupChoiceState(error = CreateGroupError.GroupAlreadyExists),
-            viewModel.state.value,
-        )
+        assertEquals(1, creations.size)
     }
 
     @Test
@@ -148,7 +146,7 @@ class GroupChoiceViewModelTest {
     private fun TestScope.collectCreations(viewModel: GroupChoiceViewModel): List<Unit> {
         val creations = mutableListOf<Unit>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.groupCreated.collect { creations += it }
+            viewModel.groupReady.collect { creations += it }
         }
 
         return creations
