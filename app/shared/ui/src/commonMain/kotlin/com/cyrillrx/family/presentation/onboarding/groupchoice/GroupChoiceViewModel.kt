@@ -17,6 +17,7 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<GroupChoiceState>
         field = MutableStateFlow(GroupChoiceState())
 
+    // TODO(#84): announce without a Channel.
     private val groupsReady = Channel<Unit>(Channel.BUFFERED)
     val groupReady: Flow<Unit> = groupsReady.receiveAsFlow()
 

@@ -16,6 +16,7 @@ class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<DisplayNameState>
         field = MutableStateFlow(DisplayNameState())
 
+    // TODO(#84): announce without a Channel.
     private val registrations = Channel<Unit>(Channel.BUFFERED)
     val registered: Flow<Unit> = registrations.receiveAsFlow()
 

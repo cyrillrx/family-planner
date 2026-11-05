@@ -16,6 +16,7 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
     val state: StateFlow<JoinGroupState>
         field = MutableStateFlow(JoinGroupState())
 
+    // TODO(#84): announce without a Channel.
     private val joins = Channel<Unit>(Channel.BUFFERED)
     val joined: Flow<Unit> = joins.receiveAsFlow()
 
