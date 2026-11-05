@@ -108,6 +108,16 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
+    fun `answers that it cannot tell when the lookup fails`() = runTest {
+        val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
+
+        assertEquals(
+            Result.Failure(CreateGroupWriteError.Unknown),
+            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+        )
+    }
+
+    @Test
     fun `refuses to found a second group for the same credential`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
