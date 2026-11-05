@@ -36,6 +36,7 @@ service cloud.firestore {
       }
     }
 
+    // TODO(#83): reaches every collection named members.
     match /{path=**}/members/{credential} {
       allow read: if request.auth != null && resource.data.credential == request.auth.uid;
     }
