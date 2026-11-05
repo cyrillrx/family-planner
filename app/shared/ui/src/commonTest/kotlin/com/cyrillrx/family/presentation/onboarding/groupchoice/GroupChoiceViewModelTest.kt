@@ -1,12 +1,14 @@
 package com.cyrillrx.family.presentation.onboarding.groupchoice
 
 import com.cyrillrx.family.group.domain.CreateGroupError
+import com.cyrillrx.family.group.domain.CreateGroupWriteError
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
+import com.cyrillrx.family.presentation.RefusingGroupRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
 import kotlinx.coroutines.Dispatchers
@@ -116,6 +118,30 @@ class GroupChoiceViewModelTest {
             GroupChoiceState(error = CreateGroupError.NotRegistered),
             viewModel.state.value,
         )
+    }
+
+    @Test
+    fun `carries the refusal of a store that could not write the group`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), RefusingGroupRepository())
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(
+            GroupChoiceState(error = CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
+            viewModel.state.value,
+        )
+    }
+
+    @Test
+    fun `does not announce a group the store could not write`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), RefusingGroupRepository())
+        val announcements = collectAnnouncements(viewModel)
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(0, announcements.size)
     }
 
     @Test

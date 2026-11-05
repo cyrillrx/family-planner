@@ -1,6 +1,7 @@
 package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.CreateGroupWriteError
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.InvitationRepository
 import com.cyrillrx.family.group.domain.RamGroupRepository
@@ -54,6 +55,12 @@ internal class CountingGroupRepository(
         private set
 
     override suspend fun group() = delegate.group().also { reads++ }
+}
+
+internal class RefusingGroupRepository(
+    private val delegate: RamGroupRepository = RamGroupRepository(),
+) : GroupRepository by delegate {
+    override suspend fun create(group: Group, founder: UserId) = Result.Failure(CreateGroupWriteError.Unknown)
 }
 
 internal class CountingInvitationRepository : InvitationRepository {
