@@ -14,6 +14,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.cyrillrx.family.group.domain.CreateGroupError
+import com.cyrillrx.family.group.domain.CreateGroupWriteError
 import com.cyrillrx.family.navigation.OnboardingRouter
 import com.cyrillrx.family.presentation.component.ErrorText
 import com.cyrillrx.family.presentation.component.OnboardingStepLayout
@@ -108,7 +109,7 @@ private fun GroupChoiceScreenPreview() {
 @Composable
 private fun GroupChoiceScreenRefusedPreview() {
     GroupChoiceScreen(
-        state = GroupChoiceState(error = CreateGroupError.GroupAlreadyExists),
+        state = GroupChoiceState(error = CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
         onCreateGroupClicked = {},
         onJoinGroupClicked = {},
         onBackClicked = {},

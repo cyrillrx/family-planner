@@ -20,8 +20,6 @@
     <string name="onboarding_choice_subtitle">Créez-en un, ou rejoignez celui pour lequel vous avez reçu une invitation.</string>
     <string name="onboarding_choice_create">Créer un groupe</string>
 
-    <string name="onboarding_error_already_in_a_group">Vous appartenez déjà à un groupe.</string>
-
     <string name="onboarding_name_title">Comment doit-on vous appeler ?</string>
     <string name="onboarding_name_subtitle">Les autres membres de votre groupe verront ce nom.</string>
     <string name="onboarding_name_label">Votre nom</string>
