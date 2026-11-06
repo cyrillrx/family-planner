@@ -20,7 +20,6 @@ service cloud.firestore {
         && request.resource.data.id == resource.data.id;
     }
 
-    // A group is reached through a membership addressed by the credential reading it (ADR-008).
     match /groups/{groupId} {
       allow read: if isMemberOf(groupId);
       allow create: if request.auth != null
