@@ -22,6 +22,7 @@ import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
 import com.cyrillrx.family.presentation.start.StartState
 import com.cyrillrx.family.presentation.start.StartViewModel
+import com.cyrillrx.family.start.domain.StartDestination
 
 @Composable
 @Preview
@@ -32,15 +33,15 @@ fun App(graph: AppGraph = AppGraph.shared) {
 
             when (val state = startViewModel.state.collectAsStateWithLifecycle().value) {
                 StartState.Resolving -> Unit
-                is StartState.Resolved -> AppNavigation(graph, startRoutes = state.destination.toBackStack())
+                is StartState.Resolved -> AppNavigation(graph, state.destination)
             }
         }
     }
 }
 
 @Composable
-private fun AppNavigation(graph: AppGraph, startRoutes: List<NavKey>) {
-    val backStack = rememberAppBackStack(startRoutes)
+private fun AppNavigation(graph: AppGraph, destination: StartDestination) {
+    val backStack = rememberAppBackStack(destination)
 
     NavDisplay(
         backStack = backStack,
@@ -63,12 +64,12 @@ private fun AppNavigation(graph: AppGraph, startRoutes: List<NavKey>) {
 }
 
 @Composable
-internal fun rememberAppBackStack(startRoutes: List<NavKey>): NavBackStack<NavKey> {
-    val backStack = rememberNavBackStack(navSavedStateConfig, *startRoutes.toTypedArray())
+internal fun rememberAppBackStack(destination: StartDestination): NavBackStack<NavKey> {
+    val backStack = rememberNavBackStack(navSavedStateConfig, *destination.toBackStack().toTypedArray())
 
     // During composition rather than in an effect: NavDisplay composes the entries in this same
     // pass, and a repeated key crashes it before any effect would get the chance to run.
-    remember(backStack) { backStack.resetIfRestoredThroughFallback(startRoutes) }
+    remember(backStack) { backStack.resetUnlessReachableFrom(destination) }
 
     return backStack
 }

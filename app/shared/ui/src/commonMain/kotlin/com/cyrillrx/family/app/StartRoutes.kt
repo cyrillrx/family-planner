@@ -14,3 +14,25 @@ private fun OnboardingStep.toBackStack(): List<NavKey> = when (this) {
     OnboardingStep.DISPLAY_NAME -> listOf(OnboardingRoute.DisplayName)
     OnboardingStep.GROUP_CHOICE -> listOf(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
 }
+
+internal fun MutableList<NavKey>.resetUnlessReachableFrom(destination: StartDestination) {
+    val reachable = destination.reachableRoutes()
+    if (all { it in reachable }) return
+
+    clear()
+    addAll(destination.toBackStack())
+}
+
+private fun StartDestination.reachableRoutes(): Set<NavKey> = when (this) {
+    StartDestination.Home -> setOf(MainRoute.Home)
+    is StartDestination.Onboarding -> step.reachableRoutes()
+}
+
+private fun OnboardingStep.reachableRoutes(): Set<NavKey> = when (this) {
+    OnboardingStep.DISPLAY_NAME -> setOf(OnboardingRoute.DisplayName)
+    OnboardingStep.GROUP_CHOICE -> setOf(
+        OnboardingRoute.DisplayName,
+        OnboardingRoute.GroupChoice,
+        OnboardingRoute.JoinGroup,
+    )
+}

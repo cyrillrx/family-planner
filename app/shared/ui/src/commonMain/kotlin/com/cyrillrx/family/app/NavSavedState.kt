@@ -26,10 +26,3 @@ internal val navSerializersModule = SerializersModule {
 internal val navSavedStateConfig = SavedStateConfiguration {
     serializersModule = navSerializersModule
 }
-
-internal fun MutableList<NavKey>.resetIfRestoredThroughFallback(startRoutes: List<NavKey>) {
-    if (none { it == UnrecognizedRoute }) return
-
-    clear()
-    addAll(startRoutes)
-}
