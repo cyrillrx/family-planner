@@ -26,6 +26,19 @@ import kotlin.time.Instant
 class OnboardingTest {
 
     @Test
+    fun `resumes on the display name when nobody is registered`() = runTest {
+        assertEquals(OnboardingStep.DISPLAY_NAME, onboarding().currentStep())
+    }
+
+    @Test
+    fun `resumes on the group choice once registered`() = runTest {
+        val onboarding = onboarding()
+        onboarding.register("Cyril")
+
+        assertEquals(OnboardingStep.GROUP_CHOICE, onboarding.currentStep())
+    }
+
+    @Test
     fun `registers the user of this device under the given name`() = runTest {
         val users = UserRepositoryImpl(EchoingUserApi())
 
