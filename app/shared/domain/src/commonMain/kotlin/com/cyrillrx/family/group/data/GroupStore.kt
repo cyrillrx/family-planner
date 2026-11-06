@@ -4,7 +4,6 @@ import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
 import kotlinx.coroutines.flow.Flow
 
-/** Every call may throw when the store refuses or cannot be reached. */
 interface GroupStore {
 
     suspend fun findGroupOf(credential: String): GroupDocument?
