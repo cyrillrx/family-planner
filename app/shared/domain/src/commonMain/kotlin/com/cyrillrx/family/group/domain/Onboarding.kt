@@ -5,7 +5,6 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Invitation
-import com.cyrillrx.family.group.model.Member
 import com.cyrillrx.family.group.model.User
 
 class Onboarding(
@@ -39,16 +38,10 @@ class Onboarding(
 
         val group = groupFactory.create()
 
-        // TODO(#16): one guarded write — a failure between the two strands the founder outside the group.
-        groupRepository.setGroup(group)
-        // The founder joins the moment the group exists, so both dates come from one reading.
-        // TODO(ADR-004, open question): createdAt and joinedAt read the client clock, and PRD-001
-        //  resolves conflicts on server time. Settled with whoever ends up writing the membership.
-        groupRepository.addMember(
-            Member(userId = userId, groupId = group.id, joinedAt = group.createdAt),
-        )
-
-        return Result.Success(group)
+        return when (val created = groupRepository.create(group, founder = userId)) {
+            is Result.Success -> Result.Success(group)
+            is Result.Failure -> Result.Failure(created.error.toCreateGroupError())
+        }
     }
 
     suspend fun joinGroup(code: String): Result<GroupId, JoinGroupError> {
@@ -77,6 +70,11 @@ class Onboarding(
     }
 }
 
+private fun CreateGroupWriteError.toCreateGroupError(): CreateGroupError = when (this) {
+    CreateGroupWriteError.AlreadyInAGroup -> CreateGroupError.GroupAlreadyExists
+    CreateGroupWriteError.Unknown -> CreateGroupError.Creation(this)
+}
+
 sealed interface RegisterError : Error {
     data object BlankDisplayName : RegisterError
     data class Registration(val cause: RegisterUserError) : RegisterError
@@ -85,6 +83,7 @@ sealed interface RegisterError : Error {
 sealed interface CreateGroupError : Error {
     data object NotRegistered : CreateGroupError
     data object GroupAlreadyExists : CreateGroupError
+    data class Creation(val cause: CreateGroupWriteError) : CreateGroupError
 }
 
 sealed interface JoinGroupError : Error {

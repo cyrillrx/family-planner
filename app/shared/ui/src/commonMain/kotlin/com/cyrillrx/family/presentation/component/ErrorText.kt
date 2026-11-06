@@ -9,7 +9,6 @@ import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RegisterError
 import familyplanner.app.shared.ui.generated.resources.Res
-import familyplanner.app.shared.ui.generated.resources.onboarding_error_already_in_a_group
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_blank_display_name
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_already_redeemed
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_expired
@@ -17,6 +16,7 @@ import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_rev
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_too_short
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_unknown
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_unexpected
+import familyplanner.app.shared.ui.generated.resources.onboarding_join_error_already_in_a_group
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -37,14 +37,16 @@ fun RegisterError.message(): String = when (this) {
 
 @Composable
 fun CreateGroupError.message(): String = when (this) {
-    CreateGroupError.GroupAlreadyExists -> stringResource(Res.string.onboarding_error_already_in_a_group)
-    CreateGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
+    CreateGroupError.GroupAlreadyExists,
+    CreateGroupError.NotRegistered,
+    is CreateGroupError.Creation,
+    -> stringResource(Res.string.onboarding_error_unexpected)
 }
 
 @Composable
 fun JoinGroupError.message(): String = when (this) {
     JoinGroupError.CodeTooShort -> stringResource(Res.string.onboarding_error_code_too_short)
-    JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_error_already_in_a_group)
+    JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_join_error_already_in_a_group)
     JoinGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
     is JoinGroupError.Redemption -> cause.message()
 }
