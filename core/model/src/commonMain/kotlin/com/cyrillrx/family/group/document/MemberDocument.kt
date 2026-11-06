@@ -3,8 +3,8 @@ package com.cyrillrx.family.group.document
 import kotlinx.serialization.Serializable
 
 /**
- * A membership as the client reads it, under its group and addressed by the [credential] of the
- * member. [joinedAt] is the server's clock, in milliseconds since the epoch.
+ * Addressed by the [credential] of the member. [joinedAt] is the server's clock, in milliseconds
+ * since the epoch.
  *
  * Every field is optional because a document is read back as whichever client version wrote it.
  */

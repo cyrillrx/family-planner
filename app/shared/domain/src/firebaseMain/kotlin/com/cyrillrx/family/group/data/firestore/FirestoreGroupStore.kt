@@ -62,7 +62,6 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
     }
 }
 
-/** The stored shape, where the server writes its own timestamps. */
 @Serializable
 private class StoredGroup(
     val id: String? = null,

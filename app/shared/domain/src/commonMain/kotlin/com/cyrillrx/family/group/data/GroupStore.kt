@@ -4,14 +4,9 @@ import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
 import kotlinx.coroutines.flow.Flow
 
-/**
- * The groups this device can reach, and their memberships.
- *
- * Every call may throw when the store refuses or cannot be reached.
- */
+/** Every call may throw when the store refuses or cannot be reached. */
 interface GroupStore {
 
-    /** The group the credential is a member of, or null if it is a member of none. */
     suspend fun findGroupOf(credential: String): GroupDocument?
 
     /**
@@ -20,6 +15,5 @@ interface GroupStore {
      */
     suspend fun create(group: GroupDocument, founder: MemberDocument)
 
-    /** Emits again whenever a membership of the group changes. */
     fun observeMembers(groupId: String): Flow<List<MemberDocument>>
 }

@@ -10,12 +10,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
 
-    /** Null until this device's user belongs to a group. */
     suspend fun group(): Group?
 
     fun observeMembers(groupId: GroupId): Flow<List<Member>>
 
-    /** Writes the group and its founder's membership together, or neither. */
     suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError>
 }
 
