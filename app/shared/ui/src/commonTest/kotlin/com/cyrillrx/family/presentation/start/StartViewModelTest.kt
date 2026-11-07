@@ -59,38 +59,27 @@ class StartViewModelTest {
     }
 
     @Test
-    fun `resets a back stack the resolved destination cannot reach`() = runTest {
-        val viewModel = StartViewModel(appStart())
-        advanceUntilIdle()
+    fun `resets a back stack the destination cannot reach`() {
         val backStack = mutableListOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
 
-        viewModel.reconcile(backStack)
+        StartViewModel(appStart()).reconcile(backStack, DISPLAY_NAME)
 
         assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
     }
 
     @Test
-    fun `leaves alone a back stack the member advanced once it was reconciled`() = runTest {
+    fun `leaves alone a back stack the member advanced once it was reconciled`() {
         val viewModel = StartViewModel(appStart())
-        advanceUntilIdle()
-        viewModel.reconcile(mutableListOf(OnboardingRoute.DisplayName))
+        viewModel.reconcile(mutableListOf(OnboardingRoute.DisplayName), DISPLAY_NAME)
         val advanced = mutableListOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
 
-        viewModel.reconcile(advanced)
+        viewModel.reconcile(advanced, DISPLAY_NAME)
 
         assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), advanced)
     }
 
-    @Test
-    fun `waits for the destination before it reconciles`() = runTest {
-        val viewModel = StartViewModel(appStart())
-        viewModel.reconcile(mutableListOf(OnboardingRoute.DisplayName))
-        advanceUntilIdle()
-        val backStack = mutableListOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
-
-        viewModel.reconcile(backStack)
-
-        assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName), backStack)
+    private companion object {
+        val DISPLAY_NAME = StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME)
     }
 
     private fun appStart(

@@ -47,7 +47,7 @@ fun App(graph: AppGraph = AppGraph.shared) {
 private fun AppNavigation(
     graph: AppGraph,
     destination: StartDestination,
-    reconcile: (MutableList<NavKey>) -> Unit,
+    reconcile: (MutableList<NavKey>, StartDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val backStack = rememberAppBackStack(destination, reconcile)
@@ -76,13 +76,13 @@ private fun AppNavigation(
 @Composable
 internal fun rememberAppBackStack(
     destination: StartDestination,
-    reconcile: (MutableList<NavKey>) -> Unit,
+    reconcile: (MutableList<NavKey>, StartDestination) -> Unit,
 ): NavBackStack<NavKey> {
     val backStack = rememberNavBackStack(navSavedStateConfig, *destination.toBackStack().toTypedArray())
 
     // During composition rather than in an effect: NavDisplay composes the entries in this same
     // pass, and a repeated key crashes it before any effect would get the chance to run.
-    remember(backStack) { reconcile(backStack) }
+    remember(backStack) { reconcile(backStack, destination) }
 
     return backStack
 }

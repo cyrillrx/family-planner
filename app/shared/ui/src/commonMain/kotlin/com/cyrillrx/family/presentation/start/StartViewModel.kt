@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
 import com.cyrillrx.family.app.resetUnlessReachableFrom
 import com.cyrillrx.family.start.domain.AppStart
+import com.cyrillrx.family.start.domain.StartDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,14 +24,13 @@ class StartViewModel(private val appStart: AppStart) : ViewModel() {
     }
 
     /**
-     * Resets [backStack] unless the resolved destination can reach it, once per view model: a
-     * view model that outlived its window kept a destination the member may since have left.
+     * Resets [backStack] unless [destination] can reach it, once per view model: a view model that
+     * outlived its window kept a destination the member may since have left.
      */
-    fun reconcile(backStack: MutableList<NavKey>) {
-        val resolved = state.value as? StartState.Resolved ?: return
+    fun reconcile(backStack: MutableList<NavKey>, destination: StartDestination) {
         if (backStackReconciled) return
 
         backStackReconciled = true
-        backStack.resetUnlessReachableFrom(resolved.destination)
+        backStack.resetUnlessReachableFrom(destination)
     }
 }
