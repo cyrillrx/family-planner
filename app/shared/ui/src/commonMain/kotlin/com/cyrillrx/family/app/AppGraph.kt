@@ -12,6 +12,7 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.StoreGroupRepository
 import com.cyrillrx.family.group.domain.StoreUserRepository
 import com.cyrillrx.family.group.domain.UserRepository
+import com.cyrillrx.family.start.domain.AppStart
 
 class AppGraph(
     userStore: UserStore? = firestoreUserStore(),
@@ -20,6 +21,7 @@ class AppGraph(
     invitationRepository: InvitationRepository = SampleInvitationRepository(),
 ) {
     val onboarding = Onboarding(userRepository, groupRepository, invitationRepository)
+    val appStart = AppStart(groupRepository, onboarding)
 
     companion object {
         // Outside the composition: a configuration change destroys it but keeps the view models,

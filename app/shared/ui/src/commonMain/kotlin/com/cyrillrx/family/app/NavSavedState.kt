@@ -2,7 +2,6 @@ package com.cyrillrx.family.app
 
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.cyrillrx.family.navigation.OnboardingRoute
 import com.cyrillrx.family.navigation.registerOnboardingRoutes
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -26,11 +25,4 @@ internal val navSerializersModule = SerializersModule {
 
 internal val navSavedStateConfig = SavedStateConfiguration {
     serializersModule = navSerializersModule
-}
-
-internal fun MutableList<NavKey>.resetIfRestoredThroughFallback() {
-    if (none { it == UnrecognizedRoute }) return
-
-    clear()
-    add(OnboardingRoute.DisplayName)
 }

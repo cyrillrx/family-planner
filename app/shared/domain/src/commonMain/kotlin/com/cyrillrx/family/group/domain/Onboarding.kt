@@ -15,6 +15,10 @@ class Onboarding(
     private val groupFactory: GroupFactory = GroupFactory(idGenerator),
 ) {
 
+    /** The step to resume at, for someone not in a group yet: a member of a group is past the onboarding. */
+    suspend fun currentStep(): OnboardingStep =
+        if (userRepository.registeredUserId() == null) OnboardingStep.DISPLAY_NAME else OnboardingStep.GROUP_CHOICE
+
     suspend fun register(displayName: String): Result<User, RegisterError> {
         val name = displayName.trim()
         if (name.isEmpty()) return Result.Failure(RegisterError.BlankDisplayName)
@@ -74,6 +78,8 @@ private fun CreateGroupWriteError.toCreateGroupError(): CreateGroupError = when 
     CreateGroupWriteError.AlreadyInAGroup -> CreateGroupError.GroupAlreadyExists
     CreateGroupWriteError.Unknown -> CreateGroupError.Creation(this)
 }
+
+enum class OnboardingStep { DISPLAY_NAME, GROUP_CHOICE }
 
 sealed interface RegisterError : Error {
     data object BlankDisplayName : RegisterError
