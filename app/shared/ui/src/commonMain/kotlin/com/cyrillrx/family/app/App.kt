@@ -55,7 +55,7 @@ private fun AppNavigation(
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
-        onBack = { backStack.navigateUp() },
+        onBack = backStack::navigateUp,
         // By default a view model is scoped to the window, outlives its entry and hands a
         // popped step back the state it was left in. The view model store needs the
         // saveable state holder alongside it to reach a SavedStateHandle.
