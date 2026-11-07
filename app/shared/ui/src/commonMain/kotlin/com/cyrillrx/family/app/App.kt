@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.cyrillrx.family.group.domain.OnboardingStep
 import com.cyrillrx.family.navigation.handleOnboardingRoutes
 import com.cyrillrx.family.navigation.navigateUp
 import com.cyrillrx.family.presentation.home.HomeScreen
@@ -25,7 +26,6 @@ import com.cyrillrx.family.presentation.start.StartViewModel
 import com.cyrillrx.family.start.domain.StartDestination
 
 @Composable
-@Preview
 fun App(graph: AppGraph = AppGraph.shared) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -85,4 +85,14 @@ internal fun rememberAppBackStack(
     remember(backStack) { reconcile(backStack, destination) }
 
     return backStack
+}
+
+@Preview
+@Composable
+private fun AppNavigationPreview() = MaterialTheme {
+    AppNavigation(
+        graph = AppGraph.shared,
+        destination = StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME),
+        reconcile = { _, _ -> },
+    )
 }
