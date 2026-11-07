@@ -48,11 +48,13 @@ private fun AppNavigation(
     graph: AppGraph,
     destination: StartDestination,
     reconcile: (MutableList<NavKey>) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val backStack = rememberAppBackStack(destination, reconcile)
 
     NavDisplay(
         backStack = backStack,
+        modifier = modifier,
         onBack = { backStack.navigateUp() },
         // By default a view model is scoped to the window, outlives its entry and hands a
         // popped step back the state it was left in. The view model store needs the
