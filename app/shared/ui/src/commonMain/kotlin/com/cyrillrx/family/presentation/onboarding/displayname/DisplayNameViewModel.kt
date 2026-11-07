@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 
 class DisplayNameViewModel(private val onboarding: Onboarding) : ViewModel() {
 
+    // TODO(#86): prefill with the registered name.
     val state: StateFlow<DisplayNameState>
         field = MutableStateFlow(DisplayNameState())
 
