@@ -78,12 +78,12 @@ class StartViewModelTest {
         assertEquals(listOf<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice), advanced)
     }
 
-    private companion object {
-        val DISPLAY_NAME = StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME)
-    }
-
     private fun appStart(
         users: RamUserRepository = RamUserRepository(),
         groups: RamGroupRepository = RamGroupRepository(),
     ) = AppStart(groups, Onboarding(users, groups, SampleInvitationRepository()))
+
+    private companion object {
+        val DISPLAY_NAME = StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME)
+    }
 }
