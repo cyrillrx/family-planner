@@ -15,6 +15,7 @@ class Onboarding(
     private val groupFactory: GroupFactory = GroupFactory(idGenerator),
 ) {
 
+    /** The step to resume at, for someone not in a group yet: a member of a group is past the onboarding. */
     suspend fun currentStep(): OnboardingStep =
         if (userRepository.registeredUserId() == null) OnboardingStep.DISPLAY_NAME else OnboardingStep.GROUP_CHOICE
 
