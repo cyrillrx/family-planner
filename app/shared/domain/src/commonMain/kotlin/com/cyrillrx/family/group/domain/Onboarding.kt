@@ -16,7 +16,7 @@ class Onboarding(
 ) {
 
     suspend fun currentStep(): OnboardingStep =
-        if (userRepository.registeredUserId() != null) OnboardingStep.GROUP_CHOICE else OnboardingStep.DISPLAY_NAME
+        if (userRepository.registeredUserId() == null) OnboardingStep.DISPLAY_NAME else OnboardingStep.GROUP_CHOICE
 
     suspend fun register(displayName: String): Result<User, RegisterError> {
         val name = displayName.trim()
