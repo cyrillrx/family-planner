@@ -22,7 +22,13 @@ class AppStartTest {
     @Test
     fun `opens home for a member of a group`() = runTest {
         users.register(User(id = UserId("alice"), displayName = "Alice"))
-        groups.setGroup(Group(id = GroupId("group-1"), name = "Family", createdAt = Instant.fromEpochMilliseconds(0)))
+        groups.setGroup(
+            Group(
+                id = GroupId("group-1"),
+                name = "Family",
+                createdAt = Instant.fromEpochMilliseconds(epochMilliseconds = 0),
+            ),
+        )
 
         assertEquals(StartDestination.Home, appStart().destination())
     }

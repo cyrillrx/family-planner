@@ -33,7 +33,7 @@ class OnboardingTest {
     @Test
     fun `resumes on the group choice once registered`() = runTest {
         val onboarding = onboarding()
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(OnboardingStep.GROUP_CHOICE, onboarding.currentStep())
     }
@@ -114,7 +114,7 @@ class OnboardingTest {
     fun `creates a group for the registered user`() = runTest {
         val groups = RamGroupRepository()
         val onboarding = onboarding(groupRepository = groups)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         val group = (onboarding.createGroup() as Result.Success).value
 
@@ -129,7 +129,7 @@ class OnboardingTest {
     @Test
     fun `names the group without borrowing the founder's name`() = runTest {
         val onboarding = onboarding()
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals("Family", (onboarding.createGroup() as Result.Success).value.name)
     }
@@ -151,7 +151,7 @@ class OnboardingTest {
     @Test
     fun `refuses to create a second group`() = runTest {
         val onboarding = onboarding()
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
         onboarding.createGroup()
 
         assertEquals(
@@ -164,7 +164,7 @@ class OnboardingTest {
     fun `leaves the first group and its member untouched when a second is refused`() = runTest {
         val groups = RamGroupRepository()
         val onboarding = onboarding(groupRepository = groups)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
         val first = (onboarding.createGroup() as Result.Success).value
 
         onboarding.createGroup()
@@ -176,7 +176,7 @@ class OnboardingTest {
     @Test
     fun `reports the group the repository found while writing`() = runTest {
         val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.AlreadyInAGroup))
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(Result.Failure(CreateGroupError.GroupAlreadyExists), onboarding.createGroup())
     }
@@ -184,7 +184,7 @@ class OnboardingTest {
     @Test
     fun `reports a group the repository could not write`() = runTest {
         val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.Unknown))
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(
             Result.Failure(CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
@@ -195,7 +195,7 @@ class OnboardingTest {
     @Test
     fun `joins the group behind a valid invitation`() = runTest {
         val onboarding = onboarding()
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(
             Result.Success(GroupId("group-of-the-inviter")),
@@ -212,7 +212,7 @@ class OnboardingTest {
     fun `refuses a code too short to be an invitation without calling the service`() = runTest {
         val invitations = RecordingInvitationRepository()
         val onboarding = onboarding(invitationRepository = invitations)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(Result.Failure(JoinGroupError.CodeTooShort), onboarding.joinGroup("too-short"))
         assertEquals(0, invitations.calls)
@@ -222,7 +222,7 @@ class OnboardingTest {
     fun `trims the invitation code`() = runTest {
         val invitations = RecordingInvitationRepository()
         val onboarding = onboarding(invitationRepository = invitations)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         onboarding.joinGroup("  $CODE\n")
 
@@ -233,7 +233,7 @@ class OnboardingTest {
     fun `refuses a code only long enough because of its padding`() = runTest {
         val invitations = RecordingInvitationRepository()
         val onboarding = onboarding(invitationRepository = invitations)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(
             Result.Failure(JoinGroupError.CodeTooShort),
@@ -246,7 +246,7 @@ class OnboardingTest {
     fun `refuses to join when this device already has a group`() = runTest {
         val invitations = RecordingInvitationRepository()
         val onboarding = onboarding(invitationRepository = invitations)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
         onboarding.createGroup()
 
         assertEquals(Result.Failure(JoinGroupError.AlreadyInAGroup), onboarding.joinGroup(CODE))
@@ -258,7 +258,7 @@ class OnboardingTest {
         val onboarding = onboarding(
             invitationRepository = RefusingInvitationRepository(RedeemInvitationError.Expired),
         )
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         assertEquals(
             Result.Failure(JoinGroupError.Redemption(RedeemInvitationError.Expired)),
@@ -270,7 +270,7 @@ class OnboardingTest {
     fun `writes no membership itself`() = runTest {
         val groups = RamGroupRepository()
         val onboarding = onboarding(groupRepository = groups)
-        onboarding.register("Cyril")
+        onboarding.register(displayName = "Cyril")
 
         onboarding.joinGroup(CODE)
 
