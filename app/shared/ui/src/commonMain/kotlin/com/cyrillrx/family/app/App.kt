@@ -33,15 +33,23 @@ fun App(graph: AppGraph = AppGraph.shared) {
 
             when (val state = startViewModel.state.collectAsStateWithLifecycle().value) {
                 StartState.Resolving -> Unit
-                is StartState.Resolved -> AppNavigation(graph, state.destination)
+                is StartState.Resolved -> AppNavigation(
+                    graph = graph,
+                    destination = state.destination,
+                    reconcile = startViewModel::reconcile,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun AppNavigation(graph: AppGraph, destination: StartDestination) {
-    val backStack = rememberAppBackStack(destination)
+private fun AppNavigation(
+    graph: AppGraph,
+    destination: StartDestination,
+    reconcile: (MutableList<NavKey>) -> Unit,
+) {
+    val backStack = rememberAppBackStack(destination, reconcile)
 
     NavDisplay(
         backStack = backStack,
@@ -64,12 +72,15 @@ private fun AppNavigation(graph: AppGraph, destination: StartDestination) {
 }
 
 @Composable
-internal fun rememberAppBackStack(destination: StartDestination): NavBackStack<NavKey> {
+internal fun rememberAppBackStack(
+    destination: StartDestination,
+    reconcile: (MutableList<NavKey>) -> Unit,
+): NavBackStack<NavKey> {
     val backStack = rememberNavBackStack(navSavedStateConfig, *destination.toBackStack().toTypedArray())
 
     // During composition rather than in an effect: NavDisplay composes the entries in this same
     // pass, and a repeated key crashes it before any effect would get the chance to run.
-    remember(backStack) { backStack.resetUnlessReachableFrom(destination) }
+    remember(backStack) { reconcile(backStack) }
 
     return backStack
 }
