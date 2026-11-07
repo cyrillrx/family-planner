@@ -23,16 +23,14 @@ internal fun MutableList<NavKey>.resetUnlessReachableFrom(destination: StartDest
     addAll(destination.toBackStack())
 }
 
-private fun StartDestination.reachableRoutes(): Set<NavKey> = when (this) {
-    StartDestination.Home -> setOf(MainRoute.Home)
-    is StartDestination.Onboarding -> step.reachableRoutes()
+private fun StartDestination.reachableRoutes(): Set<NavKey> = toBackStack().toSet() + forwardRoutes()
+
+private fun StartDestination.forwardRoutes(): Set<NavKey> = when (this) {
+    StartDestination.Home -> emptySet()
+    is StartDestination.Onboarding -> step.forwardRoutes()
 }
 
-private fun OnboardingStep.reachableRoutes(): Set<NavKey> = when (this) {
-    OnboardingStep.DISPLAY_NAME -> setOf(OnboardingRoute.DisplayName)
-    OnboardingStep.GROUP_CHOICE -> setOf(
-        OnboardingRoute.DisplayName,
-        OnboardingRoute.GroupChoice,
-        OnboardingRoute.JoinGroup,
-    )
+private fun OnboardingStep.forwardRoutes(): Set<NavKey> = when (this) {
+    OnboardingStep.DISPLAY_NAME -> emptySet()
+    OnboardingStep.GROUP_CHOICE -> setOf(OnboardingRoute.JoinGroup)
 }
