@@ -1,8 +1,7 @@
 <resources>
     <string name="onboarding_choice_join">J'ai un code d'invitation</string>
 
-    <string name="onboarding_join_title">Votre code d'invitation</string>
-    <string name="onboarding_join_subtitle">Collez le code qu'un membre du groupe vous a envoyé.</string>
+    <string name="onboarding_join_title">Entrez le code d'invitation reçu</string>
     <string name="onboarding_join_label">Code d'invitation</string>
     <string name="onboarding_join_submit">Rejoindre le groupe</string>
     <string name="onboarding_join_error_already_in_a_group">Vous appartenez déjà à un groupe, ce code n'a donc pas été utilisé.</string>
