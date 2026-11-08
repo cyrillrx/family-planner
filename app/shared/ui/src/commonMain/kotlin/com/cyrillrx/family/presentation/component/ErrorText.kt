@@ -1,9 +1,11 @@
 package com.cyrillrx.family.presentation.component
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import com.cyrillrx.family.group.domain.CreateGroupError
 import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.group.domain.RedeemInvitationError
@@ -23,9 +25,10 @@ import org.jetbrains.compose.resources.stringResource
 fun ErrorText(message: String, modifier: Modifier = Modifier) {
     Text(
         text = message,
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
+        textAlign = TextAlign.Center,
     )
 }
 
