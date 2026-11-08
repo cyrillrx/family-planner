@@ -16,8 +16,7 @@
 
     <string name="onboarding_back">Back</string>
 
-    <string name="onboarding_choice_title">Your group</string>
-    <string name="onboarding_choice_subtitle">Create one, or join the one you were invited to.</string>
+    <string name="onboarding_choice_title">Create or join a group</string>
     <string name="onboarding_choice_create">Create a group</string>
 
     <string name="onboarding_name_title">What should we call you?</string>

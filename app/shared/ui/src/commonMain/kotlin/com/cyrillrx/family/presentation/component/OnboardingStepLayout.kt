@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OnboardingStepLayout(
     title: String,
-    subtitle: String,
+    subtitle: String? = null,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -41,7 +41,7 @@ fun OnboardingStepLayout(
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
             Text(text = title, style = MaterialTheme.typography.headlineMedium)
-            Text(text = subtitle, style = MaterialTheme.typography.bodyMedium)
+            subtitle?.let { Text(text = it, style = MaterialTheme.typography.bodyMedium) }
 
             content()
         }
