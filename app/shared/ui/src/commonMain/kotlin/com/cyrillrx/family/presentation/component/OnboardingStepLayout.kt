@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OnboardingStepLayout(
     title: String,
-    subtitle: String? = null,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // The safe area shrinks by the height of the keyboard, which on a short screen leaves less
