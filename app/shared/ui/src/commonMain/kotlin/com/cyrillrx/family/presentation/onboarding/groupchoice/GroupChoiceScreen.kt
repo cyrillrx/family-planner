@@ -23,7 +23,6 @@ import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.onboarding_back
 import familyplanner.app.shared.ui.generated.resources.onboarding_choice_create
 import familyplanner.app.shared.ui.generated.resources.onboarding_choice_join
-import familyplanner.app.shared.ui.generated.resources.onboarding_choice_subtitle
 import familyplanner.app.shared.ui.generated.resources.onboarding_choice_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -63,7 +62,6 @@ fun GroupChoiceScreen(
 ) {
     OnboardingStepLayout(
         title = stringResource(Res.string.onboarding_choice_title),
-        subtitle = stringResource(Res.string.onboarding_choice_subtitle),
         modifier = modifier,
     ) {
         state.error?.let { ErrorText(it.message()) }

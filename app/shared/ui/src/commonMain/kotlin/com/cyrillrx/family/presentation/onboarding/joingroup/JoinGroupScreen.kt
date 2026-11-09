@@ -22,7 +22,6 @@ import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.onboarding_back
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_label
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_submit
-import familyplanner.app.shared.ui.generated.resources.onboarding_join_subtitle
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_title
 import familyplanner.app.shared.ui.generated.resources.onboarding_open_home
 import org.jetbrains.compose.resources.stringResource
@@ -66,7 +65,6 @@ fun JoinGroupScreen(
 ) {
     OnboardingStepLayout(
         title = stringResource(Res.string.onboarding_join_title),
-        subtitle = stringResource(Res.string.onboarding_join_subtitle),
         modifier = modifier,
     ) {
         OutlinedTextField(

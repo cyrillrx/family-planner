@@ -16,13 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun OnboardingStepLayout(
     title: String,
-    subtitle: String,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // The safe area shrinks by the height of the keyboard, which on a short screen leaves less
@@ -40,8 +41,20 @@ fun OnboardingStepLayout(
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
-            Text(text = title, style = MaterialTheme.typography.headlineMedium)
-            Text(text = subtitle, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = title,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
             content()
         }
