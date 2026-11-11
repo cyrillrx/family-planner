@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupStore {
 
+    /** Throws when the store cannot answer, an absence it cannot confirm included. */
     suspend fun findGroupOf(credential: String): GroupDocument?
 
     /**

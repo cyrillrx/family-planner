@@ -16,18 +16,21 @@ import kotlinx.serialization.Serializable
 internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : GroupStore {
 
     override suspend fun findGroupOf(credential: String): GroupDocument? {
-        val membership = firestore.collectionGroup(MEMBERS)
+        val memberships = firestore.collectionGroup(MEMBERS)
             .where { "credential" equalTo credential }
             .limit(1)
             .get()
-            .documents
-            .firstOrNull()
-            ?.toMember()
-            ?: return null
+        val membership = memberships.documents.firstOrNull()?.toMember()
+        if (membership == null) {
+            check(!memberships.metadata.isFromCache) { "No membership in the cache tells nothing of the server" }
+            return null
+        }
 
         val group = groups().document(membership.groupId ?: return null).get()
+        if (group.exists) return group.toGroup()
 
-        return if (group.exists) group.toGroup() else null
+        check(!group.metadata.isFromCache) { "No group in the cache tells nothing of the server" }
+        return null
     }
 
     override suspend fun create(group: GroupDocument, founder: MemberDocument) {
