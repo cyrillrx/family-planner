@@ -97,5 +97,14 @@ class ResetUnlessReachableFromTest {
         assertEquals(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE).toBackStack(), backStack)
     }
 
+    @Test
+    fun `sends a member whose group is missing past a restored home`() {
+        val backStack = backStackOf(MainRoute.Home)
+
+        backStack.resetUnlessReachableFrom(StartDestination.GroupNotFound)
+
+        assertEquals(listOf<NavKey>(MainRoute.GroupNotFound), backStack)
+    }
+
     private fun backStackOf(vararg keys: NavKey) = keys.toMutableList()
 }

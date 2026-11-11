@@ -5,11 +5,14 @@ import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.presentation.CountingGroupRepository
 import com.cyrillrx.family.presentation.IntermittentGroupRepository
+import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.NOW
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -58,6 +61,19 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         assertEquals(HomeState(HomeState.Body.Unavailable), viewModel.state.value)
+    }
+
+    @Test
+    fun `announces a group that cannot be found`() = runTest {
+        val viewModel = HomeViewModel(MissingGroupRepository())
+        val missingGroups = mutableListOf<Unit>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.groupNotFound.collect { missingGroups += it }
+        }
+
+        advanceUntilIdle()
+
+        assertEquals(1, missingGroups.size)
     }
 
     @Test

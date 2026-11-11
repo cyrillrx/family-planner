@@ -2,6 +2,7 @@ package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.CreateGroupWriteError
+import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.InvitationRepository
 import com.cyrillrx.family.group.domain.RamGroupRepository
@@ -68,6 +69,21 @@ internal class IntermittentGroupRepository(
     var available = false
 
     override suspend fun group() = if (available) delegate.group() else Result.Failure(StoreUnavailable)
+}
+
+internal class MissingGroupRepository(
+    private val reachable: Boolean = true,
+    private val delegate: RamGroupRepository = RamGroupRepository(),
+) : GroupRepository by delegate {
+    var departures = 0
+        private set
+
+    override suspend fun group() = Result.Failure(GroupNotFound)
+
+    override suspend fun create(group: Group, founder: UserId) = Result.Failure(GroupNotFound)
+
+    override suspend fun leaveMissingGroup() =
+        if (reachable) Result.Success(Unit).also { departures++ } else Result.Failure(StoreUnavailable)
 }
 
 internal class RefusingGroupRepository(

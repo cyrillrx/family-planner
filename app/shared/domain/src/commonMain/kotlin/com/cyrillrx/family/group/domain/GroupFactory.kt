@@ -10,7 +10,7 @@ class GroupFactory(
 
     fun create() = Group(id = idGenerator.newGroupId(), name = DEFAULT_NAME, createdAt = clock.now())
 
-    private companion object {
+    internal companion object {
         const val DEFAULT_NAME = "Family"
     }
 }

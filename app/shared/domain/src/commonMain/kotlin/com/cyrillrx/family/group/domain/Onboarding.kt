@@ -65,7 +65,7 @@ class Onboarding(
             return Result.Failure(JoinGroupError.CodeTooShort)
         }
 
-        val group = groupRepository.group().getOrElse { return Result.Failure(JoinGroupError.StoreUnavailable) }
+        val group = groupRepository.group().getOrElse { return Result.Failure(it.toJoinGroupError()) }
         if (group != null) return Result.Failure(JoinGroupError.AlreadyInAGroup)
 
         // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
@@ -75,10 +75,18 @@ class Onboarding(
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
         }
     }
+
+    suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable> = groupRepository.leaveMissingGroup()
+}
+
+private fun GroupReadError.toJoinGroupError(): JoinGroupError = when (this) {
+    StoreUnavailable -> JoinGroupError.StoreUnavailable
+    GroupNotFound -> JoinGroupError.GroupNotFound
 }
 
 private fun CreateGroupWriteError.toCreateGroupError(): CreateGroupError = when (this) {
     CreateGroupWriteError.AlreadyInAGroup -> CreateGroupError.GroupAlreadyExists
+    GroupNotFound -> CreateGroupError.GroupNotFound
     StoreUnavailable -> CreateGroupError.StoreUnavailable
     CreateGroupWriteError.Unknown -> CreateGroupError.Creation(this)
 }
@@ -94,6 +102,7 @@ sealed interface CreateGroupError : Error {
     data object NotRegistered : CreateGroupError
     data object StoreUnavailable : CreateGroupError
     data object GroupAlreadyExists : CreateGroupError
+    data object GroupNotFound : CreateGroupError
     data class Creation(val cause: CreateGroupWriteError) : CreateGroupError
 }
 
@@ -102,5 +111,6 @@ sealed interface JoinGroupError : Error {
     data object StoreUnavailable : JoinGroupError
     data object CodeTooShort : JoinGroupError
     data object AlreadyInAGroup : JoinGroupError
+    data object GroupNotFound : JoinGroupError
     data class Redemption(val cause: RedeemInvitationError) : JoinGroupError
 }

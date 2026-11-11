@@ -21,6 +21,10 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     private val groupsReady = Channel<Unit>(Channel.BUFFERED)
     val groupReady: Flow<Unit> = groupsReady.receiveAsFlow()
 
+    // TODO(#84): announce without a Channel.
+    private val missingGroups = Channel<Unit>(Channel.BUFFERED)
+    val groupNotFound: Flow<Unit> = missingGroups.receiveAsFlow()
+
     fun createGroup() {
         val beforeSubmit = state.value
         if (beforeSubmit.submitting) return
@@ -39,6 +43,10 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     private suspend fun refuse(beforeSubmit: GroupChoiceState, error: CreateGroupError) {
         when (error) {
             CreateGroupError.GroupAlreadyExists -> groupsReady.send(Unit)
+            CreateGroupError.GroupNotFound -> {
+                state.value = beforeSubmit
+                missingGroups.send(Unit)
+            }
             CreateGroupError.StoreUnavailable,
             CreateGroupError.NotRegistered,
             is CreateGroupError.Creation,

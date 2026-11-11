@@ -7,7 +7,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * The store could not be reached, or refused the call. Unlike an answer of "nothing", it tells
  * nothing about what the store holds.
  */
-data object StoreUnavailable : CreateGroupWriteError
+data object StoreUnavailable : GroupReadError, CreateGroupWriteError
 
 internal suspend fun <T> reachStore(call: suspend () -> T): Result<T, StoreUnavailable> = try {
     Result.Success(call())

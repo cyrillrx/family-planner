@@ -12,6 +12,7 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.REV
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
 import com.cyrillrx.family.presentation.CountingInvitationRepository
+import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
@@ -220,6 +221,41 @@ class JoinGroupViewModelTest {
     }
 
     @Test
+    fun `announces a group that cannot be found`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), MissingGroupRepository())
+        val missingGroups = collectMissingGroups(viewModel)
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertEquals(1, missingGroups.size)
+    }
+
+    @Test
+    fun `shows no error for a group it announces as not found`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), MissingGroupRepository())
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertEquals(JoinGroupState(code = ACCEPTED_CODE), viewModel.state.value)
+    }
+
+    @Test
+    fun `announces no missing group for any other refusal`() = runTest {
+        val viewModel = viewModel(registeredUserRepository())
+        val missingGroups = collectMissingGroups(viewModel)
+        viewModel.changeInvitationCode(REVOKED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertEquals(emptyList(), missingGroups)
+    }
+
+    @Test
     fun `redeems once however many times the button is pressed`() = runTest {
         val invitations = CountingInvitationRepository()
         val viewModel = viewModel(registeredUserRepository(), invitationRepository = invitations)
@@ -267,6 +303,15 @@ class JoinGroupViewModelTest {
         }
 
         return joins
+    }
+
+    private fun TestScope.collectMissingGroups(viewModel: JoinGroupViewModel): List<Unit> {
+        val missingGroups = mutableListOf<Unit>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.groupNotFound.collect { missingGroups += it }
+        }
+
+        return missingGroups
     }
 
     private fun viewModel(

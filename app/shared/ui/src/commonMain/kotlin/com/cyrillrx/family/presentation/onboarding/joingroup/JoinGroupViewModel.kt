@@ -3,6 +3,7 @@ package com.cyrillrx.family.presentation.onboarding.joingroup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.group.domain.Onboarding
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,10 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
     private val joins = Channel<Unit>(Channel.BUFFERED)
     val joined: Flow<Unit> = joins.receiveAsFlow()
 
+    // TODO(#84): announce without a Channel.
+    private val missingGroups = Channel<Unit>(Channel.BUFFERED)
+    val groupNotFound: Flow<Unit> = missingGroups.receiveAsFlow()
+
     fun changeInvitationCode(code: String) {
         val beforeSubmit = state.value
         if (beforeSubmit.submitting) return
@@ -36,6 +41,11 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
         viewModelScope.launch {
             when (val redemption = onboarding.joinGroup(beforeSubmit.code)) {
                 is Result.Success -> joins.send(Unit)
+
+                is Result.Failure if redemption.error == JoinGroupError.GroupNotFound -> {
+                    state.value = beforeSubmit
+                    missingGroups.send(Unit)
+                }
 
                 is Result.Failure -> state.value = beforeSubmit.copy(error = redemption.error)
             }

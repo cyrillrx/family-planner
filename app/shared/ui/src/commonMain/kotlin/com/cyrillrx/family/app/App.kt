@@ -17,8 +17,11 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.cyrillrx.family.navigation.OnboardingRoute
+import com.cyrillrx.family.navigation.OnboardingRouterImpl
 import com.cyrillrx.family.navigation.handleOnboardingRoutes
 import com.cyrillrx.family.navigation.navigateUp
+import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundScreen
+import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundViewModel
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
 import com.cyrillrx.family.presentation.start.StartState
@@ -58,6 +61,8 @@ private fun AppNavigation(
     backStack: NavBackStack<NavKey>,
     modifier: Modifier = Modifier,
 ) {
+    val router = remember(backStack) { OnboardingRouterImpl(backStack) }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -70,10 +75,17 @@ private fun AppNavigation(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            handleOnboardingRoutes(backStack, graph)
+            handleOnboardingRoutes(router, graph)
 
             entry<MainRoute.Home> {
-                HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
+                HomeScreen(
+                    viewModel { HomeViewModel(graph.groupRepository) },
+                    onGroupNotFound = router::openGroupNotFound,
+                )
+            }
+
+            entry<MainRoute.GroupNotFound> {
+                GroupNotFoundScreen(viewModel { GroupNotFoundViewModel(graph.onboarding) }, router)
             }
         },
     )

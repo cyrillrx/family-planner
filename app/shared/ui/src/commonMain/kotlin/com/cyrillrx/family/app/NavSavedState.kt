@@ -14,6 +14,7 @@ internal data object UnrecognizedRoute : NavKey
 internal val navSerializersModule = SerializersModule {
     polymorphic(NavKey::class) {
         subclass(MainRoute.Home::class, MainRoute.Home.serializer())
+        subclass(MainRoute.GroupNotFound::class, MainRoute.GroupNotFound.serializer())
         subclass(UnrecognizedRoute::class, UnrecognizedRoute.serializer())
         registerOnboardingRoutes()
 

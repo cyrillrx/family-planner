@@ -209,6 +209,33 @@ class OnboardingTest {
     }
 
     @Test
+    fun `reports a missing group the repository found while writing`() = runTest {
+        val onboarding = onboarding(groupRepository = RefusingGroupRepository(GroupNotFound))
+        onboarding.register(displayName = "Cyril")
+
+        assertEquals(Result.Failure(CreateGroupError.GroupNotFound), onboarding.createGroup())
+    }
+
+    @Test
+    fun `redeems nothing while this device holds a membership of a missing group`() = runTest {
+        val invitations = RecordingInvitationRepository()
+        val onboarding = onboarding(groupRepository = MissingGroupRepository(), invitationRepository = invitations)
+        onboarding.register(displayName = "Cyril")
+
+        assertEquals(Result.Failure(JoinGroupError.GroupNotFound), onboarding.joinGroup(CODE))
+        assertEquals(0, invitations.calls)
+    }
+
+    @Test
+    fun `leaves a missing group`() = runTest {
+        val groups = MissingGroupRepository()
+
+        onboarding(groupRepository = groups).leaveMissingGroup()
+
+        assertEquals(1, groups.departures)
+    }
+
+    @Test
     fun `reports a group the repository could not write`() = runTest {
         val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.Unknown))
         onboarding.register(displayName = "Cyril")
@@ -379,6 +406,8 @@ class OnboardingTest {
         override fun observeMembers(groupId: GroupId): Flow<List<Member>> = emptyFlow()
 
         override suspend fun create(group: Group, founder: UserId) = Result.Failure(error)
+
+        override suspend fun leaveMissingGroup() = Result.Success(Unit)
     }
 
     private object FixedClock : Clock {

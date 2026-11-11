@@ -33,6 +33,7 @@ fun GroupChoiceScreen(
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(viewModel) { viewModel.groupReady.collect { router.openHome() } }
+    LaunchedEffect(viewModel) { viewModel.groupNotFound.collect { router.openGroupNotFound() } }
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
 

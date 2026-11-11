@@ -33,6 +33,7 @@ fun JoinGroupScreen(
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(viewModel) { viewModel.joined.collect { router.openHome() } }
+    LaunchedEffect(viewModel) { viewModel.groupNotFound.collect { router.openGroupNotFound() } }
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
 

@@ -1,6 +1,7 @@
 package com.cyrillrx.family.start.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.MissingGroupRepository
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.OnboardingStep
 import com.cyrillrx.family.group.domain.RamGroupRepository
@@ -55,6 +56,16 @@ class AppStartTest {
 
         assertEquals(
             Result.Failure(StoreUnavailable),
+            AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
+        )
+    }
+
+    @Test
+    fun `opens on the missing group for a membership whose group does not exist`() = runTest {
+        val groups = MissingGroupRepository()
+
+        assertEquals(
+            Result.Success(StartDestination.GroupNotFound),
             AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
         )
     }

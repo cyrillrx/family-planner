@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -25,8 +26,10 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    onGroupNotFound: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(viewModel) { viewModel.groupNotFound.collect { onGroupNotFound() } }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.silentRefresh() }
 
     HomeScreen(state = viewModel.state.collectAsStateWithLifecycle().value, modifier = modifier)

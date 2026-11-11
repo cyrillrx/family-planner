@@ -29,4 +29,9 @@ class ToBackStackTest {
     fun `opens home alone for a member of a group`() {
         assertEquals(listOf<NavKey>(MainRoute.Home), StartDestination.Home.toBackStack())
     }
+
+    @Test
+    fun `opens the missing group alone for a membership whose group does not exist`() {
+        assertEquals(listOf<NavKey>(MainRoute.GroupNotFound), StartDestination.GroupNotFound.toBackStack())
+    }
 }

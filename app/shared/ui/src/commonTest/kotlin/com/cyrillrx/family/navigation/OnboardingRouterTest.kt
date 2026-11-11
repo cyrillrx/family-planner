@@ -74,4 +74,39 @@ class OnboardingRouterTest {
 
         assertEquals(listOf<NavKey>(MainRoute.Home), backStack.toList())
     }
+
+    @Test
+    fun `opens the missing group on a back stack holding nothing else`() {
+        val backStack = NavBackStack<NavKey>(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
+
+        OnboardingRouterImpl(backStack).openGroupNotFound()
+
+        assertEquals(listOf<NavKey>(MainRoute.GroupNotFound), backStack.toList())
+    }
+
+    @Test
+    fun `opens the missing group once when asked twice`() {
+        val backStack = NavBackStack<NavKey>(MainRoute.Home)
+        val router = OnboardingRouterImpl(backStack)
+
+        router.openGroupNotFound()
+        router.openGroupNotFound()
+
+        assertEquals(listOf<NavKey>(MainRoute.GroupNotFound), backStack.toList())
+    }
+
+    @Test
+    fun `opens the group choice under the display name once the missing group is left`() {
+        val backStack = NavBackStack<NavKey>(MainRoute.GroupNotFound)
+
+        OnboardingRouterImpl(backStack).openGroupChoiceAfterLeavingMissingGroup()
+
+        assertEquals(
+            listOf<NavKey>(
+                OnboardingRoute.DisplayName,
+                OnboardingRoute.GroupChoice,
+            ),
+            backStack.toList(),
+        )
+    }
 }

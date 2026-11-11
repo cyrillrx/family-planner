@@ -1,6 +1,7 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.data.GroupLookup
 import com.cyrillrx.family.group.data.GroupStore
 import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.GroupDocument
@@ -49,12 +50,74 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
-    fun `reads a stored group missing a field as no group`() = runTest {
-        val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup().copy(createdAt = null) }
+    fun `reads a stored group missing its fields with their defaults`() = runTest {
+        val store = FakeGroupStore().apply {
+            groupsByCredential["uid-1"] = GroupDocument(id = "group-1", name = null, createdAt = null)
+        }
 
         assertEquals(
-            Result.Success(value = null),
+            Result.Success(group().copy(createdAt = Instant.fromEpochMilliseconds(epochMilliseconds = 0))),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
+        )
+    }
+
+    @Test
+    fun `cannot find the group a membership names when that group does not exist`() = runTest {
+        val store = FakeGroupStore().apply { missingGroupMemberships["uid-1"] = "group-1" }
+
+        assertEquals(
+            Result.Failure(GroupNotFound),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
+        )
+    }
+
+    @Test
+    fun `refuses to found a group while the credential holds a membership of a missing one`() = runTest {
+        val store = FakeGroupStore().apply { missingGroupMemberships["uid-1"] = "group-1" }
+
+        assertEquals(
+            Result.Failure(GroupNotFound),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
+        )
+        assertEquals(emptyList(), store.creations)
+    }
+
+    @Test
+    fun `leaves a missing group`() = runTest {
+        val store = FakeGroupStore().apply { missingGroupMemberships["uid-1"] = "group-1" }
+
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).leaveMissingGroup()
+
+        assertEquals(listOf("group-1" to "uid-1"), store.leaves)
+    }
+
+    @Test
+    fun `answers a successful departure`() = runTest {
+        val store = FakeGroupStore().apply { missingGroupMemberships["uid-1"] = "group-1" }
+
+        assertEquals(
+            Result.Success(Unit),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).leaveMissingGroup(),
+        )
+    }
+
+    @Test
+    fun `never leaves a group that exists`() = runTest {
+        val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
+
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).leaveMissingGroup()
+
+        assertEquals(emptyList(), store.leaves)
+    }
+
+    @Test
+    fun `reports a departure the store could not make`() = runTest {
+        val store = FakeGroupStore(failure = IllegalStateException("unreachable"), lookupFailure = null)
+            .apply { missingGroupMemberships["uid-1"] = "group-1" }
+
+        assertEquals(
+            Result.Failure(StoreUnavailable),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).leaveMissingGroup(),
         )
     }
 
@@ -229,19 +292,31 @@ private class FakeGroupStore(
 ) : GroupStore {
 
     val groupsByCredential = mutableMapOf<String, GroupDocument>()
+    val missingGroupMemberships = mutableMapOf<String, String>()
     val creations = mutableListOf<Pair<GroupDocument, MemberDocument>>()
+    val leaves = mutableListOf<Pair<String, String>>()
     val membersByGroup = MutableStateFlow<Map<String, List<MemberDocument>>>(emptyMap())
 
-    override suspend fun findGroupOf(credential: String): GroupDocument? {
+    override suspend fun findGroupOf(credential: String): GroupLookup {
         lookupFailure?.let { throw it }
 
-        return groupsByCredential[credential]
+        missingGroupMemberships[credential]?.let { return GroupLookup.NotFound(it) }
+
+        val group = groupsByCredential[credential] ?: return GroupLookup.NoMembership
+
+        return GroupLookup.Found(checkNotNull(group.id), group)
     }
 
     override suspend fun create(group: GroupDocument, founder: MemberDocument) {
         failure?.let { throw it }
 
         creations += group to founder
+    }
+
+    override suspend fun leave(groupId: String, credential: String) {
+        failure?.let { throw it }
+
+        leaves += groupId to credential
     }
 
     override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =
