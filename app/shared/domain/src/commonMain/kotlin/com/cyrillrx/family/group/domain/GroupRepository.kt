@@ -17,10 +17,6 @@ interface GroupRepository {
 
     suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError>
 
-    /**
-     * Leaves the group that [group] answers [GroupNotFound] for. Succeeds when there is none to
-     * leave, and never leaves a group that exists.
-     */
     suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable>
 }
 
