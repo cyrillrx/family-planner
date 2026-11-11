@@ -17,19 +17,26 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import familyplanner.app.shared.ui.generated.resources.Res
+import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.home_in_group
 import familyplanner.app.shared.ui.generated.resources.home_waiting_for_group
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    modifier: Modifier = Modifier,
+) {
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.silentRefresh() }
 
     HomeScreen(state = viewModel.state.collectAsStateWithLifecycle().value, modifier = modifier)
 }
 
 @Composable
-fun HomeScreen(state: HomeState, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    state: HomeState,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -43,6 +50,11 @@ fun HomeScreen(state: HomeState, modifier: Modifier = Modifier) {
 
             HomeState.Body.WaitingForTheGroup -> HomeMessage(
                 stringResource(Res.string.home_waiting_for_group),
+            )
+
+            // TODO(#90): offer a retry, ON_RESUME seldom fires on Desktop.
+            HomeState.Body.Unavailable -> HomeMessage(
+                stringResource(Res.string.error_store_unavailable),
             )
 
             is HomeState.Body.InGroup -> HomeMessage(
@@ -70,3 +82,8 @@ private fun HomeScreenFounderPreview() =
 @Composable
 private fun HomeScreenJoinerPreview() =
     HomeScreen(state = HomeState(HomeState.Body.WaitingForTheGroup))
+
+@Preview
+@Composable
+private fun HomeScreenUnavailablePreview() =
+    HomeScreen(state = HomeState(HomeState.Body.Unavailable))

@@ -11,6 +11,7 @@ import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RegisterError
 import familyplanner.app.shared.ui.generated.resources.Res
+import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_blank_display_name
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_already_redeemed
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_expired
@@ -40,6 +41,7 @@ fun RegisterError.message(): String = when (this) {
 
 @Composable
 fun CreateGroupError.message(): String = when (this) {
+    CreateGroupError.StoreUnavailable -> stringResource(Res.string.error_store_unavailable)
     CreateGroupError.GroupAlreadyExists,
     CreateGroupError.NotRegistered,
     is CreateGroupError.Creation,
@@ -50,6 +52,7 @@ fun CreateGroupError.message(): String = when (this) {
 fun JoinGroupError.message(): String = when (this) {
     JoinGroupError.CodeTooShort -> stringResource(Res.string.onboarding_error_code_too_short)
     JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_join_error_already_in_a_group)
+    JoinGroupError.StoreUnavailable -> stringResource(Res.string.error_store_unavailable)
     JoinGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
     is JoinGroupError.Redemption -> cause.message()
 }

@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
 
-    suspend fun group(): Group?
+    /** Succeeds with null when this device belongs to no group. */
+    suspend fun group(): Result<Group?, StoreUnavailable>
 
     fun observeMembers(groupId: GroupId): Flow<List<Member>>
 

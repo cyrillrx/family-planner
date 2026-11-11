@@ -2,6 +2,7 @@ package com.cyrillrx.family.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.model.Group
 import kotlinx.coroutines.Job
@@ -29,8 +30,15 @@ class HomeViewModel(private val groupRepository: GroupRepository) : ViewModel() 
     private fun read() {
         reading?.cancel()
         reading = viewModelScope.launch {
-            state.value = HomeState(body = groupRepository.group().toBody())
+            when (val group = groupRepository.group()) {
+                is Result.Success -> state.value = HomeState(body = group.value.toBody())
+                is Result.Failure -> showUnavailableUnlessAnAnswerIsShown()
+            }
         }
+    }
+
+    private fun showUnavailableUnlessAnAnswerIsShown() {
+        if (state.value.body == HomeState.Body.Loading) state.value = HomeState(body = HomeState.Body.Unavailable)
     }
 }
 

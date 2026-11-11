@@ -8,6 +8,7 @@ import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.RegisterUserError
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
+import com.cyrillrx.family.group.domain.StoreUnavailable
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
@@ -26,13 +27,13 @@ internal suspend fun registeredUserRepository() = RamUserRepository().apply {
 }
 
 internal class AmnesicUserRepository : UserRepository {
-    override suspend fun registeredUserId(): UserId? = null
+    override suspend fun registeredUserId() = Result.Success(value = null)
 
     override suspend fun register(user: User) = Result.Success(user)
 }
 
 internal object FailingUserRepository : UserRepository {
-    override suspend fun registeredUserId(): UserId? = null
+    override suspend fun registeredUserId() = Result.Success(value = null)
 
     override suspend fun register(user: User) = Result.Failure(RegisterUserError.Unknown)
 }
@@ -55,6 +56,18 @@ internal class CountingGroupRepository(
         private set
 
     override suspend fun group() = delegate.group().also { reads++ }
+}
+
+internal class UnavailableUserRepository : UserRepository by RamUserRepository() {
+    override suspend fun registeredUserId() = Result.Failure(StoreUnavailable)
+}
+
+internal class IntermittentGroupRepository(
+    private val delegate: RamGroupRepository = RamGroupRepository(),
+) : GroupRepository by delegate {
+    var available = false
+
+    override suspend fun group() = if (available) delegate.group() else Result.Failure(StoreUnavailable)
 }
 
 internal class RefusingGroupRepository(

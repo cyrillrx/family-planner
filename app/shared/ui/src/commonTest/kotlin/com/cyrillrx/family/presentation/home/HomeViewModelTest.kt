@@ -4,6 +4,7 @@ import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.presentation.CountingGroupRepository
+import com.cyrillrx.family.presentation.IntermittentGroupRepository
 import com.cyrillrx.family.presentation.NOW
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,7 @@ class HomeViewModelTest {
 
         advanceUntilIdle()
 
-        assertEquals(HomeState(HomeState.Body.InGroup("Home")), viewModel.state.value)
+        assertEquals(HomeState(HomeState.Body.InGroup(groupName = "Home")), viewModel.state.value)
     }
 
     @Test
@@ -51,6 +52,41 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `says the group cannot be reached when the first read fails`() = runTest {
+        val viewModel = HomeViewModel(IntermittentGroupRepository())
+
+        advanceUntilIdle()
+
+        assertEquals(HomeState(HomeState.Body.Unavailable), viewModel.state.value)
+    }
+
+    @Test
+    fun `keeps the group it shows when a refresh cannot read it`() = runTest {
+        val groups = IntermittentGroupRepository(groupRepositoryWithAGroup()).apply { available = true }
+        val viewModel = HomeViewModel(groups)
+        advanceUntilIdle()
+        groups.available = false
+
+        viewModel.silentRefresh()
+        advanceUntilIdle()
+
+        assertEquals(HomeState(HomeState.Body.InGroup(groupName = "Home")), viewModel.state.value)
+    }
+
+    @Test
+    fun `names the group once a refresh reaches it`() = runTest {
+        val groups = IntermittentGroupRepository(groupRepositoryWithAGroup())
+        val viewModel = HomeViewModel(groups)
+        advanceUntilIdle()
+        groups.available = true
+
+        viewModel.silentRefresh()
+        advanceUntilIdle()
+
+        assertEquals(HomeState(HomeState.Body.InGroup(groupName = "Home")), viewModel.state.value)
+    }
+
+    @Test
     fun `sees a group that arrives after the first read`() = runTest {
         val groups = RamGroupRepository()
         val viewModel = HomeViewModel(groups)
@@ -60,7 +96,7 @@ class HomeViewModelTest {
         viewModel.silentRefresh()
         advanceUntilIdle()
 
-        assertEquals(HomeState(HomeState.Body.InGroup("Family")), viewModel.state.value)
+        assertEquals(HomeState(HomeState.Body.InGroup(groupName = "Family")), viewModel.state.value)
     }
 
     @Test

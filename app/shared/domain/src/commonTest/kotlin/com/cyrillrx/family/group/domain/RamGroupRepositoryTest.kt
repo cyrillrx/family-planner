@@ -1,6 +1,7 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.core.domain.getOrNull
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Member
@@ -9,14 +10,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.time.Instant
 
 class RamGroupRepositoryTest {
 
     @Test
     fun `has no group before one is set`() = runTest {
-        assertNull(RamGroupRepository().group())
+        assertEquals(Result.Success(value = null), RamGroupRepository().group())
     }
 
     @Test
@@ -25,7 +25,7 @@ class RamGroupRepositoryTest {
 
         repository.create(group(), founder = UserId("alice"))
 
-        assertEquals(group(), repository.group())
+        assertEquals(Result.Success(group()), repository.group())
         assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
     }
 
@@ -46,7 +46,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group())
 
-        assertEquals(group(), repository.group())
+        assertEquals(Result.Success(group()), repository.group())
     }
 
     @Test
@@ -56,7 +56,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group().copy(name = "Other"))
 
-        assertEquals("Other", repository.group()?.name)
+        assertEquals("Other", repository.group().getOrNull()?.name)
     }
 
     @Test

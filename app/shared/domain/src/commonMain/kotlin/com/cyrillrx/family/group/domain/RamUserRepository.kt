@@ -14,7 +14,7 @@ class RamUserRepository : UserRepository {
     /** A thread-safe box for the same reason as [UserRepositoryImpl]'s: writers and readers differ. */
     private val registered = MutableStateFlow<User?>(null)
 
-    override suspend fun registeredUserId(): UserId? = registered.value?.id
+    override suspend fun registeredUserId(): Result<UserId?, StoreUnavailable> = Result.Success(registered.value?.id)
 
     override suspend fun register(user: User): Result<User, RegisterUserError> {
         registered.value = user

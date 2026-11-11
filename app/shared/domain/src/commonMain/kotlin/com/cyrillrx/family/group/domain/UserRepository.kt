@@ -7,7 +7,8 @@ import com.cyrillrx.family.group.model.UserId
 
 interface UserRepository {
 
-    suspend fun registeredUserId(): UserId?
+    /** Succeeds with null when nobody registered on this device. */
+    suspend fun registeredUserId(): Result<UserId?, StoreUnavailable>
 
     suspend fun register(user: User): Result<User, RegisterUserError>
 }

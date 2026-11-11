@@ -12,6 +12,7 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository.Companion.REV
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
 import com.cyrillrx.family.presentation.CountingInvitationRepository
+import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
 import kotlinx.coroutines.Dispatchers
@@ -200,6 +201,20 @@ class JoinGroupViewModelTest {
 
         assertEquals(
             JoinGroupState(code = ACCEPTED_CODE, error = JoinGroupError.NotRegistered),
+            viewModel.state.value,
+        )
+    }
+
+    @Test
+    fun `carries an unavailable store rather than a lost registration`() = runTest {
+        val viewModel = viewModel(UnavailableUserRepository())
+        viewModel.changeInvitationCode(ACCEPTED_CODE)
+
+        viewModel.joinGroup()
+        advanceUntilIdle()
+
+        assertEquals(
+            JoinGroupState(code = ACCEPTED_CODE, error = JoinGroupError.StoreUnavailable),
             viewModel.state.value,
         )
     }

@@ -1,10 +1,14 @@
 package com.cyrillrx.family.start.domain
 
+import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.OnboardingStep
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
+import com.cyrillrx.family.group.domain.StoreUnavailable
+import com.cyrillrx.family.group.domain.UnavailableGroupRepository
+import com.cyrillrx.family.group.domain.UnavailableUserRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.User
@@ -30,19 +34,39 @@ class AppStartTest {
             ),
         )
 
-        assertEquals(StartDestination.Home, appStart().destination())
+        assertEquals(Result.Success(StartDestination.Home), appStart().destination())
     }
 
     @Test
     fun `opens the onboarding on the display name when nobody is registered`() = runTest {
-        assertEquals(StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME), appStart().destination())
+        assertEquals(Result.Success(StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME)), appStart().destination())
     }
 
     @Test
     fun `opens the onboarding on the group choice for a member without a group`() = runTest {
         users.register(User(id = UserId("alice"), displayName = "Alice"))
 
-        assertEquals(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE), appStart().destination())
+        assertEquals(Result.Success(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE)), appStart().destination())
+    }
+
+    @Test
+    fun `cannot tell the destination when the store cannot say whether there is a group`() = runTest {
+        val groups = UnavailableGroupRepository()
+
+        assertEquals(
+            Result.Failure(StoreUnavailable),
+            AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
+        )
+    }
+
+    @Test
+    fun `cannot tell the destination when the store cannot say who is registered`() = runTest {
+        val users = UnavailableUserRepository()
+
+        assertEquals(
+            Result.Failure(StoreUnavailable),
+            AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
+        )
     }
 
     private fun appStart() = AppStart(groups, Onboarding(users, groups, SampleInvitationRepository()))

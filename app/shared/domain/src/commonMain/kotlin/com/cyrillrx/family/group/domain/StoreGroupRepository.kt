@@ -1,6 +1,7 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.core.domain.getOrElse
 import com.cyrillrx.family.group.data.GroupStore
 import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.GroupDocument
@@ -19,14 +20,8 @@ class StoreGroupRepository(
     private val users: UserStore,
 ) : GroupRepository {
 
-    override suspend fun group(): Group? = try {
-        findGroup()
-    } catch (cancellation: CancellationException) {
-        throw cancellation
-    } catch (e: Exception) {
-        // TODO(#69): callers read this null as "not in a group".
-        null
-    }
+    override suspend fun group(): Result<Group?, StoreUnavailable> =
+        reachStore { users.credential()?.let { store.findGroupOf(it) }?.toDomain() }
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
         store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
@@ -39,11 +34,11 @@ class StoreGroupRepository(
         Result.Failure(CreateGroupWriteError.Unknown)
     }
 
-    private suspend fun findGroup(): Group? = users.credential()?.let { store.findGroupOf(it) }?.toDomain()
-
     private suspend fun write(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> {
         val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
-        if (store.findGroupOf(credential) != null) return Result.Failure(CreateGroupWriteError.AlreadyInAGroup)
+
+        val found = reachStore { store.findGroupOf(credential) }.getOrElse { return Result.Failure(it) }
+        if (found != null) return Result.Failure(CreateGroupWriteError.AlreadyInAGroup)
 
         store.create(group.toDocument(), founder.toMembership(group.id, credential))
 

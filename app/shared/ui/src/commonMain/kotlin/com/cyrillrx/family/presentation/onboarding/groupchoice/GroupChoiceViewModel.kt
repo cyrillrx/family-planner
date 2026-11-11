@@ -37,11 +37,12 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
     }
 
     private suspend fun refuse(beforeSubmit: GroupChoiceState, error: CreateGroupError) {
-        if (error == CreateGroupError.GroupAlreadyExists) {
-            groupsReady.send(Unit)
-            return
+        when (error) {
+            CreateGroupError.GroupAlreadyExists -> groupsReady.send(Unit)
+            CreateGroupError.StoreUnavailable,
+            CreateGroupError.NotRegistered,
+            is CreateGroupError.Creation,
+            -> state.value = beforeSubmit.copy(error = error)
         }
-
-        state.value = beforeSubmit.copy(error = error)
     }
 }

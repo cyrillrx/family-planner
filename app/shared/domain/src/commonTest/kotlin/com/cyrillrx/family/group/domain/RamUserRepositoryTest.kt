@@ -6,13 +6,12 @@ import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class RamUserRepositoryTest {
 
     @Test
     fun `has no registered user before anyone registers`() = runTest {
-        assertNull(RamUserRepository().registeredUserId())
+        assertEquals(Result.Success(value = null), RamUserRepository().registeredUserId())
     }
 
     @Test
@@ -30,7 +29,7 @@ class RamUserRepositoryTest {
 
         repository.register(alice())
 
-        assertEquals(UserId("alice"), repository.registeredUserId())
+        assertEquals(Result.Success(UserId("alice")), repository.registeredUserId())
     }
 
     @Test
@@ -40,7 +39,7 @@ class RamUserRepositoryTest {
 
         repository.register(User(id = UserId("bob"), displayName = "Bob"))
 
-        assertEquals(UserId("bob"), repository.registeredUserId())
+        assertEquals(Result.Success(UserId("bob")), repository.registeredUserId())
     }
 
     private fun alice() = User(id = UserId("alice"), displayName = "Alice")

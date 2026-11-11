@@ -15,7 +15,7 @@ class RamGroupRepository : GroupRepository {
     private val group = MutableStateFlow<Group?>(null)
     private val members = MutableStateFlow<List<Member>>(emptyList())
 
-    override suspend fun group(): Group? = group.value
+    override suspend fun group(): Result<Group?, StoreUnavailable> = Result.Success(group.value)
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
         members.map { current -> current.filter { it.groupId == groupId } }

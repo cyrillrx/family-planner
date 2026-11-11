@@ -19,7 +19,6 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 import kotlin.time.Instant
 
 class StoreGroupRepositoryTest {
@@ -28,40 +27,61 @@ class StoreGroupRepositoryTest {
     fun `has no group on a device that never signed in`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
-        assertNull(StoreGroupRepository(store, CredentialOnly(credential = null)).group())
+        assertEquals(
+            Result.Success(value = null),
+            StoreGroupRepository(store, CredentialOnly(credential = null)).group(),
+        )
     }
 
     @Test
     fun `has no group when the credential is a member of none`() = runTest {
-        assertNull(StoreGroupRepository(FakeGroupStore(), CredentialOnly("uid-1")).group())
+        assertEquals(
+            Result.Success(value = null),
+            StoreGroupRepository(FakeGroupStore(), CredentialOnly(credential = "uid-1")).group(),
+        )
     }
 
     @Test
     fun `finds the group the credential is a member of`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
-        assertEquals(group(), StoreGroupRepository(store, CredentialOnly("uid-1")).group())
+        assertEquals(Result.Success(group()), StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group())
     }
 
     @Test
     fun `reads a stored group missing a field as no group`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup().copy(createdAt = null) }
 
-        assertNull(StoreGroupRepository(store, CredentialOnly("uid-1")).group())
+        assertEquals(
+            Result.Success(value = null),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
+        )
     }
 
     @Test
-    fun `has no group when the store cannot be read`() = runTest {
+    fun `cannot tell the group when the store cannot be read`() = runTest {
         val store = FakeGroupStore(failure = IllegalStateException("unreachable"))
 
-        assertNull(StoreGroupRepository(store, CredentialOnly("uid-1")).group())
+        assertEquals(
+            Result.Failure(StoreUnavailable),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
+        )
+    }
+
+    @Test
+    fun `lets a cancellation of the read through`() = runTest {
+        val store = FakeGroupStore(failure = CancellationException("left the screen"))
+
+        assertFailsWith<CancellationException> {
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group()
+        }
     }
 
     @Test
     fun `writes the group and its founder under the credential of this device`() = runTest {
         val store = FakeGroupStore()
 
-        StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), founder = UserId("user-1"))
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), founder = UserId("user-1"))
 
         assertEquals(
             GroupDocument(id = "group-1", name = "Family") to
@@ -74,7 +94,10 @@ class StoreGroupRepositoryTest {
     fun `answers a successful creation`() = runTest {
         assertEquals(
             Result.Success(Unit),
-            StoreGroupRepository(FakeGroupStore(), CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+            StoreGroupRepository(
+                FakeGroupStore(),
+                CredentialOnly(credential = "uid-1"),
+            ).create(group(), UserId("user-1")),
         )
     }
 
@@ -90,11 +113,11 @@ class StoreGroupRepositoryTest {
 
     @Test
     fun `reports a store that refuses the creation`() = runTest {
-        val store = FakeGroupStore(failure = IllegalStateException("permission denied"))
+        val store = FakeGroupStore(failure = IllegalStateException("permission denied"), lookupFailure = null)
 
         assertEquals(
             Result.Failure(CreateGroupWriteError.Unknown),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
 
@@ -102,7 +125,7 @@ class StoreGroupRepositoryTest {
     fun `refuses to found a group when it cannot tell the credential has none`() = runTest {
         val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
 
-        StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1"))
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1"))
 
         assertEquals(emptyList(), store.creations)
     }
@@ -112,8 +135,8 @@ class StoreGroupRepositoryTest {
         val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
 
         assertEquals(
-            Result.Failure(CreateGroupWriteError.Unknown),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+            Result.Failure(StoreUnavailable),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
 
@@ -121,7 +144,7 @@ class StoreGroupRepositoryTest {
     fun `refuses to found a second group for the same credential`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
-        StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1"))
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1"))
 
         assertEquals(emptyList(), store.creations)
     }
@@ -132,7 +155,7 @@ class StoreGroupRepositoryTest {
 
         assertEquals(
             Result.Failure(CreateGroupWriteError.AlreadyInAGroup),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1")),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
 
@@ -141,7 +164,7 @@ class StoreGroupRepositoryTest {
         val store = FakeGroupStore(failure = CancellationException("left the screen"))
 
         assertFailsWith<CancellationException> {
-            StoreGroupRepository(store, CredentialOnly("uid-1")).create(group(), UserId("user-1"))
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1"))
         }
     }
 
@@ -152,7 +175,10 @@ class StoreGroupRepositoryTest {
 
         assertEquals(
             listOf(Member(userId = UserId("user-1"), groupId = GroupId("group-1"), joinedAt = CREATED_AT)),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).observeMembers(GroupId("group-1")).first(),
+            StoreGroupRepository(
+                store,
+                CredentialOnly(credential = "uid-1"),
+            ).observeMembers(GroupId("group-1")).first(),
         )
     }
 
@@ -163,7 +189,10 @@ class StoreGroupRepositoryTest {
 
         assertEquals(
             emptyList(),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).observeMembers(GroupId("group-1")).first(),
+            StoreGroupRepository(
+                store,
+                CredentialOnly(credential = "uid-1"),
+            ).observeMembers(GroupId("group-1")).first(),
         )
     }
 
@@ -174,7 +203,10 @@ class StoreGroupRepositoryTest {
 
         assertEquals(
             emptyList(),
-            StoreGroupRepository(store, CredentialOnly("uid-1")).observeMembers(GroupId("group-1")).first(),
+            StoreGroupRepository(
+                store,
+                CredentialOnly(credential = "uid-1"),
+            ).observeMembers(GroupId("group-1")).first(),
         )
     }
 

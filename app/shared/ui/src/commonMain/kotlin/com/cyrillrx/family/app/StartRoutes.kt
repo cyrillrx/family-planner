@@ -12,11 +12,13 @@ internal fun StartDestination.toBackStack(): List<NavKey> = when (this) {
 
 internal fun MutableList<NavKey>.resetUnlessReachableFrom(destination: StartDestination) {
     val reachable = destination.reachableRoutes()
-    if (all { it in reachable }) return
+    if (isNotEmpty() && all { it in reachable }) return
 
     clear()
     addAll(destination.toBackStack())
 }
+
+internal fun List<NavKey>.canResumeWithoutStart(): Boolean = isNotEmpty() && UnrecognizedRoute !in this
 
 private fun OnboardingStep.toBackStack(): List<NavKey> = when (this) {
     OnboardingStep.DISPLAY_NAME -> listOf(OnboardingRoute.DisplayName)

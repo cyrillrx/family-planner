@@ -9,6 +9,7 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
 import com.cyrillrx.family.presentation.RefusingGroupRepository
+import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +119,16 @@ class GroupChoiceViewModelTest {
             GroupChoiceState(error = CreateGroupError.NotRegistered),
             viewModel.state.value,
         )
+    }
+
+    @Test
+    fun `carries an unavailable store rather than a lost registration`() = runTest {
+        val viewModel = viewModel(UnavailableUserRepository())
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(GroupChoiceState(error = CreateGroupError.StoreUnavailable), viewModel.state.value)
     }
 
     @Test
