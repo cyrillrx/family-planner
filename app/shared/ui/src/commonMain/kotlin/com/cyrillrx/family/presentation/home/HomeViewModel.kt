@@ -41,8 +41,8 @@ class HomeViewModel(private val groupRepository: GroupRepository) : ViewModel() 
         reading = viewModelScope.launch {
             when (val group = groupRepository.group()) {
                 is Result.Success -> state.value = HomeState(body = group.value.toBody())
-                is Result.Failure if group.error == GroupNotFound -> missingGroups.send(Unit)
-                is Result.Failure -> showUnavailableUnlessAnAnswerIsShown()
+                is Result.Failure ->
+                    if (group.error == GroupNotFound) missingGroups.send(Unit) else showUnavailableUnlessAnAnswerIsShown()
             }
         }
     }

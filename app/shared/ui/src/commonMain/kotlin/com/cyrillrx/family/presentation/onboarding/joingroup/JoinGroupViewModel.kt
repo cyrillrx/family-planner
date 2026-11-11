@@ -42,12 +42,12 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
             when (val redemption = onboarding.joinGroup(beforeSubmit.code)) {
                 is Result.Success -> joins.send(Unit)
 
-                is Result.Failure if redemption.error == JoinGroupError.GroupNotFound -> {
+                is Result.Failure -> if (redemption.error == JoinGroupError.GroupNotFound) {
                     state.value = beforeSubmit
                     missingGroups.send(Unit)
+                } else {
+                    state.value = beforeSubmit.copy(error = redemption.error)
                 }
-
-                is Result.Failure -> state.value = beforeSubmit.copy(error = redemption.error)
             }
         }
     }
