@@ -24,6 +24,7 @@ import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundScreen
 import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundViewModel
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
+import com.cyrillrx.family.presentation.start.StartResolvingScreen
 import com.cyrillrx.family.presentation.start.StartState
 import com.cyrillrx.family.presentation.start.StartUnavailableScreen
 import com.cyrillrx.family.presentation.start.StartViewModel
@@ -36,7 +37,7 @@ fun App(graph: AppGraph = AppGraph.shared) {
             val backStack = rememberNavBackStack(navSavedStateConfig)
 
             when (val state = startViewModel.state.collectAsStateWithLifecycle().value) {
-                StartState.Resolving -> Unit
+                StartState.Resolving -> StartResolvingScreen()
 
                 is StartState.Resolved -> {
                     // During composition rather than in an effect: NavDisplay composes the entries in
