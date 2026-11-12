@@ -26,6 +26,11 @@
     <string name="onboarding_error_blank_display_name">Enter a name to continue.</string>
     <string name="onboarding_error_unexpected">Something went wrong. Try again.</string>
 
+    <string name="error_store_unavailable">The server cannot be reached right now. Check your connection and try again.</string>
+    <string name="action_retry">Try again</string>
+    <string name="group_not_found">Your group can no longer be found. Leave it to create or join another one.</string>
+    <string name="action_leave_group">Leave this group</string>
+
     <string name="home_in_group">You are in %1$s.</string>
     <string name="home_waiting_for_group">You are in. Waiting for the group to reach this device…</string>
 </resources>

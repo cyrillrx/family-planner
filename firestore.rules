@@ -32,6 +32,8 @@ service cloud.firestore {
           && isValidMembership(groupId, credential)
           && !exists(group(groupId))
           && existsAfter(group(groupId));
+        // Leaving a group that exists is PRD-001's own feature.
+        allow delete: if isSignedInAs(credential) && !exists(group(groupId));
       }
     }
 

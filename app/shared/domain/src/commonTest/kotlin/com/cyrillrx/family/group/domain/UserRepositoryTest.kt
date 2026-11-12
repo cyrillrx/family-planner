@@ -13,7 +13,6 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 
 class UserRepositoryTest {
 
@@ -130,7 +129,7 @@ class UserRepositoryTest {
     fun `knows nobody until someone registers`() = runTest {
         val repository = UserRepositoryImpl(RecordingUserApi(ApiResponse()))
 
-        assertNull(repository.registeredUserId())
+        assertEquals(Result.Success(value = null), repository.registeredUserId())
     }
 
     @Test
@@ -139,7 +138,7 @@ class UserRepositoryTest {
 
         repository.register(User(UserId("user-1"), "Cyril"))
 
-        assertEquals(UserId("user-1"), repository.registeredUserId())
+        assertEquals(Result.Success(UserId("user-1")), repository.registeredUserId())
     }
 
     @Test
@@ -148,14 +147,14 @@ class UserRepositoryTest {
 
         repository.register(User(UserId("user-1"), "Cyril"))
 
-        assertNull(repository.registeredUserId())
+        assertEquals(Result.Success(value = null), repository.registeredUserId())
     }
 
     @Test
     fun `starts from the user it was built with`() = runTest {
         val repository = UserRepositoryImpl(RecordingUserApi(ApiResponse()), UserId("from-last-run"))
 
-        assertEquals(UserId("from-last-run"), repository.registeredUserId())
+        assertEquals(Result.Success(UserId("from-last-run")), repository.registeredUserId())
     }
 
     private fun cyril() = ApiUser(id = "user-1", displayName = "Cyril")

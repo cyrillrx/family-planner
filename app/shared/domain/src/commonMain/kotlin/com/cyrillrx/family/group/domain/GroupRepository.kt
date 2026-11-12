@@ -10,12 +10,20 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
 
-    suspend fun group(): Group?
+    /** Succeeds with null when this device belongs to no group. */
+    suspend fun group(): Result<Group?, GroupReadError>
 
     fun observeMembers(groupId: GroupId): Flow<List<Member>>
 
     suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError>
+
+    suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable>
 }
+
+sealed interface GroupReadError : Error
+
+/** This device's membership names a group that does not exist: the member can only leave it. */
+data object GroupNotFound : GroupReadError, CreateGroupWriteError
 
 sealed interface CreateGroupWriteError : Error {
     data object AlreadyInAGroup : CreateGroupWriteError

@@ -18,7 +18,10 @@ internal class FirestoreUserStore(
     override suspend fun find(credential: String): UserDocument? {
         val snapshot = users().document(credential).get()
 
-        return if (snapshot.exists) snapshot.data<UserDocument>() else null
+        if (snapshot.exists) return snapshot.data<UserDocument>()
+
+        check(!snapshot.metadata.isFromCache) { "No user in the cache tells nothing of the server" }
+        return null
     }
 
     override suspend fun save(credential: String, document: UserDocument) {

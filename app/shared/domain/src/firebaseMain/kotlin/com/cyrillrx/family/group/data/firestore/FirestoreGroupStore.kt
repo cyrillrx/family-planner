@@ -1,5 +1,6 @@
 package com.cyrillrx.family.group.data.firestore
 
+import com.cyrillrx.family.group.data.GroupLookup
 import com.cyrillrx.family.group.data.GroupStore
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
@@ -15,19 +16,24 @@ import kotlinx.serialization.Serializable
 
 internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : GroupStore {
 
-    override suspend fun findGroupOf(credential: String): GroupDocument? {
-        val membership = firestore.collectionGroup(MEMBERS)
+    override suspend fun findGroupOf(credential: String): GroupLookup {
+        val memberships = firestore.collectionGroup(MEMBERS)
             .where { "credential" equalTo credential }
             .limit(1)
             .get()
-            .documents
-            .firstOrNull()
-            ?.toMember()
-            ?: return null
+        val membership = memberships.documents.firstOrNull()
+        if (membership == null) {
+            check(!memberships.metadata.isFromCache) { "No membership in the cache tells nothing of the server" }
+            return GroupLookup.NoMembership
+        }
 
-        val group = groups().document(membership.groupId ?: return null).get()
+        // From the path rather than the field: the path is always there.
+        val groupId = checkNotNull(membership.reference.parent.parent) { "A membership sits under a group" }.id
+        val group = groups().document(groupId).get()
+        if (group.exists) return GroupLookup.Found(groupId, group.toGroup())
 
-        return if (group.exists) group.toGroup() else null
+        check(!group.metadata.isFromCache) { "No group in the cache tells nothing of the server" }
+        return GroupLookup.NotFound(groupId)
     }
 
     override suspend fun create(group: GroupDocument, founder: MemberDocument) {
@@ -48,6 +54,11 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
                 ),
             )
             .commit()
+    }
+
+    override suspend fun leave(groupId: String, credential: String) {
+        // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
+        groups().document(groupId).collection(MEMBERS).document(credential).delete()
     }
 
     override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =

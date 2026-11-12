@@ -26,6 +26,11 @@
     <string name="onboarding_error_blank_display_name">Saisissez un nom pour continuer.</string>
     <string name="onboarding_error_unexpected">Une erreur est survenue. Réessayez.</string>
 
+    <string name="error_store_unavailable">Impossible de joindre le serveur pour le moment. Vérifiez votre connexion et réessayez.</string>
+    <string name="action_retry">Réessayer</string>
+    <string name="group_not_found">Votre groupe est introuvable. Quittez-le pour en créer ou en rejoindre un autre.</string>
+    <string name="action_leave_group">Quitter ce groupe</string>
+
     <string name="home_in_group">Vous êtes dans %1$s.</string>
     <string name="home_waiting_for_group">C'est bon. En attente de l'arrivée du groupe sur cet appareil…</string>
 </resources>

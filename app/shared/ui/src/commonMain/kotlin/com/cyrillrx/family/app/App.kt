@@ -16,28 +16,41 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.cyrillrx.family.group.domain.OnboardingStep
+import com.cyrillrx.family.navigation.OnboardingRoute
+import com.cyrillrx.family.navigation.OnboardingRouterImpl
 import com.cyrillrx.family.navigation.handleOnboardingRoutes
 import com.cyrillrx.family.navigation.navigateUp
+import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundScreen
+import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundViewModel
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
+import com.cyrillrx.family.presentation.start.StartResolvingScreen
 import com.cyrillrx.family.presentation.start.StartState
+import com.cyrillrx.family.presentation.start.StartUnavailableScreen
 import com.cyrillrx.family.presentation.start.StartViewModel
-import com.cyrillrx.family.start.domain.StartDestination
 
 @Composable
 fun App(graph: AppGraph = AppGraph.shared) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             val startViewModel = viewModel { StartViewModel(graph.appStart) }
+            val backStack = rememberNavBackStack(navSavedStateConfig)
 
             when (val state = startViewModel.state.collectAsStateWithLifecycle().value) {
-                StartState.Resolving -> Unit
-                is StartState.Resolved -> AppNavigation(
-                    graph = graph,
-                    destination = state.destination,
-                    reconcile = startViewModel::reconcile,
-                )
+                StartState.Resolving -> StartResolvingScreen()
+
+                is StartState.Resolved -> {
+                    // During composition rather than in an effect: NavDisplay composes the entries in
+                    // this same pass, and a repeated key crashes it before any effect would get the
+                    // chance to run.
+                    remember(backStack) { startViewModel.reconcile(backStack, state.destination) }
+                    AppNavigation(graph, backStack)
+                }
+
+                // TODO(#90): resolve the start again once the store is reachable, and reconcile then.
+                StartState.Unavailable if backStack.canResumeWithoutStart() -> AppNavigation(graph, backStack)
+
+                StartState.Unavailable -> StartUnavailableScreen(onRetryClicked = startViewModel::retry)
             }
         }
     }
@@ -46,11 +59,10 @@ fun App(graph: AppGraph = AppGraph.shared) {
 @Composable
 private fun AppNavigation(
     graph: AppGraph,
-    destination: StartDestination,
-    reconcile: (MutableList<NavKey>, StartDestination) -> Unit,
+    backStack: NavBackStack<NavKey>,
     modifier: Modifier = Modifier,
 ) {
-    val backStack = rememberAppBackStack(destination, reconcile)
+    val router = remember(backStack) { OnboardingRouterImpl(backStack) }
 
     NavDisplay(
         backStack = backStack,
@@ -64,27 +76,20 @@ private fun AppNavigation(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            handleOnboardingRoutes(backStack, graph)
+            handleOnboardingRoutes(router, graph)
 
             entry<MainRoute.Home> {
-                HomeScreen(viewModel { HomeViewModel(graph.groupRepository) })
+                HomeScreen(
+                    viewModel { HomeViewModel(graph.groupRepository) },
+                    onGroupNotFound = router::openGroupNotFound,
+                )
+            }
+
+            entry<MainRoute.GroupNotFound> {
+                GroupNotFoundScreen(viewModel { GroupNotFoundViewModel(graph.onboarding) }, router)
             }
         },
     )
-}
-
-@Composable
-internal fun rememberAppBackStack(
-    destination: StartDestination,
-    reconcile: (MutableList<NavKey>, StartDestination) -> Unit,
-): NavBackStack<NavKey> {
-    val backStack = rememberNavBackStack(navSavedStateConfig, *destination.toBackStack().toTypedArray())
-
-    // During composition rather than in an effect: NavDisplay composes the entries in this same
-    // pass, and a repeated key crashes it before any effect would get the chance to run.
-    remember(backStack) { reconcile(backStack, destination) }
-
-    return backStack
 }
 
 @Preview
@@ -92,7 +97,6 @@ internal fun rememberAppBackStack(
 private fun AppNavigationPreview() = MaterialTheme {
     AppNavigation(
         graph = AppGraph.shared,
-        destination = StartDestination.Onboarding(OnboardingStep.DISPLAY_NAME),
-        reconcile = { _, _ -> },
+        backStack = rememberNavBackStack(navSavedStateConfig, OnboardingRoute.DisplayName),
     )
 }

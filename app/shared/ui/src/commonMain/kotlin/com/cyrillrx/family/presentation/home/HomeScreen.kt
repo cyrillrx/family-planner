@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -17,22 +20,32 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import familyplanner.app.shared.ui.generated.resources.Res
+import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.home_in_group
 import familyplanner.app.shared.ui.generated.resources.home_waiting_for_group
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    onGroupNotFound: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LaunchedEffect(viewModel) { viewModel.groupNotFound.collect { onGroupNotFound() } }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.silentRefresh() }
 
     HomeScreen(state = viewModel.state.collectAsStateWithLifecycle().value, modifier = modifier)
 }
 
 @Composable
-fun HomeScreen(state: HomeState, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    state: HomeState,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .safeContentPadding()
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -43,6 +56,11 @@ fun HomeScreen(state: HomeState, modifier: Modifier = Modifier) {
 
             HomeState.Body.WaitingForTheGroup -> HomeMessage(
                 stringResource(Res.string.home_waiting_for_group),
+            )
+
+            // TODO(#90): offer a retry, ON_RESUME seldom fires on Desktop.
+            HomeState.Body.Unavailable -> HomeMessage(
+                stringResource(Res.string.error_store_unavailable),
             )
 
             is HomeState.Body.InGroup -> HomeMessage(
@@ -70,3 +88,8 @@ private fun HomeScreenFounderPreview() =
 @Composable
 private fun HomeScreenJoinerPreview() =
     HomeScreen(state = HomeState(HomeState.Body.WaitingForTheGroup))
+
+@Preview
+@Composable
+private fun HomeScreenUnavailablePreview() =
+    HomeScreen(state = HomeState(HomeState.Body.Unavailable))

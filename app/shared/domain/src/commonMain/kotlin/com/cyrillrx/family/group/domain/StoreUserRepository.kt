@@ -13,15 +13,8 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 class StoreUserRepository(private val store: UserStore) : UserRepository {
 
-    /** Null when the store cannot tell: [register] keeps the identifier either way. */
-    override suspend fun registeredUserId(): UserId? = try {
-        store.credential()?.let { storedId(it) }
-    } catch (cancellation: CancellationException) {
-        throw cancellation
-    } catch (e: Exception) {
-        // TODO(#69): callers other than register read this null as "not registered".
-        null
-    }
+    override suspend fun registeredUserId(): Result<UserId?, StoreUnavailable> =
+        reachStore { store.credential()?.let { storedId(it) } }
 
     override suspend fun register(user: User): Result<User, RegisterUserError> = try {
         Result.Success(save(user))

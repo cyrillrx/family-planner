@@ -11,7 +11,11 @@ class ResetUnlessReachableFromTest {
 
     @Test
     fun `keeps a restored back stack the start destination can reach`() {
-        val backStack = backStackOf(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice, OnboardingRoute.JoinGroup)
+        val backStack = backStackOf(
+            OnboardingRoute.DisplayName,
+            OnboardingRoute.GroupChoice,
+            OnboardingRoute.JoinGroup,
+        )
 
         backStack.resetUnlessReachableFrom(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE))
 
@@ -82,6 +86,24 @@ class ResetUnlessReachableFromTest {
         backStack.resetUnlessReachableFrom(StartDestination.Home)
 
         assertEquals(listOf<NavKey>(MainRoute.Home), backStack)
+    }
+
+    @Test
+    fun `fills an empty back stack with the start destination`() {
+        val backStack = backStackOf()
+
+        backStack.resetUnlessReachableFrom(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE))
+
+        assertEquals(StartDestination.Onboarding(OnboardingStep.GROUP_CHOICE).toBackStack(), backStack)
+    }
+
+    @Test
+    fun `sends a member whose group is missing past a restored home`() {
+        val backStack = backStackOf(MainRoute.Home)
+
+        backStack.resetUnlessReachableFrom(StartDestination.GroupNotFound)
+
+        assertEquals(listOf<NavKey>(MainRoute.GroupNotFound), backStack)
     }
 
     private fun backStackOf(vararg keys: NavKey) = keys.toMutableList()

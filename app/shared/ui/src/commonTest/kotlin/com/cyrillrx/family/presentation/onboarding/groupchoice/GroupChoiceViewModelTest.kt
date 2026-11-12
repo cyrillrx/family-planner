@@ -8,7 +8,9 @@ import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
+import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.RefusingGroupRepository
+import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
 import kotlinx.coroutines.Dispatchers
@@ -121,6 +123,37 @@ class GroupChoiceViewModelTest {
     }
 
     @Test
+    fun `carries an unavailable store rather than a lost registration`() = runTest {
+        val viewModel = viewModel(UnavailableUserRepository())
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(GroupChoiceState(error = CreateGroupError.StoreUnavailable), viewModel.state.value)
+    }
+
+    @Test
+    fun `announces a group that cannot be found`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), MissingGroupRepository())
+        val missingGroups = collectMissingGroups(viewModel)
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(1, missingGroups.size)
+    }
+
+    @Test
+    fun `shows no error for a group it announces as not found`() = runTest {
+        val viewModel = viewModel(registeredUserRepository(), MissingGroupRepository())
+
+        viewModel.createGroup()
+        advanceUntilIdle()
+
+        assertEquals(GroupChoiceState(), viewModel.state.value)
+    }
+
+    @Test
     fun `carries the refusal of a store that could not write the group`() = runTest {
         val viewModel = viewModel(registeredUserRepository(), RefusingGroupRepository())
 
@@ -176,6 +209,15 @@ class GroupChoiceViewModelTest {
         }
 
         return announcements
+    }
+
+    private fun TestScope.collectMissingGroups(viewModel: GroupChoiceViewModel): List<Unit> {
+        val missingGroups = mutableListOf<Unit>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.groupNotFound.collect { missingGroups += it }
+        }
+
+        return missingGroups
     }
 
     private fun viewModel(

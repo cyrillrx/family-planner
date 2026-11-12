@@ -10,9 +10,10 @@ fun NavBackStack<NavKey>.navigateUp() {
 }
 
 /** One mutation: `NavDisplay` requires a back stack that is never empty. */
-fun NavBackStack<NavKey>.replaceAllWith(key: NavKey) {
+fun NavBackStack<NavKey>.replaceAllWith(first: NavKey, vararg rest: NavKey) {
     Snapshot.withMutableSnapshot {
         clear()
-        add(key)
+        add(first)
+        addAll(rest)
     }
 }

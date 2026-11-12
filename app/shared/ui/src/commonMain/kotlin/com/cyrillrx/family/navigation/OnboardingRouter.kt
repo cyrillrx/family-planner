@@ -11,6 +11,10 @@ interface OnboardingRouter {
 
     fun openHome()
 
+    fun openGroupNotFound()
+
+    fun openGroupChoiceAfterLeavingMissingGroup()
+
     fun navigateUp()
 }
 
@@ -19,7 +23,7 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
     // A second tap during the transition must not push the step twice: a repeated key
     // crashes `NavDisplay`.
     override fun openGroupChoice() {
-        if (backStack.lastOrNull() == OnboardingRoute.GroupChoice) return
+        if (backStack.lastOrNull() is OnboardingRoute.GroupChoice) return
 
         backStack.add(OnboardingRoute.GroupChoice)
     }
@@ -32,6 +36,14 @@ class OnboardingRouterImpl(private val backStack: NavBackStack<NavKey>) : Onboar
 
     override fun openHome() {
         backStack.replaceAllWith(MainRoute.Home)
+    }
+
+    override fun openGroupNotFound() {
+        backStack.replaceAllWith(MainRoute.GroupNotFound)
+    }
+
+    override fun openGroupChoiceAfterLeavingMissingGroup() {
+        backStack.replaceAllWith(OnboardingRoute.DisplayName, OnboardingRoute.GroupChoice)
     }
 
     override fun navigateUp() {

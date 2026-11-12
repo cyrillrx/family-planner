@@ -2,6 +2,9 @@ package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.core.domain.getOrElse
+import com.cyrillrx.core.domain.getOrNull
+import com.cyrillrx.core.domain.map
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Invitation
@@ -16,15 +19,18 @@ class Onboarding(
 ) {
 
     /** The step to resume at, for someone not in a group yet: a member of a group is past the onboarding. */
-    suspend fun currentStep(): OnboardingStep =
-        if (userRepository.registeredUserId() == null) OnboardingStep.DISPLAY_NAME else OnboardingStep.GROUP_CHOICE
+    suspend fun currentStep(): Result<OnboardingStep, StoreUnavailable> =
+        userRepository.registeredUserId().map { registered ->
+            if (registered == null) OnboardingStep.DISPLAY_NAME else OnboardingStep.GROUP_CHOICE
+        }
 
     suspend fun register(displayName: String): Result<User, RegisterError> {
         val name = displayName.trim()
         if (name.isEmpty()) return Result.Failure(RegisterError.BlankDisplayName)
 
         // TODO(#71): a store-backed repository discards this identifier; let the repository own it.
-        val id = userRepository.registeredUserId() ?: idGenerator.newUserId()
+        // TODO(#95): report a store out of reach instead of generating a new identifier.
+        val id = userRepository.registeredUserId().getOrNull() ?: idGenerator.newUserId()
 
         return when (val registered = userRepository.register(User(id = id, displayName = name))) {
             is Result.Success -> registered
@@ -34,11 +40,8 @@ class Onboarding(
 
     suspend fun createGroup(): Result<Group, CreateGroupError> {
         val userId = userRepository.registeredUserId()
+            .getOrElse { return Result.Failure(CreateGroupError.StoreUnavailable) }
             ?: return Result.Failure(CreateGroupError.NotRegistered)
-
-        if (groupRepository.group() != null) {
-            return Result.Failure(CreateGroupError.GroupAlreadyExists)
-        }
 
         val group = groupFactory.create()
 
@@ -50,6 +53,7 @@ class Onboarding(
 
     suspend fun joinGroup(code: String): Result<GroupId, JoinGroupError> {
         val userId = userRepository.registeredUserId()
+            .getOrElse { return Result.Failure(JoinGroupError.StoreUnavailable) }
             ?: return Result.Failure(JoinGroupError.NotRegistered)
 
         // Trimmed like the display name: a code pasted from a message carries what surrounds it.
@@ -61,9 +65,8 @@ class Onboarding(
             return Result.Failure(JoinGroupError.CodeTooShort)
         }
 
-        if (groupRepository.group() != null) {
-            return Result.Failure(JoinGroupError.AlreadyInAGroup)
-        }
+        val group = groupRepository.group().getOrElse { return Result.Failure(it.toJoinGroupError()) }
+        if (group != null) return Result.Failure(JoinGroupError.AlreadyInAGroup)
 
         // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
         // redeemed invitation stays here — it carries the code.
@@ -72,10 +75,19 @@ class Onboarding(
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))
         }
     }
+
+    suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable> = groupRepository.leaveMissingGroup()
+}
+
+private fun GroupReadError.toJoinGroupError(): JoinGroupError = when (this) {
+    StoreUnavailable -> JoinGroupError.StoreUnavailable
+    GroupNotFound -> JoinGroupError.GroupNotFound
 }
 
 private fun CreateGroupWriteError.toCreateGroupError(): CreateGroupError = when (this) {
     CreateGroupWriteError.AlreadyInAGroup -> CreateGroupError.GroupAlreadyExists
+    GroupNotFound -> CreateGroupError.GroupNotFound
+    StoreUnavailable -> CreateGroupError.StoreUnavailable
     CreateGroupWriteError.Unknown -> CreateGroupError.Creation(this)
 }
 
@@ -88,13 +100,17 @@ sealed interface RegisterError : Error {
 
 sealed interface CreateGroupError : Error {
     data object NotRegistered : CreateGroupError
+    data object StoreUnavailable : CreateGroupError
     data object GroupAlreadyExists : CreateGroupError
+    data object GroupNotFound : CreateGroupError
     data class Creation(val cause: CreateGroupWriteError) : CreateGroupError
 }
 
 sealed interface JoinGroupError : Error {
     data object NotRegistered : JoinGroupError
+    data object StoreUnavailable : JoinGroupError
     data object CodeTooShort : JoinGroupError
     data object AlreadyInAGroup : JoinGroupError
+    data object GroupNotFound : JoinGroupError
     data class Redemption(val cause: RedeemInvitationError) : JoinGroupError
 }

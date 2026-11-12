@@ -7,16 +7,19 @@ import com.cyrillrx.family.start.domain.StartDestination
 
 internal fun StartDestination.toBackStack(): List<NavKey> = when (this) {
     StartDestination.Home -> listOf(MainRoute.Home)
+    StartDestination.GroupNotFound -> listOf(MainRoute.GroupNotFound)
     is StartDestination.Onboarding -> step.toBackStack()
 }
 
 internal fun MutableList<NavKey>.resetUnlessReachableFrom(destination: StartDestination) {
     val reachable = destination.reachableRoutes()
-    if (all { it in reachable }) return
+    if (isNotEmpty() && all { it in reachable }) return
 
     clear()
     addAll(destination.toBackStack())
 }
+
+internal fun List<NavKey>.canResumeWithoutStart(): Boolean = isNotEmpty() && UnrecognizedRoute !in this
 
 private fun OnboardingStep.toBackStack(): List<NavKey> = when (this) {
     OnboardingStep.DISPLAY_NAME -> listOf(OnboardingRoute.DisplayName)
@@ -26,7 +29,7 @@ private fun OnboardingStep.toBackStack(): List<NavKey> = when (this) {
 private fun StartDestination.reachableRoutes(): Set<NavKey> = toBackStack().toSet() + forwardRoutes()
 
 private fun StartDestination.forwardRoutes(): Set<NavKey> = when (this) {
-    StartDestination.Home -> emptySet()
+    StartDestination.Home, StartDestination.GroupNotFound -> emptySet()
     is StartDestination.Onboarding -> step.forwardRoutes()
 }
 
