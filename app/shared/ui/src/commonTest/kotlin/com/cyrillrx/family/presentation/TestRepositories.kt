@@ -1,13 +1,13 @@
 package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.domain.CreateGroupWriteError
 import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.InvitationRepository
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.RegisterUserError
+import com.cyrillrx.family.group.domain.Registration
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.StoreUnavailable
 import com.cyrillrx.family.group.domain.UserRepository
@@ -19,6 +19,8 @@ import kotlin.time.Instant
 
 internal val NOW: Instant = Instant.fromEpochMilliseconds(1_700_000_000_000)
 
+internal val UNREACHABLE = StoreUnavailable(IllegalStateException("unreachable"))
+
 internal suspend fun groupRepositoryWithAGroup() = RamGroupRepository().apply {
     setGroup(Group(id = GroupId("group-1"), name = "Home", createdAt = NOW))
 }
@@ -28,13 +30,13 @@ internal suspend fun registeredUserRepository() = RamUserRepository().apply {
 }
 
 internal class AmnesicUserRepository : UserRepository {
-    override suspend fun registeredUserId() = Result.Success(value = null)
+    override suspend fun registeredUserId() = Result.Success(Registration.NotRegistered)
 
     override suspend fun register(user: User) = Result.Success(user)
 }
 
 internal object FailingUserRepository : UserRepository {
-    override suspend fun registeredUserId() = Result.Success(value = null)
+    override suspend fun registeredUserId() = Result.Success(Registration.NotRegistered)
 
     override suspend fun register(user: User) = Result.Failure(RegisterUserError.Unknown)
 }
@@ -60,7 +62,7 @@ internal class CountingGroupRepository(
 }
 
 internal class UnavailableUserRepository : UserRepository by RamUserRepository() {
-    override suspend fun registeredUserId() = Result.Failure(StoreUnavailable)
+    override suspend fun registeredUserId() = Result.Failure(UNREACHABLE)
 }
 
 internal class IntermittentGroupRepository(
@@ -68,7 +70,7 @@ internal class IntermittentGroupRepository(
 ) : GroupRepository by delegate {
     var available = false
 
-    override suspend fun group() = if (available) delegate.group() else Result.Failure(StoreUnavailable)
+    override suspend fun group() = if (available) delegate.group() else Result.Failure(UNREACHABLE)
 }
 
 internal class MissingGroupRepository(
@@ -83,13 +85,13 @@ internal class MissingGroupRepository(
     override suspend fun create(group: Group, founder: UserId) = Result.Failure(GroupNotFound)
 
     override suspend fun leaveMissingGroup() =
-        if (reachable) Result.Success(Unit).also { departures++ } else Result.Failure(StoreUnavailable)
+        if (reachable) Result.Success(Unit).also { departures++ } else Result.Failure(UNREACHABLE)
 }
 
 internal class RefusingGroupRepository(
     private val delegate: RamGroupRepository = RamGroupRepository(),
 ) : GroupRepository by delegate {
-    override suspend fun create(group: Group, founder: UserId) = Result.Failure(CreateGroupWriteError.Unknown)
+    override suspend fun create(group: Group, founder: UserId) = Result.Failure(UNREACHABLE)
 }
 
 internal class CountingInvitationRepository : InvitationRepository {

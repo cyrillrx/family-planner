@@ -19,8 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cyrillrx.family.group.domain.StoreUnavailable
+import com.cyrillrx.family.presentation.component.message
 import familyplanner.app.shared.ui.generated.resources.Res
-import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.home_in_group
 import familyplanner.app.shared.ui.generated.resources.home_waiting_for_group
 import org.jetbrains.compose.resources.stringResource
@@ -59,9 +60,7 @@ fun HomeScreen(
             )
 
             // TODO(#90): offer a retry, ON_RESUME seldom fires on Desktop.
-            HomeState.Body.Unavailable -> HomeMessage(
-                stringResource(Res.string.error_store_unavailable),
-            )
+            is HomeState.Body.Failed -> HomeMessage(body.error.message())
 
             is HomeState.Body.InGroup -> HomeMessage(
                 stringResource(Res.string.home_in_group, body.groupName),
@@ -92,4 +91,4 @@ private fun HomeScreenJoinerPreview() =
 @Preview
 @Composable
 private fun HomeScreenUnavailablePreview() =
-    HomeScreen(state = HomeState(HomeState.Body.Unavailable))
+    HomeScreen(state = HomeState(HomeState.Body.Failed(StoreUnavailable(IllegalStateException("preview")))))

@@ -3,8 +3,8 @@ package com.cyrillrx.family.presentation.groupnotfound
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
-import com.cyrillrx.family.group.domain.StoreUnavailable
 import com.cyrillrx.family.presentation.MissingGroupRepository
+import com.cyrillrx.family.presentation.UNREACHABLE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ class GroupNotFoundViewModelTest {
         viewModel.leaveGroup()
         advanceUntilIdle()
 
-        assertEquals(GroupNotFoundState(error = StoreUnavailable), viewModel.state.value)
+        assertEquals(GroupNotFoundState(error = UNREACHABLE), viewModel.state.value)
     }
 
     @Test

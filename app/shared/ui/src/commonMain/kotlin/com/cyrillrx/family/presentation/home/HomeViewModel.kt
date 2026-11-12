@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.GroupRepository
-import com.cyrillrx.family.group.model.Group
+import com.cyrillrx.family.group.domain.Membership
+import com.cyrillrx.family.group.domain.NoAnswer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -41,16 +42,20 @@ class HomeViewModel(private val groupRepository: GroupRepository) : ViewModel() 
         reading = viewModelScope.launch {
             when (val group = groupRepository.group()) {
                 is Result.Success -> state.value = HomeState(body = group.value.toBody())
-                is Result.Failure ->
-                    if (group.error == GroupNotFound) missingGroups.send(Unit) else showUnavailableUnlessAnAnswerIsShown()
+                is Result.Failure -> when (val error = group.error) {
+                    GroupNotFound -> missingGroups.send(Unit)
+                    is NoAnswer -> showFailureUnlessAnAnswerIsShown(error)
+                }
             }
         }
     }
 
-    private fun showUnavailableUnlessAnAnswerIsShown() {
-        if (state.value.body == HomeState.Body.Loading) state.value = HomeState(body = HomeState.Body.Unavailable)
+    private fun showFailureUnlessAnAnswerIsShown(error: NoAnswer) {
+        if (state.value.body == HomeState.Body.Loading) state.value = HomeState(body = HomeState.Body.Failed(error))
     }
 }
 
-private fun Group?.toBody(): HomeState.Body =
-    if (this == null) HomeState.Body.WaitingForTheGroup else HomeState.Body.InGroup(name)
+private fun Membership.toBody(): HomeState.Body = when (this) {
+    is Membership.InGroup -> HomeState.Body.InGroup(group.name)
+    Membership.NoGroup -> HomeState.Body.WaitingForTheGroup
+}

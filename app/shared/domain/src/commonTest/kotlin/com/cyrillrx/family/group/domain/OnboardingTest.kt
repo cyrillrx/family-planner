@@ -39,7 +39,7 @@ class OnboardingTest {
 
     @Test
     fun `cannot tell the step when the store cannot say who is registered`() = runTest {
-        assertEquals(Result.Failure(StoreUnavailable), onboarding(UnavailableUserRepository()).currentStep())
+        assertEquals(Result.Failure(UNREACHABLE), onboarding(UnavailableUserRepository()).currentStep())
     }
 
     @Test
@@ -59,14 +59,15 @@ class OnboardingTest {
 
         onboarding(users).register("Cyril")
 
-        assertEquals(Result.Success(UserId("user-1")), users.registeredUserId())
+        assertEquals(Result.Success(Registration.Registered(UserId("user-1"))), users.registeredUserId())
     }
 
     @Test
-    fun `registers under a new identifier when the store cannot say who is registered`() = runTest {
-        val registered = onboarding(UnavailableUserRepository()).register(displayName = "Cyril")
-
-        assertEquals(UserId("user-1"), (registered as Result.Success).value.id)
+    fun `reports an unreachable store rather than registering under a new identifier`() = runTest {
+        assertEquals(
+            Result.Failure(RegisterError.Registration(UNREACHABLE)),
+            onboarding(UnavailableUserRepository()).register(displayName = "Cyril"),
+        )
     }
 
     @Test
@@ -100,7 +101,7 @@ class OnboardingTest {
 
         onboarding(users).register(" ")
 
-        assertEquals(Result.Success(value = null), users.registeredUserId())
+        assertEquals(Result.Success(Registration.NotRegistered), users.registeredUserId())
     }
 
     @Test
@@ -130,7 +131,7 @@ class OnboardingTest {
         val group = (onboarding.createGroup() as Result.Success).value
 
         assertEquals(GroupId("group-1"), group.id)
-        assertEquals(Result.Success(group), groups.group())
+        assertEquals(Result.Success(Membership.InGroup(group)), groups.group())
         assertEquals(
             listOf(Member(userId = UserId("user-1"), groupId = group.id, joinedAt = NOW)),
             groups.observeMembers(group.id).first(),
@@ -148,7 +149,7 @@ class OnboardingTest {
     @Test
     fun `reports an unavailable store rather than nobody registered when founding a group`() = runTest {
         assertEquals(
-            Result.Failure(CreateGroupError.StoreUnavailable),
+            Result.Failure(CreateGroupError.Creation(UNREACHABLE)),
             onboarding(UnavailableUserRepository()).createGroup(),
         )
     }
@@ -164,7 +165,7 @@ class OnboardingTest {
 
         onboarding(groupRepository = groups).createGroup()
 
-        assertEquals(Result.Success(value = null), groups.group())
+        assertEquals(Result.Success(Membership.NoGroup), groups.group())
     }
 
     @Test
@@ -174,7 +175,7 @@ class OnboardingTest {
         onboarding.createGroup()
 
         assertEquals(
-            Result.Failure(CreateGroupError.GroupAlreadyExists),
+            Result.Failure(CreateGroupError.Creation(AlreadyInAGroup)),
             onboarding.createGroup(),
         )
     }
@@ -188,32 +189,16 @@ class OnboardingTest {
 
         onboarding.createGroup()
 
-        assertEquals(Result.Success(first), groups.group())
+        assertEquals(Result.Success(Membership.InGroup(first)), groups.group())
         assertEquals(1, groups.observeMembers(first.id).first().size)
     }
 
     @Test
-    fun `reports the group the repository found while writing`() = runTest {
-        val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.AlreadyInAGroup))
-        onboarding.register(displayName = "Cyril")
-
-        assertEquals(Result.Failure(CreateGroupError.GroupAlreadyExists), onboarding.createGroup())
-    }
-
-    @Test
-    fun `reports an unavailable store the repository met while writing`() = runTest {
-        val onboarding = onboarding(groupRepository = RefusingGroupRepository(StoreUnavailable))
-        onboarding.register(displayName = "Cyril")
-
-        assertEquals(Result.Failure(CreateGroupError.StoreUnavailable), onboarding.createGroup())
-    }
-
-    @Test
-    fun `reports a missing group the repository found while writing`() = runTest {
+    fun `reports the refusal the repository met while writing`() = runTest {
         val onboarding = onboarding(groupRepository = RefusingGroupRepository(GroupNotFound))
         onboarding.register(displayName = "Cyril")
 
-        assertEquals(Result.Failure(CreateGroupError.GroupNotFound), onboarding.createGroup())
+        assertEquals(Result.Failure(CreateGroupError.Creation(GroupNotFound)), onboarding.createGroup())
     }
 
     @Test
@@ -222,7 +207,7 @@ class OnboardingTest {
         val onboarding = onboarding(groupRepository = MissingGroupRepository(), invitationRepository = invitations)
         onboarding.register(displayName = "Cyril")
 
-        assertEquals(Result.Failure(JoinGroupError.GroupNotFound), onboarding.joinGroup(CODE))
+        assertEquals(Result.Failure(JoinGroupError.Lookup(GroupNotFound)), onboarding.joinGroup(CODE))
         assertEquals(0, invitations.calls)
     }
 
@@ -233,17 +218,6 @@ class OnboardingTest {
         onboarding(groupRepository = groups).leaveMissingGroup()
 
         assertEquals(1, groups.departures)
-    }
-
-    @Test
-    fun `reports a group the repository could not write`() = runTest {
-        val onboarding = onboarding(groupRepository = RefusingGroupRepository(CreateGroupWriteError.Unknown))
-        onboarding.register(displayName = "Cyril")
-
-        assertEquals(
-            Result.Failure(CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
-            onboarding.createGroup(),
-        )
     }
 
     @Test
@@ -260,7 +234,7 @@ class OnboardingTest {
     @Test
     fun `reports an unavailable store rather than nobody registered when joining`() = runTest {
         assertEquals(
-            Result.Failure(JoinGroupError.StoreUnavailable),
+            Result.Failure(JoinGroupError.Lookup(UNREACHABLE)),
             onboarding(UnavailableUserRepository()).joinGroup(CODE),
         )
     }
@@ -271,7 +245,7 @@ class OnboardingTest {
         val onboarding = onboarding(groupRepository = UnavailableGroupRepository(), invitationRepository = invitations)
         onboarding.register(displayName = "Cyril")
 
-        assertEquals(Result.Failure(JoinGroupError.StoreUnavailable), onboarding.joinGroup(CODE))
+        assertEquals(Result.Failure(JoinGroupError.Lookup(UNREACHABLE)), onboarding.joinGroup(CODE))
         assertEquals(0, invitations.calls)
     }
 
@@ -400,8 +374,8 @@ class OnboardingTest {
         override suspend fun redeem(code: String, user: UserId) = Result.Failure(reason)
     }
 
-    private class RefusingGroupRepository(private val error: CreateGroupWriteError) : GroupRepository {
-        override suspend fun group() = Result.Success(value = null)
+    private class RefusingGroupRepository(private val error: GroupError.Write) : GroupRepository {
+        override suspend fun group() = Result.Success(Membership.NoGroup)
 
         override fun observeMembers(groupId: GroupId): Flow<List<Member>> = emptyFlow()
 
@@ -438,7 +412,7 @@ class OnboardingTest {
     }
 
     private object FailingUserRepository : UserRepository {
-        override suspend fun registeredUserId() = Result.Success(value = null)
+        override suspend fun registeredUserId() = Result.Success(Registration.NotRegistered)
 
         override suspend fun register(user: User) = Result.Failure(RegisterUserError.Unknown)
     }

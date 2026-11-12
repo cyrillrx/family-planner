@@ -1,7 +1,6 @@
 package com.cyrillrx.family.presentation.onboarding.groupchoice
 
 import com.cyrillrx.family.group.domain.CreateGroupError
-import com.cyrillrx.family.group.domain.CreateGroupWriteError
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.RamGroupRepository
@@ -10,6 +9,7 @@ import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
 import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.RefusingGroupRepository
+import com.cyrillrx.family.presentation.UNREACHABLE
 import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
@@ -129,7 +129,7 @@ class GroupChoiceViewModelTest {
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(GroupChoiceState(error = CreateGroupError.StoreUnavailable), viewModel.state.value)
+        assertEquals(GroupChoiceState(error = CreateGroupError.Creation(UNREACHABLE)), viewModel.state.value)
     }
 
     @Test
@@ -161,7 +161,7 @@ class GroupChoiceViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            GroupChoiceState(error = CreateGroupError.Creation(CreateGroupWriteError.Unknown)),
+            GroupChoiceState(error = CreateGroupError.Creation(UNREACHABLE)),
             viewModel.state.value,
         )
     }
