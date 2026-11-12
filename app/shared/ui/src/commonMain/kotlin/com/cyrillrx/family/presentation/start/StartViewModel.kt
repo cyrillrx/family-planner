@@ -23,7 +23,7 @@ class StartViewModel(private val appStart: AppStart) : ViewModel() {
     }
 
     fun retry() {
-        if (state.value == StartState.Unavailable) resolve()
+        if (state.value is StartState.Failed) resolve()
     }
 
     /**
@@ -44,7 +44,7 @@ class StartViewModel(private val appStart: AppStart) : ViewModel() {
         viewModelScope.launch {
             state.value = when (val destination = appStart.destination()) {
                 is Result.Success -> StartState.Resolved(destination.value)
-                is Result.Failure -> StartState.Unavailable
+                is Result.Failure -> StartState.Failed(destination.error)
             }
         }
     }

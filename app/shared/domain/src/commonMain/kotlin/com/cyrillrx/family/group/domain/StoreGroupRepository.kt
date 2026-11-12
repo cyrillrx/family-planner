@@ -1,6 +1,7 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.core.domain.flatten
 import com.cyrillrx.core.domain.getOrElse
 import com.cyrillrx.family.group.data.GroupLookup
 import com.cyrillrx.family.group.data.GroupStore
@@ -13,7 +14,6 @@ import com.cyrillrx.family.group.model.Member
 import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 
 class StoreGroupRepository(
@@ -21,51 +21,48 @@ class StoreGroupRepository(
     private val users: UserStore,
 ) : GroupRepository {
 
-    override suspend fun group(): Result<Group?, GroupReadError> {
-        val lookup = reachStore { users.credential()?.let { store.findGroupOf(it) } ?: GroupLookup.NoMembership }
-            .getOrElse { return Result.Failure(it) }
+    override suspend fun group(): Result<Membership, GroupError.Read> = catchUnexpected { read() }.flatten()
+
+    override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
+        store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
+
+    override suspend fun create(group: Group, founder: UserId): Result<Unit, GroupError.Write> =
+        catchUnexpected { write(group, founder) }.flatten()
+
+    override suspend fun leaveMissingGroup(): Result<Unit, NoAnswer> = catchUnexpected { leave() }.flatten()
+
+    private suspend fun read(): Result<Membership, GroupError.Read> {
+        val credential = users.credential() ?: return Result.Success(Membership.NoGroup)
+
+        val lookup = store.findGroupOf(credential).getOrElse { return Result.Failure(it) }
 
         return when (lookup) {
-            GroupLookup.NoMembership -> Result.Success(value = null)
-            is GroupLookup.Found -> Result.Success(lookup.group.toDomain(GroupId(lookup.groupId)))
+            GroupLookup.NoMembership -> Result.Success(Membership.NoGroup)
+            is GroupLookup.Found -> Result.Success(Membership.InGroup(lookup.group.toDomain(GroupId(lookup.groupId))))
             // TODO(#38): log it, the store holds a membership no client can write under the rules.
             is GroupLookup.NotFound -> Result.Failure(GroupNotFound)
         }
     }
 
-    override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
-        store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
-
-    override suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> = try {
-        write(group, founder)
-    } catch (cancellation: CancellationException) {
-        throw cancellation
-    } catch (e: Exception) {
-        Result.Failure(CreateGroupWriteError.Unknown)
-    }
-
-    override suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable> = reachStore(::leave)
-
-    private suspend fun write(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError> {
+    private suspend fun write(group: Group, founder: UserId): Result<Unit, GroupError.Write> {
         val credential = checkNotNull(users.credential()) { "A membership is written under a credential" }
 
-        val lookup = reachStore { store.findGroupOf(credential) }.getOrElse { return Result.Failure(it) }
+        val lookup = store.findGroupOf(credential).getOrElse { return Result.Failure(it) }
 
-        when (lookup) {
+        return when (lookup) {
             GroupLookup.NoMembership -> store.create(group.toDocument(), founder.toMembership(group.id, credential))
-            is GroupLookup.Found -> return Result.Failure(CreateGroupWriteError.AlreadyInAGroup)
-            is GroupLookup.NotFound -> return Result.Failure(GroupNotFound)
+            is GroupLookup.Found -> Result.Failure(AlreadyInAGroup)
+            is GroupLookup.NotFound -> Result.Failure(GroupNotFound)
         }
-
-        return Result.Success(Unit)
     }
 
-    private suspend fun leave() {
-        val credential = users.credential() ?: return
+    private suspend fun leave(): Result<Unit, NoAnswer> {
+        val credential = users.credential() ?: return Result.Success(Unit)
 
-        val lookup = store.findGroupOf(credential)
+        val lookup = store.findGroupOf(credential).getOrElse { return Result.Failure(it) }
+
         // TODO(#91): a group that exists is reported as left.
-        if (lookup is GroupLookup.NotFound) store.leave(lookup.groupId, credential)
+        return if (lookup is GroupLookup.NotFound) store.leave(lookup.groupId, credential) else Result.Success(Unit)
     }
 }
 

@@ -11,7 +11,7 @@ class RamUserRepositoryTest {
 
     @Test
     fun `has no registered user before anyone registers`() = runTest {
-        assertEquals(Result.Success(value = null), RamUserRepository().registeredUserId())
+        assertEquals(Result.Success(Registration.NotRegistered), RamUserRepository().registeredUserId())
     }
 
     @Test
@@ -29,7 +29,7 @@ class RamUserRepositoryTest {
 
         repository.register(alice())
 
-        assertEquals(Result.Success(UserId("alice")), repository.registeredUserId())
+        assertEquals(Result.Success(Registration.Registered(UserId("alice"))), repository.registeredUserId())
     }
 
     @Test
@@ -39,7 +39,7 @@ class RamUserRepositoryTest {
 
         repository.register(User(id = UserId("bob"), displayName = "Bob"))
 
-        assertEquals(Result.Success(UserId("bob")), repository.registeredUserId())
+        assertEquals(Result.Success(Registration.Registered(UserId("bob"))), repository.registeredUserId())
     }
 
     private fun alice() = User(id = UserId("alice"), displayName = "Alice")

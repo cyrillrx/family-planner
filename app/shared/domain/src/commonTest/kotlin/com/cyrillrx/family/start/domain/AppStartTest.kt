@@ -7,7 +7,7 @@ import com.cyrillrx.family.group.domain.OnboardingStep
 import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.domain.RamUserRepository
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
-import com.cyrillrx.family.group.domain.StoreUnavailable
+import com.cyrillrx.family.group.domain.UNREACHABLE
 import com.cyrillrx.family.group.domain.UnavailableGroupRepository
 import com.cyrillrx.family.group.domain.UnavailableUserRepository
 import com.cyrillrx.family.group.model.Group
@@ -55,7 +55,7 @@ class AppStartTest {
         val groups = UnavailableGroupRepository()
 
         assertEquals(
-            Result.Failure(StoreUnavailable),
+            Result.Failure(UNREACHABLE),
             AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
         )
     }
@@ -75,7 +75,7 @@ class AppStartTest {
         val users = UnavailableUserRepository()
 
         assertEquals(
-            Result.Failure(StoreUnavailable),
+            Result.Failure(UNREACHABLE),
             AppStart(groups, Onboarding(users, groups, SampleInvitationRepository())).destination(),
         )
     }

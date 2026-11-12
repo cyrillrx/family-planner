@@ -20,6 +20,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.time.Instant
 
 class StoreGroupRepositoryTest {
@@ -29,7 +30,7 @@ class StoreGroupRepositoryTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
         assertEquals(
-            Result.Success(value = null),
+            Result.Success(Membership.NoGroup),
             StoreGroupRepository(store, CredentialOnly(credential = null)).group(),
         )
     }
@@ -37,7 +38,7 @@ class StoreGroupRepositoryTest {
     @Test
     fun `has no group when the credential is a member of none`() = runTest {
         assertEquals(
-            Result.Success(value = null),
+            Result.Success(Membership.NoGroup),
             StoreGroupRepository(FakeGroupStore(), CredentialOnly(credential = "uid-1")).group(),
         )
     }
@@ -46,7 +47,10 @@ class StoreGroupRepositoryTest {
     fun `finds the group the credential is a member of`() = runTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
-        assertEquals(Result.Success(group()), StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group())
+        assertEquals(
+            Result.Success(Membership.InGroup(group())),
+            StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
+        )
     }
 
     @Test
@@ -56,7 +60,9 @@ class StoreGroupRepositoryTest {
         }
 
         assertEquals(
-            Result.Success(group().copy(createdAt = Instant.fromEpochMilliseconds(epochMilliseconds = 0))),
+            Result.Success(
+                Membership.InGroup(group().copy(createdAt = Instant.fromEpochMilliseconds(epochMilliseconds = 0))),
+            ),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
         )
     }
@@ -112,28 +118,51 @@ class StoreGroupRepositoryTest {
 
     @Test
     fun `reports a departure the store could not make`() = runTest {
-        val store = FakeGroupStore(failure = IllegalStateException("unreachable"), lookupFailure = null)
+        val store = FakeGroupStore(failure = UNREACHABLE, lookupFailure = null)
             .apply { missingGroupMemberships["uid-1"] = "group-1" }
 
         assertEquals(
-            Result.Failure(StoreUnavailable),
+            Result.Failure(UNREACHABLE),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).leaveMissingGroup(),
         )
     }
 
     @Test
     fun `cannot tell the group when the store cannot be read`() = runTest {
-        val store = FakeGroupStore(failure = IllegalStateException("unreachable"))
+        val store = FakeGroupStore(failure = UNREACHABLE)
 
         assertEquals(
-            Result.Failure(StoreUnavailable),
+            Result.Failure(UNREACHABLE),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group(),
         )
     }
 
     @Test
+    fun `reports a defect of the read as unexpected rather than as an unreachable store`() = runTest {
+        val defect = IllegalStateException("defect")
+
+        assertEquals(
+            Result.Failure(Unexpected(defect)),
+            StoreGroupRepository(FakeGroupStore(thrown = defect), CredentialOnly(credential = "uid-1")).group(),
+        )
+    }
+
+    @Test
+    fun `reports a defect of the departure as unexpected`() = runTest {
+        val defect = IllegalStateException("defect")
+
+        assertEquals(
+            Result.Failure(Unexpected(defect)),
+            StoreGroupRepository(
+                FakeGroupStore(thrown = defect),
+                CredentialOnly(credential = "uid-1"),
+            ).leaveMissingGroup(),
+        )
+    }
+
+    @Test
     fun `lets a cancellation of the read through`() = runTest {
-        val store = FakeGroupStore(failure = CancellationException("left the screen"))
+        val store = FakeGroupStore(thrown = CancellationException("left the screen"))
 
         assertFailsWith<CancellationException> {
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).group()
@@ -165,28 +194,28 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
-    fun `refuses to create a group without a credential to write it under`() = runTest {
+    fun `reports a creation without a credential to write it under as unexpected`() = runTest {
         val store = FakeGroupStore()
 
         val result = StoreGroupRepository(store, CredentialOnly(credential = null)).create(group(), UserId("user-1"))
 
-        assertEquals(Result.Failure(CreateGroupWriteError.Unknown), result)
+        assertIs<Unexpected>(assertIs<Result.Failure<*>>(result).error)
         assertEquals(emptyList(), store.creations)
     }
 
     @Test
     fun `reports a store that refuses the creation`() = runTest {
-        val store = FakeGroupStore(failure = IllegalStateException("permission denied"), lookupFailure = null)
+        val store = FakeGroupStore(failure = UNREACHABLE, lookupFailure = null)
 
         assertEquals(
-            Result.Failure(CreateGroupWriteError.Unknown),
+            Result.Failure(UNREACHABLE),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
 
     @Test
     fun `refuses to found a group when it cannot tell the credential has none`() = runTest {
-        val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
+        val store = FakeGroupStore(lookupFailure = UNREACHABLE)
 
         StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1"))
 
@@ -195,10 +224,10 @@ class StoreGroupRepositoryTest {
 
     @Test
     fun `answers that it cannot tell when the lookup fails`() = runTest {
-        val store = FakeGroupStore(lookupFailure = IllegalStateException("index not ready"))
+        val store = FakeGroupStore(lookupFailure = UNREACHABLE)
 
         assertEquals(
-            Result.Failure(StoreUnavailable),
+            Result.Failure(UNREACHABLE),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
@@ -217,14 +246,14 @@ class StoreGroupRepositoryTest {
         val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
 
         assertEquals(
-            Result.Failure(CreateGroupWriteError.AlreadyInAGroup),
+            Result.Failure(AlreadyInAGroup),
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1")),
         )
     }
 
     @Test
     fun `lets a cancellation through rather than reporting it`() = runTest {
-        val store = FakeGroupStore(failure = CancellationException("left the screen"))
+        val store = FakeGroupStore(thrown = CancellationException("left the screen"))
 
         assertFailsWith<CancellationException> {
             StoreGroupRepository(store, CredentialOnly(credential = "uid-1")).create(group(), UserId("user-1"))
@@ -287,8 +316,9 @@ class StoreGroupRepositoryTest {
 }
 
 private class FakeGroupStore(
-    private val failure: Exception? = null,
-    private val lookupFailure: Exception? = failure,
+    private val failure: StoreUnavailable? = null,
+    private val lookupFailure: StoreUnavailable? = failure,
+    private val thrown: Exception? = null,
 ) : GroupStore {
 
     val groupsByCredential = mutableMapOf<String, GroupDocument>()
@@ -297,26 +327,32 @@ private class FakeGroupStore(
     val leaves = mutableListOf<Pair<String, String>>()
     val membersByGroup = MutableStateFlow<Map<String, List<MemberDocument>>>(emptyMap())
 
-    override suspend fun findGroupOf(credential: String): GroupLookup {
-        lookupFailure?.let { throw it }
+    override suspend fun findGroupOf(credential: String): Result<GroupLookup, StoreUnavailable> {
+        thrown?.let { throw it }
 
-        missingGroupMemberships[credential]?.let { return GroupLookup.NotFound(it) }
+        lookupFailure?.let { return Result.Failure(it) }
 
-        val group = groupsByCredential[credential] ?: return GroupLookup.NoMembership
+        missingGroupMemberships[credential]?.let { return Result.Success(GroupLookup.NotFound(it)) }
 
-        return GroupLookup.Found(checkNotNull(group.id), group)
+        val group = groupsByCredential[credential] ?: return Result.Success(GroupLookup.NoMembership)
+
+        return Result.Success(GroupLookup.Found(checkNotNull(group.id), group))
     }
 
-    override suspend fun create(group: GroupDocument, founder: MemberDocument) {
-        failure?.let { throw it }
+    override suspend fun create(group: GroupDocument, founder: MemberDocument): Result<Unit, StoreUnavailable> {
+        failure?.let { return Result.Failure(it) }
 
         creations += group to founder
+
+        return Result.Success(Unit)
     }
 
-    override suspend fun leave(groupId: String, credential: String) {
-        failure?.let { throw it }
+    override suspend fun leave(groupId: String, credential: String): Result<Unit, StoreUnavailable> {
+        failure?.let { return Result.Failure(it) }
 
         leaves += groupId to credential
+
+        return Result.Success(Unit)
     }
 
     override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =
@@ -327,9 +363,12 @@ private class CredentialOnly(private val credential: String?) : UserStore {
 
     override suspend fun credential(): String? = credential
 
-    override suspend fun signInAnonymously(): String = error("The group repository never signs in")
+    override suspend fun signInAnonymously(): Result<String, StoreUnavailable> =
+        error("The group repository never signs in")
 
-    override suspend fun find(credential: String): UserDocument? = error("The group repository reads no user")
+    override suspend fun find(credential: String): Result<UserDocument?, StoreUnavailable> =
+        error("The group repository reads no user")
 
-    override suspend fun save(credential: String, document: UserDocument) = error("The group repository writes no user")
+    override suspend fun save(credential: String, document: UserDocument): Result<Unit, StoreUnavailable> =
+        error("The group repository writes no user")
 }

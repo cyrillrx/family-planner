@@ -1,9 +1,11 @@
 package com.cyrillrx.family.group.data.firestore
 
+import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.data.GroupLookup
 import com.cyrillrx.family.group.data.GroupStore
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
+import com.cyrillrx.family.group.domain.StoreUnavailable
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FirebaseFirestore
@@ -16,49 +18,64 @@ import kotlinx.serialization.Serializable
 
 internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : GroupStore {
 
-    override suspend fun findGroupOf(credential: String): GroupLookup {
+    override suspend fun findGroupOf(credential: String): Result<GroupLookup, StoreUnavailable> = firebaseCall {
         val memberships = firestore.collectionGroup(MEMBERS)
             .where { "credential" equalTo credential }
             .limit(1)
             .get()
         val membership = memberships.documents.firstOrNull()
         if (membership == null) {
-            check(!memberships.metadata.isFromCache) { "No membership in the cache tells nothing of the server" }
-            return GroupLookup.NoMembership
+            return@firebaseCall if (memberships.metadata.isFromCache) {
+                unconfirmedAbsence("No membership in the cache tells nothing of the server")
+            } else {
+                Result.Success(GroupLookup.NoMembership)
+            }
         }
 
         // From the path rather than the field: the path is always there.
         val groupId = checkNotNull(membership.reference.parent.parent) { "A membership sits under a group" }.id
         val group = groups().document(groupId).get()
-        if (group.exists) return GroupLookup.Found(groupId, group.toGroup())
+        if (group.exists) return@firebaseCall Result.Success(GroupLookup.Found(groupId, group.toGroup()))
 
-        check(!group.metadata.isFromCache) { "No group in the cache tells nothing of the server" }
-        return GroupLookup.NotFound(groupId)
+        if (group.metadata.isFromCache) {
+            return@firebaseCall unconfirmedAbsence("No group in the cache tells nothing of the server")
+        }
+
+        Result.Success(GroupLookup.NotFound(groupId))
     }
 
-    override suspend fun create(group: GroupDocument, founder: MemberDocument) {
+    override suspend fun create(group: GroupDocument, founder: MemberDocument): Result<Unit, StoreUnavailable> {
         val groupReference = groups().document(checkNotNull(group.id) { "A group is addressed by its id" })
         val founderReference = groupReference.collection(MEMBERS)
             .document(checkNotNull(founder.credential) { "A membership is addressed by its credential" })
 
         // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
-        firestore.batch()
-            .set(groupReference, StoredGroup(id = group.id, name = group.name, createdAt = Timestamp.ServerTimestamp))
-            .set(
-                founderReference,
-                StoredMember(
-                    userId = founder.userId,
-                    groupId = founder.groupId,
-                    credential = founder.credential,
-                    joinedAt = Timestamp.ServerTimestamp,
-                ),
-            )
-            .commit()
+        return firebaseCall {
+            firestore.batch()
+                .set(
+                    groupReference,
+                    StoredGroup(id = group.id, name = group.name, createdAt = Timestamp.ServerTimestamp),
+                )
+                .set(
+                    founderReference,
+                    StoredMember(
+                        userId = founder.userId,
+                        groupId = founder.groupId,
+                        credential = founder.credential,
+                        joinedAt = Timestamp.ServerTimestamp,
+                    ),
+                )
+                .commit()
+
+            Result.Success(Unit)
+        }
     }
 
-    override suspend fun leave(groupId: String, credential: String) {
+    override suspend fun leave(groupId: String, credential: String): Result<Unit, StoreUnavailable> = firebaseCall {
         // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
         groups().document(groupId).collection(MEMBERS).document(credential).delete()
+
+        Result.Success(Unit)
     }
 
     override fun observeMembers(groupId: String): Flow<List<MemberDocument>> =

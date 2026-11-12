@@ -7,6 +7,7 @@ import com.cyrillrx.family.presentation.CountingGroupRepository
 import com.cyrillrx.family.presentation.IntermittentGroupRepository
 import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.NOW
+import com.cyrillrx.family.presentation.UNREACHABLE
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,7 +61,7 @@ class HomeViewModelTest {
 
         advanceUntilIdle()
 
-        assertEquals(HomeState(HomeState.Body.Unavailable), viewModel.state.value)
+        assertEquals(HomeState(HomeState.Body.Failed(UNREACHABLE)), viewModel.state.value)
     }
 
     @Test

@@ -17,3 +17,8 @@ inline fun <Data, E : Error> Result<Data, E>.getOrElse(onFailure: (E) -> Data): 
 
 /** `null` on a failure, as on a success holding `null`. */
 fun <Data> Result<Data, *>.getOrNull(): Data? = (this as? Result.Success)?.value
+
+fun <Data, E : Error> Result<Result<Data, E>, E>.flatten(): Result<Data, E> = when (this) {
+    is Result.Success -> value
+    is Result.Failure -> this
+}

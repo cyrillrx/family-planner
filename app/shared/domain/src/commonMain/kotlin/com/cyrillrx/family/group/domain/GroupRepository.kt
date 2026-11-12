@@ -1,6 +1,5 @@
 package com.cyrillrx.family.group.domain
 
-import com.cyrillrx.core.domain.Error
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
@@ -10,22 +9,16 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupRepository {
 
-    /** Succeeds with null when this device belongs to no group. */
-    suspend fun group(): Result<Group?, GroupReadError>
+    suspend fun group(): Result<Membership, GroupError.Read>
 
     fun observeMembers(groupId: GroupId): Flow<List<Member>>
 
-    suspend fun create(group: Group, founder: UserId): Result<Unit, CreateGroupWriteError>
+    suspend fun create(group: Group, founder: UserId): Result<Unit, GroupError.Write>
 
-    suspend fun leaveMissingGroup(): Result<Unit, StoreUnavailable>
+    suspend fun leaveMissingGroup(): Result<Unit, NoAnswer>
 }
 
-sealed interface GroupReadError : Error
-
-/** This device's membership names a group that does not exist: the member can only leave it. */
-data object GroupNotFound : GroupReadError, CreateGroupWriteError
-
-sealed interface CreateGroupWriteError : Error {
-    data object AlreadyInAGroup : CreateGroupWriteError
-    data object Unknown : CreateGroupWriteError
+sealed interface Membership {
+    data class InGroup(val group: Group) : Membership
+    data object NoGroup : Membership
 }

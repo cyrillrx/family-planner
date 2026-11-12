@@ -16,9 +16,9 @@ import com.cyrillrx.family.group.domain.StoreUnavailable
 import com.cyrillrx.family.navigation.OnboardingRouter
 import com.cyrillrx.family.presentation.component.ErrorText
 import com.cyrillrx.family.presentation.component.MessageLayout
+import com.cyrillrx.family.presentation.component.message
 import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.action_leave_group
-import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.group_not_found
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +50,7 @@ fun GroupNotFoundScreen(
     modifier: Modifier = Modifier,
 ) {
     MessageLayout(message = stringResource(Res.string.group_not_found), modifier = modifier) {
-        if (state.error != null) ErrorText(stringResource(Res.string.error_store_unavailable))
+        state.error?.let { ErrorText(it.message()) }
 
         Button(
             onClick = onLeaveClicked,
@@ -71,5 +71,11 @@ private fun GroupNotFoundScreenPreview() = MaterialTheme {
 @Preview
 @Composable
 private fun GroupNotFoundScreenUnavailablePreview() = MaterialTheme {
-    GroupNotFoundScreen(state = GroupNotFoundState(error = StoreUnavailable), onLeaveClicked = {})
+    GroupNotFoundScreen(
+        state = GroupNotFoundState(
+            error = StoreUnavailable(IllegalStateException("preview")),
+        ),
+        onLeaveClicked = {
+        },
+    )
 }
