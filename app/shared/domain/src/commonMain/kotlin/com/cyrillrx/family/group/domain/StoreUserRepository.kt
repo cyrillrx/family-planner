@@ -29,7 +29,9 @@ class StoreUserRepository(private val store: UserStore) : UserRepository {
     private suspend fun save(user: User): Result<User, RegisterUserError> {
         val held = store.credential()
         val credential = held ?: store.signInAnonymously().getOrElse { return Result.Failure(it) }
+
         val storedId = held?.let { storedId(it).getOrElse { failure -> return Result.Failure(failure) } }
+
         val registered = user.copy(id = storedId ?: user.id, authenticatedId = credential)
 
         return store.save(credential, registered.toDocument()).map { registered }
