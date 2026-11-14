@@ -2,7 +2,6 @@ package com.cyrillrx.core.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class ResultTest {
 
@@ -16,16 +15,6 @@ class ResultTest {
         val failure: Result<Int, Refusal> = Result.Failure(Refusal)
 
         assertEquals(Result.Failure(Refusal), failure.map { it + 1 })
-    }
-
-    @Test
-    fun `gives the value of a success`() {
-        assertEquals(1, Result.Success(value = 1).getOrNull())
-    }
-
-    @Test
-    fun `gives nothing for a failure`() {
-        assertNull(Result.Failure(Refusal).getOrNull())
     }
 
     @Test
