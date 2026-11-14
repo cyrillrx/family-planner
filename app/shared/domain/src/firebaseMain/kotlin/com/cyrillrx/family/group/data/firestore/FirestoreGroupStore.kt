@@ -33,15 +33,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         }
 
         // From the path rather than the field: the path is always there.
-        val groupId = checkNotNull(membership.reference.parent.parent) { "A membership sits under a group" }.id
-        val group = groups().document(groupId).get()
-        if (group.exists) return@firebaseCall Result.Success(GroupLookup.Found(groupId, group.toGroup()))
-
-        if (group.metadata.isFromCache) {
-            return@firebaseCall unconfirmedAbsence("No group in the cache tells nothing of the server")
-        }
-
-        Result.Success(GroupLookup.NotFound(groupId))
+        readGroup(checkNotNull(membership.reference.parent.parent) { "A membership sits under a group" }.id)
     }
 
     override suspend fun create(group: GroupDocument, founder: MemberDocument): Result<Unit, StoreUnavailable> {
@@ -82,6 +74,17 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         groups().document(groupId).collection(MEMBERS).snapshots.map { snapshot ->
             snapshot.documents.map(DocumentSnapshot::toMember)
         }
+
+    private suspend fun readGroup(groupId: String): Result<GroupLookup, StoreUnavailable> {
+        val group = groups().document(groupId).get()
+        if (group.exists) return Result.Success(GroupLookup.Found(groupId, group.toGroup()))
+
+        if (group.metadata.isFromCache) {
+            return unconfirmedAbsence("No group in the cache tells nothing of the server")
+        }
+
+        return Result.Success(GroupLookup.NotFound(groupId))
+    }
 
     private fun groups() = firestore.collection("groups")
 
