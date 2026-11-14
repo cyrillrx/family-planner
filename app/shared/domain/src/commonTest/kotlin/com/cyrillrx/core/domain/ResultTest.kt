@@ -29,5 +29,26 @@ class ResultTest {
         assertEquals(2, failure.getOrElse { 2 })
     }
 
+    @Test
+    fun `unwraps the success held by a success`() {
+        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Success(1))
+
+        assertEquals(Result.Success(1), nested.flatten())
+    }
+
+    @Test
+    fun `unwraps the failure held by a success`() {
+        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Failure(Refusal))
+
+        assertEquals(Result.Failure(Refusal), nested.flatten())
+    }
+
+    @Test
+    fun `keeps the error of a failure through a flatten`() {
+        val failure: Result<Result<Int, Refusal>, Refusal> = Result.Failure(Refusal)
+
+        assertEquals(Result.Failure(Refusal), failure.flatten())
+    }
+
     private data object Refusal : Error
 }
