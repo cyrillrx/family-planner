@@ -81,6 +81,7 @@ class Onboarding(
         }
 
         val membership = groupRepository.group().getOrElse { return Result.Failure(JoinGroupError.Lookup(it)) }
+
         if (membership is Membership.InGroup) return Result.Failure(JoinGroupError.AlreadyInAGroup)
 
         // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
