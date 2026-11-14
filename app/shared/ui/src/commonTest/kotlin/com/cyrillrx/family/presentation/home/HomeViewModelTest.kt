@@ -4,6 +4,7 @@ import com.cyrillrx.family.group.domain.RamGroupRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.presentation.CountingGroupRepository
+import com.cyrillrx.family.presentation.DEFECT
 import com.cyrillrx.family.presentation.IntermittentGroupRepository
 import com.cyrillrx.family.presentation.MissingGroupRepository
 import com.cyrillrx.family.presentation.NOW
@@ -62,6 +63,19 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         assertEquals(HomeState(HomeState.Body.Failed(UNREACHABLE)), viewModel.state.value)
+    }
+
+    @Test
+    fun `says what the latest read met when a refresh fails differently`() = runTest {
+        val groups = IntermittentGroupRepository()
+        val viewModel = HomeViewModel(groups)
+        advanceUntilIdle()
+        groups.failure = DEFECT
+
+        viewModel.silentRefresh()
+        advanceUntilIdle()
+
+        assertEquals(HomeState(HomeState.Body.Failed(DEFECT)), viewModel.state.value)
     }
 
     @Test

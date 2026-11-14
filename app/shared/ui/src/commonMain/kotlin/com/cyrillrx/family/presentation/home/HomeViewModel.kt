@@ -51,7 +51,10 @@ class HomeViewModel(private val groupRepository: GroupRepository) : ViewModel() 
     }
 
     private fun showFailureUnlessAnAnswerIsShown(error: NoAnswer) {
-        if (state.value.body == HomeState.Body.Loading) state.value = HomeState(body = HomeState.Body.Failed(error))
+        val body = state.value.body
+        if (body == HomeState.Body.Loading || body is HomeState.Body.Failed) {
+            state.value = HomeState(body = HomeState.Body.Failed(error))
+        }
     }
 }
 
