@@ -53,7 +53,9 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
                 }
                 is NoAnswer -> state.value = beforeSubmit.copy(error = error)
             }
-            CreateGroupError.NotRegistered -> state.value = beforeSubmit.copy(error = error)
+            is CreateGroupError.Lookup,
+            CreateGroupError.NotRegistered,
+            -> state.value = beforeSubmit.copy(error = error)
         }
     }
 }

@@ -149,7 +149,7 @@ class OnboardingTest {
     @Test
     fun `reports an unavailable store rather than nobody registered when founding a group`() = runTest {
         assertEquals(
-            Result.Failure(CreateGroupError.Creation(UNREACHABLE)),
+            Result.Failure(CreateGroupError.Lookup(UNREACHABLE)),
             onboarding(UnavailableUserRepository()).createGroup(),
         )
     }

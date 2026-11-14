@@ -129,7 +129,7 @@ class GroupChoiceViewModelTest {
         viewModel.createGroup()
         advanceUntilIdle()
 
-        assertEquals(GroupChoiceState(error = CreateGroupError.Creation(UNREACHABLE)), viewModel.state.value)
+        assertEquals(GroupChoiceState(error = CreateGroupError.Lookup(UNREACHABLE)), viewModel.state.value)
     }
 
     @Test

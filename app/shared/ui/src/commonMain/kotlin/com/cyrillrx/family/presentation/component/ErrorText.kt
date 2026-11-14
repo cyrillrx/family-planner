@@ -59,6 +59,7 @@ fun RegisterUserError.message(): String = when (this) {
 @Composable
 fun CreateGroupError.message(): String = when (this) {
     CreateGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
+    is CreateGroupError.Lookup -> cause.message()
     is CreateGroupError.Creation -> cause.message()
 }
 

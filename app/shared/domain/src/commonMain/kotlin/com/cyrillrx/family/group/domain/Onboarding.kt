@@ -47,7 +47,7 @@ class Onboarding(
 
     suspend fun createGroup(): Result<Group, CreateGroupError> {
         val registration = userRepository.registeredUserId()
-            .getOrElse { return Result.Failure(CreateGroupError.Creation(it)) }
+            .getOrElse { return Result.Failure(CreateGroupError.Lookup(it)) }
 
         val userId = when (registration) {
             is Registration.Registered -> registration.id
@@ -103,6 +103,7 @@ sealed interface RegisterError : Error {
 
 sealed interface CreateGroupError : Error {
     data object NotRegistered : CreateGroupError
+    data class Lookup(val cause: NoAnswer) : CreateGroupError
     data class Creation(val cause: GroupError.Write) : CreateGroupError
 }
 
