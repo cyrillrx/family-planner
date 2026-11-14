@@ -1,8 +1,7 @@
-package com.cyrillrx.family.group.data
+package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.document.UserDocument
-import com.cyrillrx.family.group.domain.StoreUnavailable
 
 /**
  * The users this device can reach, each addressed by the credential that authenticates it.

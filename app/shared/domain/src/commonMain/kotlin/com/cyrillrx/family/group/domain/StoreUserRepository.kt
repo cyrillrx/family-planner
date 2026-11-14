@@ -4,7 +4,6 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.core.domain.flatten
 import com.cyrillrx.core.domain.getOrElse
 import com.cyrillrx.core.domain.map
-import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.UserDocument
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId

@@ -3,9 +3,6 @@ package com.cyrillrx.family.group.domain
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.core.domain.flatten
 import com.cyrillrx.core.domain.getOrElse
-import com.cyrillrx.family.group.data.GroupLookup
-import com.cyrillrx.family.group.data.GroupStore
-import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
 import com.cyrillrx.family.group.model.Group

@@ -1,10 +1,10 @@
 package com.cyrillrx.family.group.data.firestore
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.data.GroupLookup
-import com.cyrillrx.family.group.data.GroupStore
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
+import com.cyrillrx.family.group.domain.GroupLookup
+import com.cyrillrx.family.group.domain.GroupStore
 import com.cyrillrx.family.group.domain.StoreUnavailable
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.DocumentSnapshot

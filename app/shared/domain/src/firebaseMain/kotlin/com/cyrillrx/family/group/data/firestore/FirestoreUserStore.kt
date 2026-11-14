@@ -1,9 +1,9 @@
 package com.cyrillrx.family.group.data.firestore
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.UserDocument
 import com.cyrillrx.family.group.domain.StoreUnavailable
+import com.cyrillrx.family.group.domain.UserStore
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 

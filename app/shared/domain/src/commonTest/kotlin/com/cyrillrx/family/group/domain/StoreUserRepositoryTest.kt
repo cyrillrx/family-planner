@@ -1,7 +1,6 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.document.UserDocument
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId

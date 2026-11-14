@@ -1,9 +1,8 @@
-package com.cyrillrx.family.group.data
+package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
-import com.cyrillrx.family.group.domain.StoreUnavailable
 import kotlinx.coroutines.flow.Flow
 
 interface GroupStore {
