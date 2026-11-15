@@ -31,9 +31,9 @@ class ResultTest {
 
     @Test
     fun `unwraps the success held by a success`() {
-        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Success(1))
+        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Success(value = 1))
 
-        assertEquals(Result.Success(1), nested.flatten())
+        assertEquals(Result.Success(value = 1), nested.flatten())
     }
 
     @Test
