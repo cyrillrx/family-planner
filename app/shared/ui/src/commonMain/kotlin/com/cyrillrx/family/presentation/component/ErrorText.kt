@@ -19,6 +19,7 @@ import com.cyrillrx.family.group.domain.StoreUnavailable
 import com.cyrillrx.family.group.domain.Unexpected
 import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
+import familyplanner.app.shared.ui.generated.resources.error_unexpected
 import familyplanner.app.shared.ui.generated.resources.group_not_found
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_blank_display_name
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_already_redeemed
@@ -26,7 +27,6 @@ import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_exp
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_revoked
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_too_short
 import familyplanner.app.shared.ui.generated.resources.onboarding_error_code_unknown
-import familyplanner.app.shared.ui.generated.resources.onboarding_error_unexpected
 import familyplanner.app.shared.ui.generated.resources.onboarding_join_error_already_in_a_group
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,12 +53,12 @@ fun RegisterUserError.message(): String = when (this) {
     RegisterUserError.Unknown,
     RegisterUserError.EmptyResponse,
     is RegisterUserError.IncompleteResponse,
-    -> stringResource(Res.string.onboarding_error_unexpected)
+    -> stringResource(Res.string.error_unexpected)
 }
 
 @Composable
 fun CreateGroupError.message(): String = when (this) {
-    CreateGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
+    CreateGroupError.NotRegistered -> stringResource(Res.string.error_unexpected)
     is CreateGroupError.Lookup -> cause.message()
     is CreateGroupError.Creation -> cause.message()
 }
@@ -67,7 +67,7 @@ fun CreateGroupError.message(): String = when (this) {
 fun JoinGroupError.message(): String = when (this) {
     JoinGroupError.CodeTooShort -> stringResource(Res.string.onboarding_error_code_too_short)
     JoinGroupError.AlreadyInAGroup -> stringResource(Res.string.onboarding_join_error_already_in_a_group)
-    JoinGroupError.NotRegistered -> stringResource(Res.string.onboarding_error_unexpected)
+    JoinGroupError.NotRegistered -> stringResource(Res.string.error_unexpected)
     is JoinGroupError.Lookup -> cause.message()
     is JoinGroupError.Redemption -> cause.message()
 }
@@ -75,14 +75,14 @@ fun JoinGroupError.message(): String = when (this) {
 @Composable
 fun GroupError.message(): String = when (this) {
     GroupNotFound -> stringResource(Res.string.group_not_found)
-    AlreadyInAGroup -> stringResource(Res.string.onboarding_error_unexpected)
+    AlreadyInAGroup -> stringResource(Res.string.error_unexpected)
     is NoAnswer -> message()
 }
 
 @Composable
 fun NoAnswer.message(): String = when (this) {
     is StoreUnavailable -> stringResource(Res.string.error_store_unavailable)
-    is Unexpected -> stringResource(Res.string.onboarding_error_unexpected)
+    is Unexpected -> stringResource(Res.string.error_unexpected)
 }
 
 @Composable
@@ -94,5 +94,5 @@ fun RedeemInvitationError.message(): String = when (this) {
     RedeemInvitationError.Unknown -> stringResource(Res.string.onboarding_error_code_unknown)
     RedeemInvitationError.EmptyResponse,
     is RedeemInvitationError.IncompleteResponse,
-    -> stringResource(Res.string.onboarding_error_unexpected)
+    -> stringResource(Res.string.error_unexpected)
 }
