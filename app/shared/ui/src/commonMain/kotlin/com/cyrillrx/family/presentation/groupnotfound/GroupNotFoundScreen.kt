@@ -75,7 +75,6 @@ private fun GroupNotFoundScreenUnavailablePreview() = MaterialTheme {
         state = GroupNotFoundState(
             error = StoreUnavailable(IllegalStateException("preview")),
         ),
-        onLeaveClicked = {
-        },
+        onLeaveClicked = {},
     )
 }
