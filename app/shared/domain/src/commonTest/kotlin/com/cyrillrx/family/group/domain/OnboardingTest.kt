@@ -65,7 +65,7 @@ class OnboardingTest {
     @Test
     fun `reports an unreachable store rather than registering under a new identifier`() = runTest {
         assertEquals(
-            Result.Failure(RegisterError.Registration(UNREACHABLE)),
+            Result.Failure(RegisterError.Lookup(UNREACHABLE)),
             onboarding(UnavailableUserRepository()).register(displayName = "Cyril"),
         )
     }

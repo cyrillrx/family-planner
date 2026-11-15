@@ -44,6 +44,7 @@ fun ErrorText(message: String, modifier: Modifier = Modifier) {
 @Composable
 fun RegisterError.message(): String = when (this) {
     RegisterError.BlankDisplayName -> stringResource(Res.string.onboarding_error_blank_display_name)
+    is RegisterError.Lookup -> cause.message()
     is RegisterError.Registration -> cause.message()
 }
 

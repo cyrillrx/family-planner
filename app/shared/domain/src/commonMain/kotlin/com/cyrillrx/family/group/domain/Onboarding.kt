@@ -31,7 +31,7 @@ class Onboarding(
         if (name.isEmpty()) return Result.Failure(RegisterError.BlankDisplayName)
 
         val registration = userRepository.registeredUserId()
-            .getOrElse { return Result.Failure(RegisterError.Registration(it)) }
+            .getOrElse { return Result.Failure(RegisterError.Lookup(it)) }
 
         // TODO(#71): a store-backed repository discards this identifier; let the repository own it.
         val id = when (registration) {
@@ -99,6 +99,7 @@ enum class OnboardingStep { DISPLAY_NAME, GROUP_CHOICE }
 
 sealed interface RegisterError : Error {
     data object BlankDisplayName : RegisterError
+    data class Lookup(val cause: NoAnswer) : RegisterError
     data class Registration(val cause: RegisterUserError) : RegisterError
 }
 
