@@ -7,8 +7,8 @@ import dev.gitlive.firebase.FirebaseException
 /** Reports a failure of Firebase as [StoreUnavailable], and lets any other exception through as a defect. */
 internal inline fun <T> firebaseCall(call: () -> Result<T, StoreUnavailable>): Result<T, StoreUnavailable> = try {
     call()
-} catch (e: FirebaseException) {
-    Result.Failure(StoreUnavailable(e))
+} catch (failure: FirebaseException) {
+    Result.Failure(StoreUnavailable(failure))
 }
 
 /** An absence only the local cache reports: the server may hold the document. */

@@ -7,6 +7,6 @@ internal inline fun <T> catchUnexpected(call: () -> T): Result<T, Unexpected> = 
     Result.Success(call())
 } catch (cancellation: CancellationException) {
     throw cancellation
-} catch (e: Exception) {
-    Result.Failure(Unexpected(e))
+} catch (defect: Exception) {
+    Result.Failure(Unexpected(defect))
 }
