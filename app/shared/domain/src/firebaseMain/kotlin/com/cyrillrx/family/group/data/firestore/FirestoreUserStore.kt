@@ -26,7 +26,7 @@ internal class FirestoreUserStore(
         if (snapshot.exists) return@firebaseCall Result.Success(snapshot.data<UserDocument>())
 
         if (snapshot.metadata.isFromCache) {
-            return@firebaseCall unconfirmedAbsence("No user in the cache tells nothing of the server")
+            return@firebaseCall unconfirmedAbsence(message = "No user in the cache tells nothing of the server")
         }
 
         Result.Success(value = null)

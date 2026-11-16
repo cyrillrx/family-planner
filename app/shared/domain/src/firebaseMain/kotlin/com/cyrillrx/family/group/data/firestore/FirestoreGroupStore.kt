@@ -26,7 +26,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         val membership = memberships.documents.firstOrNull()
         if (membership == null) {
             return@firebaseCall if (memberships.metadata.isFromCache) {
-                unconfirmedAbsence("No membership in the cache tells nothing of the server")
+                unconfirmedAbsence(message = "No membership in the cache tells nothing of the server")
             } else {
                 Result.Success(GroupLookup.NoMembership)
             }
@@ -80,7 +80,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         if (group.exists) return Result.Success(GroupLookup.Found(groupId, group.toGroup()))
 
         if (group.metadata.isFromCache) {
-            return unconfirmedAbsence("No group in the cache tells nothing of the server")
+            return unconfirmedAbsence(message = "No group in the cache tells nothing of the server")
         }
 
         return Result.Success(GroupLookup.NotFound(groupId))
