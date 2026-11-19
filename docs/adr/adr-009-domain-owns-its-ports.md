@@ -17,7 +17,7 @@ The document types and the wire types stay in `core:model`, where [ADR-005](adr-
 
 **The repository keeps the taxonomy.** It decides what an absence means, and tells a defect of the client apart from a store that gave no answer.
 
-**The api interfaces follow when they are next touched.** `UserApi` and `InvitationApi` still sit in `data/`, as ADR-004 placed them; moving them into the domain is tracked as a follow-up, and nothing new goes into `data/` as an interface.
+**The api interfaces follow when they are next touched.** `UserApi` and `InvitationApi` still sit in `data/`, as ADR-004 placed them; moving them into the domain is tracked by [#100](https://github.com/cyrillrx/family-planner/issues/100), and nothing new goes into `data/` as an interface.
 
 ## Context
 
