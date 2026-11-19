@@ -18,15 +18,15 @@ import kotlinx.serialization.Serializable
 
 internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : GroupStore {
 
-    override suspend fun findGroupOf(credential: String): Result<GroupLookup, StoreUnavailable> = firebaseCall {
+    override suspend fun findGroupOf(credential: String): Result<GroupLookup, StoreUnavailable> = callFirebase {
         val memberships = firestore.collectionGroup(MEMBERS)
             .where { "credential" equalTo credential }
             .limit(1)
             .get()
         val membership = memberships.documents.firstOrNull()
         if (membership == null) {
-            return@firebaseCall if (memberships.metadata.isFromCache) {
-                unconfirmedAbsence(message = "No membership in the cache tells nothing of the server")
+            return@callFirebase if (memberships.metadata.isFromCache) {
+                failWithUnconfirmedAbsence(message = "No membership in the cache tells nothing of the server")
             } else {
                 Result.Success(GroupLookup.NoMembership)
             }
@@ -42,7 +42,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
             .document(checkNotNull(founder.credential) { "A membership is addressed by its credential" })
 
         // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
-        return firebaseCall {
+        return callFirebase {
             firestore.batch()
                 .set(groupReference, group.toStored())
                 .set(founderReference, founder.toStored())
@@ -52,7 +52,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         }
     }
 
-    override suspend fun leave(groupId: String, credential: String): Result<Unit, StoreUnavailable> = firebaseCall {
+    override suspend fun leave(groupId: String, credential: String): Result<Unit, StoreUnavailable> = callFirebase {
         // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
         groups().document(groupId).collection(MEMBERS).document(credential).delete()
 
@@ -69,7 +69,7 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         if (group.exists) return Result.Success(GroupLookup.Found(groupId, group.toGroup()))
 
         if (group.metadata.isFromCache) {
-            return unconfirmedAbsence(message = "No group in the cache tells nothing of the server")
+            return failWithUnconfirmedAbsence(message = "No group in the cache tells nothing of the server")
         }
 
         return Result.Success(GroupLookup.NotFound(groupId))

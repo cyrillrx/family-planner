@@ -14,26 +14,26 @@ internal class FirestoreUserStore(
 
     override suspend fun credential(): String? = auth.currentUser?.uid
 
-    override suspend fun signInAnonymously(): Result<String, StoreUnavailable> = firebaseCall {
+    override suspend fun signInAnonymously(): Result<String, StoreUnavailable> = callFirebase {
         val user = checkNotNull(auth.signInAnonymously().user) { "Anonymous sign-in answered without a user" }
 
         Result.Success(user.uid)
     }
 
-    override suspend fun find(credential: String): Result<UserDocument?, StoreUnavailable> = firebaseCall {
+    override suspend fun find(credential: String): Result<UserDocument?, StoreUnavailable> = callFirebase {
         val snapshot = users().document(credential).get()
 
-        if (snapshot.exists) return@firebaseCall Result.Success(snapshot.data<UserDocument>())
+        if (snapshot.exists) return@callFirebase Result.Success(snapshot.data<UserDocument>())
 
         if (snapshot.metadata.isFromCache) {
-            return@firebaseCall unconfirmedAbsence(message = "No user in the cache tells nothing of the server")
+            return@callFirebase failWithUnconfirmedAbsence(message = "No user in the cache tells nothing of the server")
         }
 
         Result.Success(value = null)
     }
 
     override suspend fun save(credential: String, document: UserDocument): Result<Unit, StoreUnavailable> =
-        firebaseCall {
+        callFirebase {
             // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
             users().document(credential).set(document)
 
