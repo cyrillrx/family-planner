@@ -199,7 +199,7 @@ private class FakeUserStore(
 
         anonymousSignIns++
 
-        return Result.Success("anonymous-uid".also { credential = it })
+        return Result.Success(value = "anonymous-uid".also { credential = it })
     }
 
     override suspend fun find(credential: String): Result<UserDocument?, StoreUnavailable> {
