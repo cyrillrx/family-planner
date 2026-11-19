@@ -8,6 +8,6 @@ internal inline fun <T> catchUnexpected(call: () -> T): Result<T, Unexpected> = 
 } catch (cancellation: CancellationException) {
     throw cancellation
 } catch (defect: Exception) {
-    // TODO(#38): record the defect, which nothing reads once it is on screen.
+    // TODO(#38): record the defect.
     Result.Failure(Unexpected(defect))
 }
