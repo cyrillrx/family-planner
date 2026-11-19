@@ -44,19 +44,8 @@ internal class FirestoreGroupStore(private val firestore: FirebaseFirestore) : G
         // TODO(#67): waiting for the server's acknowledgement blocks every caller while offline.
         return firebaseCall {
             firestore.batch()
-                .set(
-                    groupReference,
-                    StoredGroup(id = group.id, name = group.name, createdAt = Timestamp.ServerTimestamp),
-                )
-                .set(
-                    founderReference,
-                    StoredMember(
-                        userId = founder.userId,
-                        groupId = founder.groupId,
-                        credential = founder.credential,
-                        joinedAt = Timestamp.ServerTimestamp,
-                    ),
-                )
+                .set(groupReference, group.toStored())
+                .set(founderReference, founder.toStored())
                 .commit()
 
             Result.Success(Unit)
@@ -106,6 +95,15 @@ private class StoredMember(
     val groupId: String? = null,
     val credential: String? = null,
     val joinedAt: BaseTimestamp? = null,
+)
+
+private fun GroupDocument.toStored() = StoredGroup(id = id, name = name, createdAt = Timestamp.ServerTimestamp)
+
+private fun MemberDocument.toStored() = StoredMember(
+    userId = userId,
+    groupId = groupId,
+    credential = credential,
+    joinedAt = Timestamp.ServerTimestamp,
 )
 
 private fun DocumentSnapshot.toGroup(): GroupDocument {
