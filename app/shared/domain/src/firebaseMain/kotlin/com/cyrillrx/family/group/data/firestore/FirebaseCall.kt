@@ -8,6 +8,7 @@ import dev.gitlive.firebase.FirebaseException
 internal inline fun <T> callFirebase(call: () -> Result<T, StoreUnavailable>): Result<T, StoreUnavailable> = try {
     call()
 } catch (failure: FirebaseException) {
+    // TODO(#99): a call the store refused is no store out of reach.
     Result.Failure(StoreUnavailable(failure))
 }
 
