@@ -1,9 +1,11 @@
 # ADR-006: Firestore is reached through one store interface per aggregate
 
-> **Status**: Accepted | **Date**: 2026-10-17 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: [#58](https://github.com/cyrillrx/family-planner/issues/58) is the first repository backed by Firestore, and every repository after it will copy whatever shape it takes.
+> **Status**: Accepted | **Date**: 2026-10-17 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md), [ADR-009](adr-009-domain-owns-its-ports.md) | **Context**: [#58](https://github.com/cyrillrx/family-planner/issues/58) is the first repository backed by Firestore, and every repository after it will copy whatever shape it takes.
 
 > [!IMPORTANT]
 > [ADR-008](adr-008-invitation-under-rules.md) gave redemption to the client, so the server no longer writes the membership as stated below. It still reads the group's documents to send notifications, which is enough to keep the document types in `core:model`.
+>
+> [ADR-009](adr-009-domain-owns-its-ports.md) moved the store interfaces into `domain/`, and made a store report its failure as a `StoreUnavailable` value that the adapter translates from the SDK's exceptions. The repository keeps the rest of the taxonomy. The rejection of implementing `UserApi` still stands, on a narrower ground: an `ApiResponse` is the envelope of an HTTP call, with an error id the server chooses, and a store's `Result` carries neither.
 
 ## Decision
 

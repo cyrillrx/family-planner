@@ -13,6 +13,7 @@ import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.presentation.AmnesicUserRepository
 import com.cyrillrx.family.presentation.CountingInvitationRepository
 import com.cyrillrx.family.presentation.MissingGroupRepository
+import com.cyrillrx.family.presentation.UNREACHABLE
 import com.cyrillrx.family.presentation.UnavailableUserRepository
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
@@ -215,7 +216,7 @@ class JoinGroupViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            JoinGroupState(code = ACCEPTED_CODE, error = JoinGroupError.StoreUnavailable),
+            JoinGroupState(code = ACCEPTED_CODE, error = JoinGroupError.Lookup(UNREACHABLE)),
             viewModel.state.value,
         )
     }

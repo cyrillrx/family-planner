@@ -1,7 +1,6 @@
 package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
-import com.cyrillrx.core.domain.getOrNull
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Member
@@ -16,7 +15,7 @@ class RamGroupRepositoryTest {
 
     @Test
     fun `has no group before one is set`() = runTest {
-        assertEquals(Result.Success(value = null), RamGroupRepository().group())
+        assertEquals(Result.Success(Membership.NoGroup), RamGroupRepository().group())
     }
 
     @Test
@@ -25,7 +24,7 @@ class RamGroupRepositoryTest {
 
         repository.create(group(), founder = UserId("alice"))
 
-        assertEquals(Result.Success(group()), repository.group())
+        assertEquals(Result.Success(Membership.InGroup(group())), repository.group())
         assertEquals(listOf(member("alice")), repository.observeMembers(GROUP).first())
     }
 
@@ -35,7 +34,7 @@ class RamGroupRepositoryTest {
         repository.create(group(), founder = UserId("alice"))
 
         assertEquals(
-            Result.Failure(CreateGroupWriteError.AlreadyInAGroup),
+            Result.Failure(AlreadyInAGroup),
             repository.create(group(), founder = UserId("bob")),
         )
     }
@@ -46,7 +45,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group())
 
-        assertEquals(Result.Success(group()), repository.group())
+        assertEquals(Result.Success(Membership.InGroup(group())), repository.group())
     }
 
     @Test
@@ -56,7 +55,7 @@ class RamGroupRepositoryTest {
 
         repository.setGroup(group().copy(name = "Other"))
 
-        assertEquals("Other", repository.group().getOrNull()?.name)
+        assertEquals(Result.Success(Membership.InGroup(group().copy(name = "Other"))), repository.group())
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.cyrillrx.family.group.domain
 
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.model.User
-import com.cyrillrx.family.group.model.UserId
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -14,7 +13,8 @@ class RamUserRepository : UserRepository {
     /** A thread-safe box for the same reason as [UserRepositoryImpl]'s: writers and readers differ. */
     private val registered = MutableStateFlow<User?>(null)
 
-    override suspend fun registeredUserId(): Result<UserId?, StoreUnavailable> = Result.Success(registered.value?.id)
+    override suspend fun registeredUserId(): Result<Registration, NoAnswer> =
+        Result.Success(registered.value?.id?.let(Registration::Registered) ?: Registration.NotRegistered)
 
     override suspend fun register(user: User): Result<User, RegisterUserError> {
         registered.value = user

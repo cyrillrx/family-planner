@@ -3,6 +3,7 @@ package com.cyrillrx.family.presentation.onboarding.joingroup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.JoinGroupError
 import com.cyrillrx.family.group.domain.Onboarding
 import kotlinx.coroutines.channels.Channel
@@ -42,7 +43,7 @@ class JoinGroupViewModel(private val onboarding: Onboarding) : ViewModel() {
             when (val redemption = onboarding.joinGroup(beforeSubmit.code)) {
                 is Result.Success -> joins.send(Unit)
 
-                is Result.Failure -> if (redemption.error == JoinGroupError.GroupNotFound) {
+                is Result.Failure -> if (redemption.error == JoinGroupError.Lookup(GroupNotFound)) {
                     state.value = beforeSubmit
                     missingGroups.send(Unit)
                 } else {

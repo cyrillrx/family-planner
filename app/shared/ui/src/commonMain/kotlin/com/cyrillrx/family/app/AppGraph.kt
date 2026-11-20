@@ -1,6 +1,5 @@
 package com.cyrillrx.family.app
 
-import com.cyrillrx.family.group.data.UserStore
 import com.cyrillrx.family.group.data.firestore.firestoreGroupStore
 import com.cyrillrx.family.group.data.firestore.firestoreUserStore
 import com.cyrillrx.family.group.domain.GroupRepository
@@ -12,6 +11,7 @@ import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.StoreGroupRepository
 import com.cyrillrx.family.group.domain.StoreUserRepository
 import com.cyrillrx.family.group.domain.UserRepository
+import com.cyrillrx.family.group.domain.UserStore
 import com.cyrillrx.family.start.domain.AppStart
 
 class AppGraph(

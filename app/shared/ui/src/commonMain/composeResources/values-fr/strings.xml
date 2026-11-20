@@ -24,7 +24,7 @@
     <string name="onboarding_name_continue">Continuer</string>
 
     <string name="onboarding_error_blank_display_name">Saisissez un nom pour continuer.</string>
-    <string name="onboarding_error_unexpected">Une erreur est survenue. Réessayez.</string>
+    <string name="error_unexpected">Une erreur est survenue. Réessayez.</string>
 
     <string name="error_store_unavailable">Impossible de joindre le serveur pour le moment. Vérifiez votre connexion et réessayez.</string>
     <string name="action_retry">Réessayer</string>
