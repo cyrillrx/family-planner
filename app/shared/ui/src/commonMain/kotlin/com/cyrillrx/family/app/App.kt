@@ -47,10 +47,14 @@ fun App(graph: AppGraph = AppGraph.shared) {
                     AppNavigation(graph, backStack)
                 }
 
-                // TODO(#90): resolve the start again once the store is reachable, and reconcile then.
-                is StartState.Failed if backStack.canResumeWithoutStart() -> AppNavigation(graph, backStack)
-
-                is StartState.Failed -> StartFailedScreen(state.error, onRetryClicked = startViewModel::retry)
+                is StartState.Failed -> {
+                    // TODO(#90): resolve the start again once the store is reachable, and reconcile then.
+                    if (backStack.canResumeWithoutStart()) {
+                        AppNavigation(graph, backStack)
+                    } else {
+                        StartFailedScreen(state.error, onRetryClicked = startViewModel::retry)
+                    }
+                }
             }
         }
     }
