@@ -1,6 +1,8 @@
 # ADR-007: Members sign in with Google, linking their anonymous identity
 
-> **Status**: Accepted | **Date**: 2026-10-23 | **Context**: Firebase now deletes an anonymous account 30 days after its creation, and the anonymous account is a member's only identity ([#73](https://github.com/cyrillrx/family-planner/issues/73)).
+**Status**: Accepted  
+**Date**: 2026-10-23  
+**Context**: Firebase now deletes an anonymous account 30 days after its creation, and the anonymous account is a member's only identity ([#73](https://github.com/cyrillrx/family-planner/issues/73)).
 
 ## Decision
 

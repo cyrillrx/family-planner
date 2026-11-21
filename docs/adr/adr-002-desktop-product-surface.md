@@ -1,6 +1,8 @@
 # ADR-002: Desktop becomes a secondary product surface
 
-> **Status**: Accepted | **Date**: 2026-09-02 | **Context**: Before the persistence and sync decision, which this one constrains.
+**Status**: Accepted  
+**Date**: 2026-09-02  
+**Context**: Before the persistence and sync decision, which this one constrains.
 
 ## Decision
 
