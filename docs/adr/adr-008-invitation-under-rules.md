@@ -1,6 +1,9 @@
 # ADR-008: Invitations are redeemed under Firestore rules, not by the server
 
-> **Status**: Accepted | **Date**: 2026-10-25 | **Amends**: [ADR-003](adr-003-persistence-and-sync.md), [ADR-004](adr-004-user-identity-and-membership.md), [ADR-005](adr-005-kotlin-server.md), [ADR-006](adr-006-firestore-behind-stores.md) | **Context**: The group, its memberships and its invitations are still in memory ([#77](https://github.com/cyrillrx/family-planner/issues/77)), and ADR-003 routes redemption through a `server/` that nothing hosts yet.
+**Status**: Accepted  
+**Date**: 2026-10-25  
+**Amends**: [ADR-003](adr-003-persistence-and-sync.md), [ADR-004](adr-004-user-identity-and-membership.md), [ADR-005](adr-005-kotlin-server.md), [ADR-006](adr-006-firestore-behind-stores.md)  
+**Context**: The group, its memberships and its invitations are still in memory ([#77](https://github.com/cyrillrx/family-planner/issues/77)), and ADR-003 routes redemption through a `server/` that nothing hosts yet.
 
 ## Decision
 

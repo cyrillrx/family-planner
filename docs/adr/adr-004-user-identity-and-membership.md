@@ -1,6 +1,9 @@
 # ADR-004: User identity is separated from group membership
 
-> **Status**: Accepted | **Date**: 2026-09-12 | **Amended by**: [ADR-008](adr-008-invitation-under-rules.md) | **Context**: V0 onboarding, before implementation — writing the first caller of the group domain exposed a hole in it.
+**Status**: Accepted  
+**Date**: 2026-09-12  
+**Amended by**: [ADR-008](adr-008-invitation-under-rules.md)  
+**Context**: V0 onboarding, before implementation: writing the first caller of the group domain exposed a hole in it.
 
 > [!IMPORTANT]
 > [ADR-008](adr-008-invitation-under-rules.md) moved redemption out of `server/` and into Firestore security rules. Read what follows about `InvitationApi.redeem`, the service writing `Member` and the `ApiError` id behind a `RedeemInvitationError` as superseded: the client writes the membership in a transaction the rules check, and reads the refusal's reason from the invitation. In Firestore a membership is addressed by its member's credential and an invitation by its code. An address is not an identity: the split between `User` and `Member`, and the keys of the domain, are unchanged.

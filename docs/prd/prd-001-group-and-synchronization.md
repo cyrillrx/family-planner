@@ -1,6 +1,8 @@
-# PRD-001 — Group and synchronization
+# PRD-001: Group and synchronization
 
-> **Status**: Approved | **Version**: 0.5 | **Last updated**: 2026-10-23
+**Status**: Approved  
+**Version**: 0.5  
+**Last updated**: 2026-10-23
 
 ## Overview
 
