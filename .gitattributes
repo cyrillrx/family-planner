@@ -1,0 +1,12 @@
+# Text files use lf, as in .editorconfig
+* text=auto eol=lf
+
+# Linux start scripts should use lf, at any depth
+**/gradlew text eol=lf
+
+# These are Windows script files and should use crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files should be left untouched
+*.jar binary
