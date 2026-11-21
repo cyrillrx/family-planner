@@ -25,10 +25,7 @@ class UserRepositoryImpl internal constructor(
      */
     private val current = MutableStateFlow(initial)
 
-    /**
-     * Forgotten when the process dies. Persisting the identifier is infrastructure and belongs
-     * to the Firebase implementation, per ADR-004.
-     */
+    /** Forgotten when the process dies. */
     override suspend fun registeredUserId(): Result<Registration, NoAnswer> =
         Result.Success(current.value?.let(Registration::Registered) ?: Registration.NotRegistered)
 

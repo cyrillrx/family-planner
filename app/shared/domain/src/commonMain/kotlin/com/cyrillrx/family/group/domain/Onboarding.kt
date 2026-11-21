@@ -84,8 +84,6 @@ class Onboarding(
 
         if (membership is Membership.InGroup) return Result.Failure(JoinGroupError.AlreadyInAGroup)
 
-        // Only the redemption. The membership is the service's write, never ours (ADR-003), and the
-        // redeemed invitation stays here — it carries the code.
         return when (val redeemed = invitationRepository.redeem(trimmed, userId)) {
             is Result.Success -> Result.Success(redeemed.value.groupId)
             is Result.Failure -> Result.Failure(JoinGroupError.Redemption(redeemed.error))

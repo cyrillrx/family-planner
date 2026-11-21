@@ -328,7 +328,6 @@ class OnboardingTest {
         groupRepository: GroupRepository = RamGroupRepository(),
         invitationRepository: InvitationRepository = SilentInvitationRepository,
     ): Onboarding {
-        // One generator for both, as the production default does: the factory derives its own from it.
         val ids = CountingIdGenerator()
 
         return Onboarding(
@@ -388,7 +387,6 @@ class OnboardingTest {
         override fun now(): Instant = NOW
     }
 
-    /** Answers with whatever it was asked to register, as the real service would. */
     private class EchoingUserApi : UserApi {
         var lastRequest: ApiRegisterUserRequest? = null
             private set

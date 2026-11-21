@@ -91,7 +91,6 @@ fun RedeemInvitationError.message(): String = when (this) {
     RedeemInvitationError.Revoked -> stringResource(Res.string.onboarding_error_code_revoked)
     RedeemInvitationError.AlreadyRedeemed -> stringResource(Res.string.onboarding_error_code_already_redeemed)
     RedeemInvitationError.Expired -> stringResource(Res.string.onboarding_error_code_expired)
-    // The likeliest refusal of them all: a code typed by hand, or pasted one character short.
     RedeemInvitationError.Unknown -> stringResource(Res.string.onboarding_error_code_unknown)
     RedeemInvitationError.EmptyResponse,
     is RedeemInvitationError.IncompleteResponse,
