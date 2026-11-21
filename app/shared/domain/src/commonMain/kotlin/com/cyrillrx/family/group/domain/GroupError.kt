@@ -17,5 +17,4 @@ sealed interface NoAnswer : GroupError.Read, GroupError.Write, RegisterUserError
 
 data class StoreUnavailable(override val cause: Throwable) : NoAnswer
 
-/** A defect of this client rather than a failure of the store. */
-data class Unexpected(override val cause: Throwable) : NoAnswer
+data class ClientDefect(override val cause: Throwable) : NoAnswer

@@ -135,21 +135,21 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
-    fun `reports a defect of the read as unexpected rather than as an unreachable store`() = runTest {
+    fun `reports a defect of the read as a client defect rather than as an unreachable store`() = runTest {
         val defect = IllegalStateException("defect")
 
         assertEquals(
-            Result.Failure(Unexpected(defect)),
+            Result.Failure(ClientDefect(defect)),
             StoreGroupRepository(FakeGroupStore(thrown = defect), CredentialOnly(credential = "uid-1")).group(),
         )
     }
 
     @Test
-    fun `reports a defect of the departure as unexpected`() = runTest {
+    fun `reports a defect of the departure as a client defect`() = runTest {
         val defect = IllegalStateException("defect")
 
         assertEquals(
-            Result.Failure(Unexpected(defect)),
+            Result.Failure(ClientDefect(defect)),
             StoreGroupRepository(
                 FakeGroupStore(thrown = defect),
                 CredentialOnly(credential = "uid-1"),
@@ -191,12 +191,12 @@ class StoreGroupRepositoryTest {
     }
 
     @Test
-    fun `reports a creation without a credential to write it under as unexpected`() = runTest {
+    fun `reports a creation without a credential to write it under as a client defect`() = runTest {
         val store = FakeGroupStore()
 
         val result = StoreGroupRepository(store, CredentialOnly(credential = null)).create(group(), UserId("user-1"))
 
-        assertIs<Unexpected>(assertIs<Result.Failure<*>>(result).error)
+        assertIs<ClientDefect>(assertIs<Result.Failure<*>>(result).error)
         assertEquals(emptyList(), store.creations)
     }
 

@@ -1,6 +1,7 @@
 package com.cyrillrx.family.presentation
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.ClientDefect
 import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.GroupRepository
 import com.cyrillrx.family.group.domain.InvitationRepository
@@ -11,7 +12,6 @@ import com.cyrillrx.family.group.domain.RegisterUserError
 import com.cyrillrx.family.group.domain.Registration
 import com.cyrillrx.family.group.domain.SampleInvitationRepository
 import com.cyrillrx.family.group.domain.StoreUnavailable
-import com.cyrillrx.family.group.domain.Unexpected
 import com.cyrillrx.family.group.domain.UserRepository
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
@@ -23,7 +23,7 @@ internal val NOW: Instant = Instant.fromEpochMilliseconds(1_700_000_000_000)
 
 internal val UNREACHABLE = StoreUnavailable(IllegalStateException("unreachable"))
 
-internal val DEFECT = Unexpected(IllegalStateException("defect"))
+internal val DEFECT = ClientDefect(IllegalStateException("defect"))
 
 internal suspend fun groupRepositoryWithAGroup() = RamGroupRepository().apply {
     setGroup(Group(id = GroupId("group-1"), name = "Home", createdAt = NOW))

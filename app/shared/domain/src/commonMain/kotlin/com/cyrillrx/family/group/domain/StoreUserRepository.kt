@@ -14,9 +14,9 @@ import com.cyrillrx.family.group.model.UserId
  */
 class StoreUserRepository(private val store: UserStore) : UserRepository {
 
-    override suspend fun registeredUserId(): Result<Registration, NoAnswer> = catchUnexpected { read() }.flatten()
+    override suspend fun registeredUserId(): Result<Registration, NoAnswer> = catchClientDefect { read() }.flatten()
 
-    override suspend fun register(user: User): Result<User, RegisterUserError> = catchUnexpected {
+    override suspend fun register(user: User): Result<User, RegisterUserError> = catchClientDefect {
         save(user)
     }.flatten()
 

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.cyrillrx.family.group.domain.AlreadyInAGroup
+import com.cyrillrx.family.group.domain.ClientDefect
 import com.cyrillrx.family.group.domain.CreateGroupError
 import com.cyrillrx.family.group.domain.GroupError
 import com.cyrillrx.family.group.domain.GroupNotFound
@@ -16,7 +17,6 @@ import com.cyrillrx.family.group.domain.RedeemInvitationError
 import com.cyrillrx.family.group.domain.RegisterError
 import com.cyrillrx.family.group.domain.RegisterUserError
 import com.cyrillrx.family.group.domain.StoreUnavailable
-import com.cyrillrx.family.group.domain.Unexpected
 import familyplanner.app.shared.ui.generated.resources.Res
 import familyplanner.app.shared.ui.generated.resources.error_store_unavailable
 import familyplanner.app.shared.ui.generated.resources.error_unexpected
@@ -83,7 +83,7 @@ fun GroupError.message(): String = when (this) {
 @Composable
 fun NoAnswer.message(): String = when (this) {
     is StoreUnavailable -> stringResource(Res.string.error_store_unavailable)
-    is Unexpected -> stringResource(Res.string.error_unexpected)
+    is ClientDefect -> stringResource(Res.string.error_unexpected)
 }
 
 @Composable

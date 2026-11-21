@@ -18,15 +18,15 @@ class StoreGroupRepository(
     private val users: UserStore,
 ) : GroupRepository {
 
-    override suspend fun group(): Result<Membership, GroupError.Read> = catchUnexpected { read() }.flatten()
+    override suspend fun group(): Result<Membership, GroupError.Read> = catchClientDefect { read() }.flatten()
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
         store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, GroupError.Write> =
-        catchUnexpected { write(group, founder) }.flatten()
+        catchClientDefect { write(group, founder) }.flatten()
 
-    override suspend fun leaveMissingGroup(): Result<Unit, NoAnswer> = catchUnexpected { leave() }.flatten()
+    override suspend fun leaveMissingGroup(): Result<Unit, NoAnswer> = catchClientDefect { leave() }.flatten()
 
     private suspend fun read(): Result<Membership, GroupError.Read> {
         val credential = users.credential() ?: return Result.Success(Membership.NoGroup)

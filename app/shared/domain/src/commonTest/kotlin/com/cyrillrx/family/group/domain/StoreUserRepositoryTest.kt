@@ -54,11 +54,11 @@ class StoreUserRepositoryTest {
     }
 
     @Test
-    fun `reports a defect of the read as unexpected rather than as an unreachable store`() = runTest {
+    fun `reports a defect of the read as a client defect rather than as an unreachable store`() = runTest {
         val defect = IllegalStateException("defect")
         val store = FakeUserStore(credential = "uid-1", thrown = defect)
 
-        assertEquals(Result.Failure(Unexpected(defect)), StoreUserRepository(store).registeredUserId())
+        assertEquals(Result.Failure(ClientDefect(defect)), StoreUserRepository(store).registeredUserId())
     }
 
     @Test
@@ -155,11 +155,11 @@ class StoreUserRepositoryTest {
     }
 
     @Test
-    fun `reports a defect of the registration as unexpected`() = runTest {
+    fun `reports a defect of the registration as a client defect`() = runTest {
         val defect = IllegalStateException("defect")
 
         assertEquals(
-            Result.Failure(Unexpected(defect)),
+            Result.Failure(ClientDefect(defect)),
             StoreUserRepository(FakeUserStore(thrown = defect)).register(cyril()),
         )
     }
