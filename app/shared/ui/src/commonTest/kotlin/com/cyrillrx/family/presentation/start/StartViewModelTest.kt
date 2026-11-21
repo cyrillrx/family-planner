@@ -12,6 +12,7 @@ import com.cyrillrx.family.navigation.OnboardingRoute
 import com.cyrillrx.family.presentation.CountingGroupRepository
 import com.cyrillrx.family.presentation.IntermittentGroupRepository
 import com.cyrillrx.family.presentation.MissingGroupRepository
+import com.cyrillrx.family.presentation.UNREACHABLE
 import com.cyrillrx.family.presentation.groupRepositoryWithAGroup
 import com.cyrillrx.family.presentation.registeredUserRepository
 import com.cyrillrx.family.start.domain.AppStart
@@ -69,7 +70,7 @@ class StartViewModelTest {
 
         advanceUntilIdle()
 
-        assertEquals(StartState.Unavailable, viewModel.state.value)
+        assertEquals(StartState.Failed(UNREACHABLE), viewModel.state.value)
     }
 
     @Test

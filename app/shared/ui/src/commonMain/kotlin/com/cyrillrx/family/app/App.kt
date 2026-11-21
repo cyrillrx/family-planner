@@ -24,9 +24,9 @@ import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundScreen
 import com.cyrillrx.family.presentation.groupnotfound.GroupNotFoundViewModel
 import com.cyrillrx.family.presentation.home.HomeScreen
 import com.cyrillrx.family.presentation.home.HomeViewModel
+import com.cyrillrx.family.presentation.start.StartFailedScreen
 import com.cyrillrx.family.presentation.start.StartResolvingScreen
 import com.cyrillrx.family.presentation.start.StartState
-import com.cyrillrx.family.presentation.start.StartUnavailableScreen
 import com.cyrillrx.family.presentation.start.StartViewModel
 
 @Composable
@@ -47,10 +47,14 @@ fun App(graph: AppGraph = AppGraph.shared) {
                     AppNavigation(graph, backStack)
                 }
 
-                // TODO(#90): resolve the start again once the store is reachable, and reconcile then.
-                StartState.Unavailable if backStack.canResumeWithoutStart() -> AppNavigation(graph, backStack)
-
-                StartState.Unavailable -> StartUnavailableScreen(onRetryClicked = startViewModel::retry)
+                is StartState.Failed -> {
+                    // TODO(#90): resolve the start again once the store is reachable, and reconcile then.
+                    if (backStack.canResumeWithoutStart()) {
+                        AppNavigation(graph, backStack)
+                    } else {
+                        StartFailedScreen(state.error, onRetryClicked = startViewModel::retry)
+                    }
+                }
             }
         }
     }

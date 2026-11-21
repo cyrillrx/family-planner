@@ -1,25 +1,32 @@
 package com.cyrillrx.family.start.domain
 
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.core.domain.getOrElse
 import com.cyrillrx.core.domain.map
 import com.cyrillrx.family.group.domain.GroupNotFound
 import com.cyrillrx.family.group.domain.GroupRepository
+import com.cyrillrx.family.group.domain.Membership
+import com.cyrillrx.family.group.domain.NoAnswer
 import com.cyrillrx.family.group.domain.Onboarding
 import com.cyrillrx.family.group.domain.OnboardingStep
-import com.cyrillrx.family.group.domain.StoreUnavailable
 
 class AppStart(
     private val groupRepository: GroupRepository,
     private val onboarding: Onboarding,
 ) {
 
-    suspend fun destination(): Result<StartDestination, StoreUnavailable> = when (val group = groupRepository.group()) {
-        is Result.Failure -> when (group.error) {
-            GroupNotFound -> Result.Success(StartDestination.GroupNotFound)
-            StoreUnavailable -> Result.Failure(StoreUnavailable)
+    suspend fun destination(): Result<StartDestination, NoAnswer> {
+        val membership = groupRepository.group().getOrElse { error ->
+            return when (error) {
+                GroupNotFound -> Result.Success(StartDestination.GroupNotFound)
+                is NoAnswer -> Result.Failure(error)
+            }
         }
-        is Result.Success if group.value == null -> onboarding.currentStep().map(StartDestination::Onboarding)
-        is Result.Success -> Result.Success(StartDestination.Home)
+
+        return when (membership) {
+            is Membership.InGroup -> Result.Success(StartDestination.Home)
+            Membership.NoGroup -> onboarding.currentStep().map(StartDestination::Onboarding)
+        }
     }
 }
 

@@ -2,7 +2,6 @@ package com.cyrillrx.core.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class ResultTest {
 
@@ -19,16 +18,6 @@ class ResultTest {
     }
 
     @Test
-    fun `gives the value of a success`() {
-        assertEquals(1, Result.Success(value = 1).getOrNull())
-    }
-
-    @Test
-    fun `gives nothing for a failure`() {
-        assertNull(Result.Failure(Refusal).getOrNull())
-    }
-
-    @Test
     fun `gives the value of a success rather than the fallback`() {
         assertEquals(1, Result.Success(value = 1).getOrElse { 2 })
     }
@@ -38,6 +27,27 @@ class ResultTest {
         val failure: Result<Int, Refusal> = Result.Failure(Refusal)
 
         assertEquals(2, failure.getOrElse { 2 })
+    }
+
+    @Test
+    fun `unwraps the success held by a success`() {
+        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Success(value = 1))
+
+        assertEquals(Result.Success(value = 1), nested.flatten())
+    }
+
+    @Test
+    fun `unwraps the failure held by a success`() {
+        val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Failure(Refusal))
+
+        assertEquals(Result.Failure(Refusal), nested.flatten())
+    }
+
+    @Test
+    fun `keeps the error of a failure through a flatten`() {
+        val failure: Result<Result<Int, Refusal>, Refusal> = Result.Failure(Refusal)
+
+        assertEquals(Result.Failure(Refusal), failure.flatten())
     }
 
     private data object Refusal : Error

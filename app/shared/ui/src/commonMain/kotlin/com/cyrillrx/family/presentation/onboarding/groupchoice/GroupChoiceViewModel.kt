@@ -3,7 +3,10 @@ package com.cyrillrx.family.presentation.onboarding.groupchoice
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cyrillrx.core.domain.Result
+import com.cyrillrx.family.group.domain.AlreadyInAGroup
 import com.cyrillrx.family.group.domain.CreateGroupError
+import com.cyrillrx.family.group.domain.GroupNotFound
+import com.cyrillrx.family.group.domain.NoAnswer
 import com.cyrillrx.family.group.domain.Onboarding
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -42,14 +45,16 @@ class GroupChoiceViewModel(private val onboarding: Onboarding) : ViewModel() {
 
     private suspend fun refuse(beforeSubmit: GroupChoiceState, error: CreateGroupError) {
         when (error) {
-            CreateGroupError.GroupAlreadyExists -> groupsReady.send(Unit)
-            CreateGroupError.GroupNotFound -> {
-                state.value = beforeSubmit
-                missingGroups.send(Unit)
+            is CreateGroupError.Creation -> when (error.cause) {
+                AlreadyInAGroup -> groupsReady.send(Unit)
+                GroupNotFound -> {
+                    state.value = beforeSubmit
+                    missingGroups.send(Unit)
+                }
+                is NoAnswer -> state.value = beforeSubmit.copy(error = error)
             }
-            CreateGroupError.StoreUnavailable,
+            is CreateGroupError.Lookup,
             CreateGroupError.NotRegistered,
-            is CreateGroupError.Creation,
             -> state.value = beforeSubmit.copy(error = error)
         }
     }
