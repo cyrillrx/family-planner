@@ -1,6 +1,9 @@
 # ADR-009: The domain owns the interfaces it depends on, and a store reports its failure as a value
 
-> **Status**: Accepted | **Date**: 2026-11-16 | **Amends**: [ADR-004](adr-004-user-identity-and-membership.md), [ADR-006](adr-006-firestore-behind-stores.md) | **Context**: [#94](https://github.com/cyrillrx/family-planner/issues/94) gave the stores typed results, which made the domain name a store failure, and placed the store interfaces where ADR-006 said they live: in `data/`, below the domain that defines their contract.
+**Status**: Accepted  
+**Date**: 2026-11-16  
+**Amends**: [ADR-004](adr-004-user-identity-and-membership.md), [ADR-006](adr-006-firestore-behind-stores.md)  
+**Context**: [#94](https://github.com/cyrillrx/family-planner/issues/94) gave the stores typed results, which made the domain name a store failure, and placed the store interfaces where ADR-006 said they live: in `data/`, below the domain that defines their contract.
 
 ## Decision
 
