@@ -38,7 +38,7 @@ class InvitationRepositoryImpl(
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (failure: Exception) {
-            logger.warn(API_LOG_TAG, failure) { "The server did not redeem the invitation" }
+            logger.warn(LogTag.API, failure) { "The server did not redeem the invitation" }
             Result.Failure(RedeemInvitationError.Unknown)
         }
 }

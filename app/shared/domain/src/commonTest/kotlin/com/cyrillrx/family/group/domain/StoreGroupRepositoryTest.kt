@@ -165,7 +165,7 @@ class StoreGroupRepositoryTest {
 
         StoreGroupRepository(FakeGroupStore(thrown = defect), CredentialOnly(credential = "uid-1"), logger).group()
 
-        assertEquals(listOf(Recorded(Severity.ERROR, STORE_LOG_TAG, defect)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.ERROR, LogTag.STORE, defect)), logger.recorded())
     }
 
     @Test
@@ -178,7 +178,7 @@ class StoreGroupRepositoryTest {
             logger,
         ).group()
 
-        assertEquals(listOf(Recorded(Severity.WARN, STORE_LOG_TAG, UNREACHABLE.cause)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.STORE, UNREACHABLE.cause)), logger.recorded())
     }
 
     @Test
@@ -188,7 +188,7 @@ class StoreGroupRepositoryTest {
 
         StoreGroupRepository(store, CredentialOnly(credential = "uid-1"), logger).group()
 
-        assertEquals(listOf(Recorded(Severity.WARN, STORE_LOG_TAG)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.STORE)), logger.recorded())
     }
 
     @Test

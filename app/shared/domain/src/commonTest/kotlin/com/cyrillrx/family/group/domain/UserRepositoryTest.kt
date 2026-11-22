@@ -124,7 +124,7 @@ class UserRepositoryTest {
 
         UserRepositoryImpl(ThrowingUserApi(failure), logger).register(User(UserId("user-1"), "Cyril"))
 
-        assertEquals(listOf(Recorded(Severity.WARN, API_LOG_TAG, failure)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.API, failure)), logger.recorded())
     }
 
     @Test

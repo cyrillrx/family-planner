@@ -69,7 +69,7 @@ class StoreUserRepositoryTest {
 
         StoreUserRepository(FakeUserStore(credential = "uid-1", thrown = defect), logger).registeredUserId()
 
-        assertEquals(listOf(Recorded(Severity.ERROR, STORE_LOG_TAG, defect)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.ERROR, LogTag.STORE, defect)), logger.recorded())
     }
 
     @Test
@@ -81,7 +81,7 @@ class StoreUserRepositoryTest {
             logger,
         ).register(User(UserId("user-1"), "Cyril"))
 
-        assertEquals(listOf(Recorded(Severity.WARN, STORE_LOG_TAG, UNREACHABLE.cause)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.STORE, UNREACHABLE.cause)), logger.recorded())
     }
 
     @Test

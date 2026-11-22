@@ -39,7 +39,7 @@ class UserRepositoryImpl internal constructor(
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (failure: Exception) {
-            logger.warn(API_LOG_TAG, failure) { "The server did not register the user" }
+            logger.warn(LogTag.API, failure) { "The server did not register the user" }
             Result.Failure(RegisterUserError.Unknown)
         }
 

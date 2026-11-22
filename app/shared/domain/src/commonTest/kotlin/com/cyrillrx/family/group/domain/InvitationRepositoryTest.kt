@@ -162,7 +162,7 @@ class InvitationRepositoryTest {
 
         InvitationRepositoryImpl(ThrowingInvitationApi(failure), logger).redeem(CODE, JOINER)
 
-        assertEquals(listOf(Recorded(Severity.WARN, API_LOG_TAG, failure)), logger.recorded())
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.API, failure)), logger.recorded())
     }
 
     @Test
