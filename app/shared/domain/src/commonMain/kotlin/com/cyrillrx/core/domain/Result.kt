@@ -15,6 +15,11 @@ inline fun <Data, E : Error> Result<Data, E>.getOrElse(onFailure: (E) -> Data): 
     is Result.Failure -> onFailure(error)
 }
 
+inline fun <Data, E : Error> Result<Data, E>.onFailure(action: (E) -> Unit): Result<Data, E> {
+    if (this is Result.Failure) action(error)
+    return this
+}
+
 fun <Data, E : Error> Result<Result<Data, E>, E>.flatten(): Result<Data, E> = when (this) {
     is Result.Success -> value
     is Result.Failure -> this

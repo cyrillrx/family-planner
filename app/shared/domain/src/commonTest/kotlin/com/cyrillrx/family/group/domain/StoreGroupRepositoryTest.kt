@@ -8,6 +8,7 @@ import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Member
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Severity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -155,6 +156,75 @@ class StoreGroupRepositoryTest {
                 CredentialOnly(credential = "uid-1"),
             ).leaveMissingGroup(),
         )
+    }
+
+    @Test
+    fun `records a defect of the client as an error carrying its cause`() = runTest {
+        val defect = IllegalStateException("defect")
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(FakeGroupStore(thrown = defect), CredentialOnly(credential = "uid-1"), logger).group()
+
+        assertEquals(listOf(Recorded(Severity.ERROR, LogTag.STORE, defect)), logger.recorded())
+    }
+
+    @Test
+    fun `records a store that gives no answer as a warning carrying its cause`() = runTest {
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(
+            FakeGroupStore(lookupFailure = UNREACHABLE),
+            CredentialOnly(credential = "uid-1"),
+            logger,
+        ).group()
+
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.STORE, UNREACHABLE.cause)), logger.recorded())
+    }
+
+    @Test
+    fun `records a membership of a missing group as a warning`() = runTest {
+        val store = FakeGroupStore().apply { missingGroupMemberships["uid-1"] = "group-1" }
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1"), logger).group()
+
+        assertEquals(listOf(Recorded(Severity.WARN, LogTag.STORE)), logger.recorded())
+    }
+
+    @Test
+    fun `records nothing when the group is found`() = runTest {
+        val store = FakeGroupStore().apply { groupsByCredential["uid-1"] = storedGroup() }
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(store, CredentialOnly(credential = "uid-1"), logger).group()
+
+        assertEquals(emptyList(), logger.recorded())
+    }
+
+    @Test
+    fun `records a defect of the creation`() = runTest {
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(
+            FakeGroupStore(),
+            CredentialOnly(credential = null),
+            logger,
+        ).create(group(), UserId("user-1"))
+
+        assertEquals(listOf(Severity.ERROR), logger.recorded().map(Recorded::severity))
+    }
+
+    @Test
+    fun `records a defect of the departure`() = runTest {
+        val logger = RecordingLogger()
+
+        StoreGroupRepository(
+            FakeGroupStore(thrown = IllegalStateException("defect")),
+            CredentialOnly(credential = "uid-1"),
+            logger,
+        ).leaveMissingGroup()
+
+        assertEquals(listOf(Severity.ERROR), logger.recorded().map(Recorded::severity))
     }
 
     @Test

@@ -9,15 +9,19 @@ import com.cyrillrx.family.group.domain.UserField.DISPLAY_NAME
 import com.cyrillrx.family.group.domain.UserField.ID
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Log
+import com.cyrillrx.logger.Logger
+import com.cyrillrx.logger.warn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.coroutines.cancellation.CancellationException
 
 class UserRepositoryImpl internal constructor(
     private val api: UserApi,
     initial: UserId?,
+    private val logger: Logger = Log,
 ) : UserRepository {
 
-    constructor(api: UserApi) : this(api, null)
+    constructor(api: UserApi, logger: Logger = Log) : this(api, null, logger)
 
     /**
      * A thread-safe box rather than a stream: nobody but [register] writes it, and it resumes
@@ -34,7 +38,8 @@ class UserRepositoryImpl internal constructor(
             api.register(user.toRegisterRequest()).toDomain()
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (e: Exception) {
+        } catch (failure: Exception) {
+            logger.warn(LogTag.API, failure) { "The server did not register the user" }
             Result.Failure(RegisterUserError.Unknown)
         }
 

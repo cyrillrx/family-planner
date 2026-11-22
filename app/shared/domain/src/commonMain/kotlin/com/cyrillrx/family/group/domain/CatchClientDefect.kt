@@ -8,6 +8,5 @@ internal inline fun <T> catchClientDefect(call: () -> T): Result<T, ClientDefect
 } catch (cancellation: CancellationException) {
     throw cancellation
 } catch (defect: Exception) {
-    // TODO(#38): record the defect.
     Result.Failure(ClientDefect(defect))
 }

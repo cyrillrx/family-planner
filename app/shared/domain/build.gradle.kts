@@ -106,6 +106,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.core.model)
             api(libs.kotlinx.coroutinesCore)
+            api(libs.logger)
         }
         // Not in commonMain: on iOS the SDK does not link the Firebase frameworks transitively,
         // so that target needs CocoaPods in the build before it can carry the dependency.

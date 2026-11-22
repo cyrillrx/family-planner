@@ -30,6 +30,25 @@ class ResultTest {
     }
 
     @Test
+    fun `hands the error of a failure to its failure action and keeps the failure`() {
+        val failure: Result<Int, Refusal> = Result.Failure(Refusal)
+        val handed = mutableListOf<Refusal>()
+
+        val result = failure.onFailure { handed += it }
+
+        assertEquals(listOf(Refusal) to failure, handed to result)
+    }
+
+    @Test
+    fun `runs no failure action on a success`() {
+        val handed = mutableListOf<Refusal>()
+
+        Result.Success(value = 1).onFailure { _: Refusal -> handed += Refusal }
+
+        assertEquals(emptyList(), handed)
+    }
+
+    @Test
     fun `unwraps the success held by a success`() {
         val nested: Result<Result<Int, Refusal>, Refusal> = Result.Success(Result.Success(value = 1))
 
