@@ -4,6 +4,7 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.family.group.document.UserDocument
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Severity
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
@@ -59,6 +60,28 @@ class StoreUserRepositoryTest {
         val store = FakeUserStore(credential = "uid-1", thrown = defect)
 
         assertEquals(Result.Failure(ClientDefect(defect)), StoreUserRepository(store).registeredUserId())
+    }
+
+    @Test
+    fun `records a defect of the read as an error carrying its cause`() = runTest {
+        val defect = IllegalStateException("defect")
+        val logger = RecordingLogger()
+
+        StoreUserRepository(FakeUserStore(credential = "uid-1", thrown = defect), logger).registeredUserId()
+
+        assertEquals(listOf(Recorded(Severity.ERROR, STORE_LOG_TAG, defect)), logger.recorded())
+    }
+
+    @Test
+    fun `records a registration the store refused as a warning carrying its cause`() = runTest {
+        val logger = RecordingLogger()
+
+        StoreUserRepository(
+            FakeUserStore(signInFailure = UNREACHABLE),
+            logger,
+        ).register(User(UserId("user-1"), "Cyril"))
+
+        assertEquals(listOf(Recorded(Severity.WARN, STORE_LOG_TAG, UNREACHABLE.cause)), logger.recorded())
     }
 
     @Test

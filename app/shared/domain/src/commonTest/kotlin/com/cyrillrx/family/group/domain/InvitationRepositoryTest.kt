@@ -10,6 +10,7 @@ import com.cyrillrx.family.group.model.Invitation
 import com.cyrillrx.family.group.model.InvitationId
 import com.cyrillrx.family.group.model.RedeemedInvitation
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Severity
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
@@ -152,6 +153,16 @@ class InvitationRepositoryTest {
             repository(ThrowingInvitationApi(IllegalStateException("no network")))
                 .redeem(CODE, JOINER),
         )
+    }
+
+    @Test
+    fun `records a transport failure as a warning carrying its cause`() = runTest {
+        val failure = IllegalStateException("no network")
+        val logger = RecordingLogger()
+
+        InvitationRepositoryImpl(ThrowingInvitationApi(failure), logger).redeem(CODE, JOINER)
+
+        assertEquals(listOf(Recorded(Severity.WARN, API_LOG_TAG, failure)), logger.recorded())
     }
 
     @Test

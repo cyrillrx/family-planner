@@ -3,12 +3,15 @@ package com.cyrillrx.family.group.domain
 import com.cyrillrx.core.domain.Result
 import com.cyrillrx.core.domain.flatten
 import com.cyrillrx.core.domain.getOrElse
+import com.cyrillrx.core.domain.onFailure
 import com.cyrillrx.family.group.document.GroupDocument
 import com.cyrillrx.family.group.document.MemberDocument
 import com.cyrillrx.family.group.model.Group
 import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.Member
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Log
+import com.cyrillrx.logger.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.time.Instant
@@ -16,17 +19,20 @@ import kotlin.time.Instant
 class StoreGroupRepository(
     private val store: GroupStore,
     private val users: UserStore,
+    private val logger: Logger = Log,
 ) : GroupRepository {
 
-    override suspend fun group(): Result<Membership, GroupError.Read> = catchClientDefect { read() }.flatten()
+    override suspend fun group(): Result<Membership, GroupError.Read> =
+        catchClientDefect { read() }.flatten().onFailure(logger::recordStoreFailure)
 
     override fun observeMembers(groupId: GroupId): Flow<List<Member>> =
         store.observeMembers(groupId.value).map { documents -> documents.mapNotNull(MemberDocument::toDomain) }
 
     override suspend fun create(group: Group, founder: UserId): Result<Unit, GroupError.Write> =
-        catchClientDefect { write(group, founder) }.flatten()
+        catchClientDefect { write(group, founder) }.flatten().onFailure(logger::recordStoreFailure)
 
-    override suspend fun leaveMissingGroup(): Result<Unit, NoAnswer> = catchClientDefect { leave() }.flatten()
+    override suspend fun leaveMissingGroup(): Result<Unit, NoAnswer> =
+        catchClientDefect { leave() }.flatten().onFailure(logger::recordStoreFailure)
 
     private suspend fun read(): Result<Membership, GroupError.Read> {
         val credential = users.credential() ?: return Result.Success(Membership.NoGroup)
@@ -36,7 +42,6 @@ class StoreGroupRepository(
         return when (lookup) {
             GroupLookup.NoMembership -> Result.Success(Membership.NoGroup)
             is GroupLookup.Found -> Result.Success(Membership.InGroup(lookup.group.toDomain(GroupId(lookup.groupId))))
-            // TODO(#38): log it, the store holds a membership no client can write under the rules.
             is GroupLookup.NotFound -> Result.Failure(GroupNotFound)
         }
     }

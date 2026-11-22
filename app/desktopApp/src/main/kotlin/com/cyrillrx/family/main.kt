@@ -6,6 +6,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.cyrillrx.core.desktop.SingleInstance
 import com.cyrillrx.family.app.App
+import com.cyrillrx.family.app.installConsoleLog
 import com.cyrillrx.family.desktop.applicationDataDirectory
 import com.cyrillrx.family.firebase.initializeFirebase
 import java.awt.Desktop
@@ -16,6 +17,7 @@ fun main() {
     val instance = directory?.let(SingleInstance::claim)
     if (directory != null && instance == null) return SingleInstance.requestActivation(directory)
 
+    installConsoleLog()
     initializeFirebase()
 
     application {

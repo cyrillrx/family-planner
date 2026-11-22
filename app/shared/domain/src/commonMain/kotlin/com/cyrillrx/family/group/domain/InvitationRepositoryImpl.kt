@@ -18,10 +18,16 @@ import com.cyrillrx.family.group.model.GroupId
 import com.cyrillrx.family.group.model.InvitationId
 import com.cyrillrx.family.group.model.RedeemedInvitation
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Log
+import com.cyrillrx.logger.Logger
+import com.cyrillrx.logger.warn
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 
-class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepository {
+class InvitationRepositoryImpl(
+    private val api: InvitationApi,
+    private val logger: Logger = Log,
+) : InvitationRepository {
 
     override suspend fun redeem(
         code: String,
@@ -31,7 +37,8 @@ class InvitationRepositoryImpl(private val api: InvitationApi) : InvitationRepos
             api.redeem(code, user.value).toDomain()
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (e: Exception) {
+        } catch (failure: Exception) {
+            logger.warn(API_LOG_TAG, failure) { "The server did not redeem the invitation" }
             Result.Failure(RedeemInvitationError.Unknown)
         }
 }

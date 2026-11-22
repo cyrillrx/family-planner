@@ -8,6 +8,7 @@ import com.cyrillrx.family.group.api.ApiUser
 import com.cyrillrx.family.group.data.UserApi
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Severity
 import kotlinx.coroutines.test.runTest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
@@ -114,6 +115,16 @@ class UserRepositoryTest {
             Result.Failure(RegisterUserError.Unknown),
             repository.register(User(UserId("user-1"), "Cyril")),
         )
+    }
+
+    @Test
+    fun `records a transport failure as a warning carrying its cause`() = runTest {
+        val failure = IllegalStateException("no network")
+        val logger = RecordingLogger()
+
+        UserRepositoryImpl(ThrowingUserApi(failure), logger).register(User(UserId("user-1"), "Cyril"))
+
+        assertEquals(listOf(Recorded(Severity.WARN, API_LOG_TAG, failure)), logger.recorded())
     }
 
     @Test

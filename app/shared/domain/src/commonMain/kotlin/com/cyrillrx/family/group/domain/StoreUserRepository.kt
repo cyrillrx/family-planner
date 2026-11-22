@@ -4,21 +4,27 @@ import com.cyrillrx.core.domain.Result
 import com.cyrillrx.core.domain.flatten
 import com.cyrillrx.core.domain.getOrElse
 import com.cyrillrx.core.domain.map
+import com.cyrillrx.core.domain.onFailure
 import com.cyrillrx.family.group.document.UserDocument
 import com.cyrillrx.family.group.model.User
 import com.cyrillrx.family.group.model.UserId
+import com.cyrillrx.logger.Log
+import com.cyrillrx.logger.Logger
 
 /**
  * One user per device: the credential this device signed in with addresses it, so registering
  * again renames that user and keeps its identifier, whatever identifier the caller proposed.
  */
-class StoreUserRepository(private val store: UserStore) : UserRepository {
+class StoreUserRepository(
+    private val store: UserStore,
+    private val logger: Logger = Log,
+) : UserRepository {
 
-    override suspend fun registeredUserId(): Result<Registration, NoAnswer> = catchClientDefect { read() }.flatten()
+    override suspend fun registeredUserId(): Result<Registration, NoAnswer> =
+        catchClientDefect { read() }.flatten().onFailure(logger::recordStoreFailure)
 
-    override suspend fun register(user: User): Result<User, RegisterUserError> = catchClientDefect {
-        save(user)
-    }.flatten()
+    override suspend fun register(user: User): Result<User, RegisterUserError> =
+        catchClientDefect { save(user) }.flatten().onFailure(logger::recordStoreFailure)
 
     private suspend fun read(): Result<Registration, NoAnswer> {
         val credential = store.credential() ?: return Result.Success(Registration.NotRegistered)
