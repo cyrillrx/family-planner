@@ -50,7 +50,7 @@ _Decided_ means an accepted ADR stands behind it. _Proposed_ means the ADR is wr
 
 ## Getting started
 
-The client builds with the Gradle wrapper, on Java 21:
+The client builds with the Gradle wrapper, on Java 25:
 
 ```bash
 ./gradlew jvmTest                        # Run the tests
